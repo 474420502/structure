@@ -142,6 +142,8 @@ func (tree *IndexTree) index(i int64) *Node {
 
 }
 
+func (tree *IndexTree) Seek()
+
 // func (tree *IndexTree) Range(start, end int64) (result [][2]interface{}) {
 // 	snode := tree.index(start)
 // 	result = append(result, [2]interface{}{snode.Key, snode.Value})
