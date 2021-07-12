@@ -1,15 +1,23 @@
 package indextree
 
-func (tree *IndexTree) fixSize(cur *Node) {
+func (tree *Tree) fixPutSize(cur *Node) {
 	for cur != tree.root {
-		cur.Size++
+		cur.size++
 		cur = cur.Parent
 	}
 }
 
-func (tree *IndexTree) fixPut(cur *Node) {
+func (tree *Tree) fixRemoveSize(cur *Node) {
+	for cur != tree.root {
+		cur.size--
+		cur = cur.Parent
+	}
+}
 
-	if cur.Size == 3 {
+func (tree *Tree) fixPut(cur *Node) {
+
+	tree.fixPutSize(cur)
+	if cur.size == 3 {
 		return
 	}
 
@@ -28,21 +36,19 @@ func (tree *IndexTree) fixPut(cur *Node) {
 
 		root2nsize := (int64(1) << height)
 		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
-		if cur.Size < root2nsize {
+		if cur.size < root2nsize {
 
 			child2nsize := root2nsize >> 2
 			bottomsize := child2nsize + child2nsize>>(height>>1)
 			// 右就检测左边
 			if relations == R {
-				lsize := getSize(cur.Children[L])
-				rsize := getSize(cur.Children[R])
+				lsize, rsize := getChildrenSize(cur)
 				if rsize-lsize >= bottomsize {
 					cur = tree.sizeRrotate(cur)
 					height--
 				}
 			} else {
-				rsize := getSize(cur.Children[R])
-				lsize := getSize(cur.Children[L])
+				lsize, rsize := getChildrenSize(cur)
 				if lsize-rsize >= bottomsize {
 					cur = tree.sizeLrotate(cur)
 					height--
@@ -61,7 +67,7 @@ func (tree *IndexTree) fixPut(cur *Node) {
 	}
 }
 
-func (tree *IndexTree) sizeRrotate(cur *Node) *Node {
+func (tree *Tree) sizeRrotate(cur *Node) *Node {
 	const R = 1
 	llsize, lrsize := getChildrenSize(cur.Children[R])
 	if llsize > lrsize {
@@ -70,7 +76,7 @@ func (tree *IndexTree) sizeRrotate(cur *Node) *Node {
 	return tree.lrotate(cur)
 }
 
-func (tree *IndexTree) sizeLrotate(cur *Node) *Node {
+func (tree *Tree) sizeLrotate(cur *Node) *Node {
 	const L = 0
 	llsize, lrsize := getChildrenSize(cur.Children[L])
 	if llsize < lrsize {
@@ -79,7 +85,7 @@ func (tree *IndexTree) sizeLrotate(cur *Node) *Node {
 	return tree.rrotate(cur)
 }
 
-func (tree *IndexTree) lrotate(cur *Node) *Node {
+func (tree *Tree) lrotate(cur *Node) *Node {
 
 	const L = 1
 	const R = 0
@@ -104,13 +110,13 @@ func (tree *IndexTree) lrotate(cur *Node) *Node {
 	mov.Children[R] = cur
 	cur.Parent = mov
 
-	cur.Size = getChildrenSumSize(cur) + 1
-	mov.Size = getChildrenSumSize(mov) + 1
+	cur.size = getChildrenSumSize(cur) + 1
+	mov.size = getChildrenSumSize(mov) + 1
 
 	return mov
 }
 
-func (tree *IndexTree) rrotate(cur *Node) *Node {
+func (tree *Tree) rrotate(cur *Node) *Node {
 
 	const L = 0
 	const R = 1
@@ -135,8 +141,8 @@ func (tree *IndexTree) rrotate(cur *Node) *Node {
 	mov.Children[R] = cur
 	cur.Parent = mov
 
-	cur.Size = getChildrenSumSize(cur) + 1
-	mov.Size = getChildrenSumSize(mov) + 1
+	cur.size = getChildrenSumSize(cur) + 1
+	mov.size = getChildrenSumSize(mov) + 1
 
 	return mov
 }
@@ -153,5 +159,12 @@ func getSize(cur *Node) int64 {
 	if cur == nil {
 		return 0
 	}
-	return cur.Size
+	return cur.size
+}
+
+func getRelationship(cur *Node) int {
+	if cur.Parent.Children[1] == cur {
+		return 1
+	}
+	return 0
 }

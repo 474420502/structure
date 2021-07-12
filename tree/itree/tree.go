@@ -13,32 +13,39 @@ type Node struct {
 	Children [2]*Node
 	// direct   [2]*Node
 
-	Size  int64
+	size  int64
 	Key   interface{}
 	Value interface{}
 }
 
-type IndexTree struct {
+type Tree struct {
 	root    *Node
 	compare compare.Compare
 }
 
-func New(comp compare.Compare) *IndexTree {
-	return &IndexTree{compare: comp, root: &Node{}}
+func New(comp compare.Compare) *Tree {
+	return &Tree{compare: comp, root: &Node{}}
 }
 
-func (tree *IndexTree) getRoot() *Node {
+func (tree *Tree) getRoot() *Node {
 	return tree.root.Children[0]
 }
 
-func (tree *IndexTree) Size() int64 {
+func (tree *Tree) Size() int64 {
 	if root := tree.getRoot(); root != nil {
-		return root.Size
+		return root.size
 	}
 	return 0
 }
 
-func (tree *IndexTree) Get(key interface{}) (interface{}, bool) {
+func (tree *Tree) Get(key interface{}) (interface{}, bool) {
+	if cur := tree.getNode(key); cur != nil {
+		return cur.Value, true
+	}
+	return nil, false
+}
+
+func (tree *Tree) getNode(key interface{}) *Node {
 	const L = 0
 	const R = 1
 
@@ -51,22 +58,19 @@ func (tree *IndexTree) Get(key interface{}) (interface{}, bool) {
 		case c > 0:
 			cur = cur.Children[R]
 		default:
-			return cur.Value, true
+			return cur
 		}
 	}
-	return nil, false
+	return nil
 }
 
-func (tree *IndexTree) Put(key, value interface{}) bool {
+func (tree *Tree) Put(key, value interface{}) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		tree.root.Children[0] = &Node{Key: key, Value: value, Size: 1, Parent: tree.root}
+		tree.root.Children[0] = &Node{Key: key, Value: value, size: 1, Parent: tree.root}
 		return true
 	}
-
-	// var left *Node = nil
-	// var right *Node = nil
 
 	const L = 0
 	const R = 1
@@ -75,30 +79,23 @@ func (tree *IndexTree) Put(key, value interface{}) bool {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
-			// right = cur
+
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
-
-				node := &Node{Parent: cur, Key: key, Value: value, Size: 1}
+				node := &Node{Parent: cur, Key: key, Value: value, size: 1}
 				cur.Children[L] = node
-
-				tree.fixSize(cur)
 				tree.fixPut(cur)
 				return true
 			}
 
 		case c > 0:
 
-			// left = cur
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-
-				node := &Node{Parent: cur, Key: key, Value: value, Size: 1}
+				node := &Node{Parent: cur, Key: key, Value: value, size: 1}
 				cur.Children[R] = node
-
-				tree.fixSize(cur)
 				tree.fixPut(cur)
 				return true
 			}
@@ -106,14 +103,15 @@ func (tree *IndexTree) Put(key, value interface{}) bool {
 			return false
 		}
 	}
+
 }
 
-func (tree *IndexTree) Index(i int64) (key, value interface{}) {
+func (tree *Tree) Index(i int64) (key, value interface{}) {
 	node := tree.index(i)
 	return node.Key, node.Value
 }
 
-func (tree *IndexTree) index(i int64) *Node {
+func (tree *Tree) index(i int64) *Node {
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -142,7 +140,143 @@ func (tree *IndexTree) index(i int64) *Node {
 
 }
 
-func (tree *IndexTree) Seek()
+func (tree *Tree) Rank(key interface{}) int64 {
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	var offset int64 = getSize(cur.Children[L])
+	for cur != nil {
+		c := tree.compare(key, cur.Key)
+		switch {
+		case c < 0:
+			cur = cur.Children[L]
+			offset -= getSize(cur.Children[R]) + 1
+		case c > 0:
+			cur = cur.Children[R]
+			offset += getSize(cur.Children[L]) + 1
+		default:
+			return offset
+		}
+	}
+	return -1
+}
+
+// Traverse 遍历的方法 默认是LDR 从小到大 Compare 为 l < r
+func (tree *Tree) Traverse(every func(k, v interface{}) bool) {
+	root := tree.getRoot()
+	if root == nil {
+		return
+	}
+
+	var traverasl func(cur *Node) bool
+	traverasl = func(cur *Node) bool {
+		if cur == nil {
+			return true
+		}
+		if !traverasl(cur.Children[0]) {
+			return false
+		}
+		if !every(cur.Key, cur.Value) {
+			return false
+		}
+		if !traverasl(cur.Children[1]) {
+			return false
+		}
+		return true
+	}
+	traverasl(root)
+}
+
+func (tree *Tree) Values() []interface{} {
+	var mszie int64
+	root := tree.getRoot()
+	if root != nil {
+		mszie = root.size
+	}
+	result := make([]interface{}, 0, mszie)
+	tree.Traverse(func(k, v interface{}) bool {
+		result = append(result, v)
+		return true
+	})
+	return result
+}
+
+func (tree *Tree) Remove(key interface{}) interface{} {
+	const L = 0
+	const R = 1
+
+	if cur := tree.getNode(key); cur != nil {
+
+		lsize, rsize := getChildrenSize(cur)
+		if lsize > rsize {
+			prev := cur.Children[L]
+			for prev.Children[R] != nil {
+				prev = prev.Children[R]
+			}
+
+			value := cur.Value
+			cur.Key = prev.Key
+			cur.Value = prev.Value
+
+			prevParent := prev.Parent
+			if prevParent == cur {
+				cur.Children[L] = prev.Children[L]
+				if cur.Children[L] != nil {
+					cur.Children[L].Parent = cur
+				}
+				tree.fixRemoveSize(cur)
+			} else {
+				prevParent.Children[R] = prev.Children[L]
+				if prevParent.Children[R] != nil {
+					prevParent.Children[R].Parent = prevParent
+				}
+				tree.fixRemoveSize(prevParent)
+			}
+
+			return value
+		} else if lsize < rsize {
+
+			next := cur.Children[R]
+			for next.Children[L] != nil {
+				next = next.Children[L]
+			}
+
+			value := cur.Value
+			cur.Key = next.Key
+			cur.Value = next.Value
+
+			nextParent := next.Parent
+			if nextParent == cur {
+				cur.Children[R] = next.Children[R]
+				if cur.Children[R] != nil {
+					cur.Children[R].Parent = cur
+				}
+				tree.fixRemoveSize(cur)
+			} else {
+				nextParent.Children[L] = next.Children[R]
+				if nextParent.Children[L] != nil {
+					nextParent.Children[L].Parent = nextParent
+				}
+				tree.fixRemoveSize(nextParent)
+			}
+
+			return value
+
+		} else {
+			parent := cur.Parent
+			parent.Children[getRelationship(cur)] = nil
+			tree.fixRemoveSize(parent)
+			return cur.Value
+		}
+	}
+
+	return nil
+}
+
+func (tree *Tree) Clear() {
+	tree.root.Children[0] = nil
+}
 
 // func (tree *IndexTree) Range(start, end int64) (result [][2]interface{}) {
 // 	snode := tree.index(start)

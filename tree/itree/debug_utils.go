@@ -36,8 +36,6 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 
 }
 
-var debugCheck map[string]int
-
 func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
@@ -65,7 +63,7 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	}
 
 	// suffix += parentv + "|" + spew.Sprint(node.Size) + " " + ldirect + "<->" + rdirect + ")"
-	suffix += parentv + "|" + spew.Sprint(node.Size) + ")"
+	suffix += parentv + "|" + spew.Sprint(node.size) + ")"
 	// suffix = ""
 	k := node.Key
 
@@ -115,15 +113,12 @@ func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string)
 	}
 }
 
-func (tree *IndexTree) debugString(isSuffix bool) string {
+func (tree *Tree) debugString(isSuffix bool) string {
 	str := "BinarayList\n"
 	root := tree.getRoot()
 	if root == nil {
 		return str + "nil"
 	}
-
-	debugCheck = make(map[string]int)
-	defer func() { debugCheck = nil }()
 
 	if isSuffix {
 		outputfordebug(root, "", true, &str)
