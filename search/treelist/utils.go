@@ -1,23 +1,22 @@
-package indextree
+package treelist
 
 func (tree *Tree) fixPutSize(cur *Node) {
 	for cur != tree.root {
-		cur.size++
+		cur.Size++
 		cur = cur.Parent
 	}
 }
 
 func (tree *Tree) fixRemoveSize(cur *Node) {
 	for cur != tree.root {
-		cur.size--
+		cur.Size--
 		cur = cur.Parent
 	}
 }
 
 func (tree *Tree) fixPut(cur *Node) {
-
 	tree.fixPutSize(cur)
-	if cur.size == 3 {
+	if cur.Size == 3 {
 		return
 	}
 
@@ -36,7 +35,7 @@ func (tree *Tree) fixPut(cur *Node) {
 
 		root2nsize := (int64(1) << height)
 		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
-		if cur.size < root2nsize {
+		if cur.Size < root2nsize {
 
 			child2nsize := root2nsize >> 2
 			bottomsize := child2nsize + child2nsize>>(height>>1)
@@ -109,8 +108,8 @@ func (tree *Tree) lrotate(cur *Node) *Node {
 	mov.Children[R] = cur
 	cur.Parent = mov
 
-	cur.size = getChildrenSumSize(cur) + 1
-	mov.size = getChildrenSumSize(mov) + 1
+	cur.Size = getChildrenSumSize(cur) + 1
+	mov.Size = getChildrenSumSize(mov) + 1
 
 	return mov
 }
@@ -140,8 +139,8 @@ func (tree *Tree) rrotate(cur *Node) *Node {
 	mov.Children[R] = cur
 	cur.Parent = mov
 
-	cur.size = getChildrenSumSize(cur) + 1
-	mov.size = getChildrenSumSize(mov) + 1
+	cur.Size = getChildrenSumSize(cur) + 1
+	mov.Size = getChildrenSumSize(mov) + 1
 
 	return mov
 }
@@ -158,7 +157,7 @@ func getSize(cur *Node) int64 {
 	if cur == nil {
 		return 0
 	}
-	return cur.size
+	return cur.Size
 }
 
 func getRelationship(cur *Node) int {

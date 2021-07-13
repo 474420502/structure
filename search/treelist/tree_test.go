@@ -1,7 +1,9 @@
-package indextree
+package treelist
 
 import (
+	"bytes"
 	"log"
+	"strconv"
 	"testing"
 
 	"github.com/474420502/structure/compare"
@@ -11,17 +13,9 @@ import (
 func TestIndex(t *testing.T) {
 	tree := New(compare.Int)
 	for i := 0; i < 100; i++ {
-		tree.Put(i, i)
+		v := []byte(strconv.Itoa(i))
+		tree.Put(v, v)
 		// log.Println(tree.debugString(true))
-	}
-
-	// log.Println(tree.debugString(true))
-
-	for i := 0; i < 100; i++ {
-
-		if _, v := tree.Index(int64(i)); v != i {
-			t.Error("index error", v, i)
-		}
 	}
 
 }
@@ -29,14 +23,16 @@ func TestIndex(t *testing.T) {
 func TestRank(t *testing.T) {
 	tree := New(compare.Int)
 	for i := 0; i < 100; i++ {
-		tree.Put(i, i)
+		v := []byte(strconv.Itoa(i))
+		tree.Put(v, v)
 		// log.Println(tree.debugString(true))
 	}
 
 	// log.Println(tree.debugString(true))
 
 	for i := 0; i < 100; i++ {
-		if v := tree.Rank(i); v != int64(i) {
+		k := []byte(strconv.Itoa(i))
+		if v := tree.Rank(k); v != int64(i) {
 			t.Error("index error", i, "rank", v)
 		}
 	}
@@ -46,39 +42,41 @@ func TestRank(t *testing.T) {
 func TestRemove1(t *testing.T) {
 	tree := New(compare.Int)
 	for _, i := range testutils.TestedArray {
-		if !tree.Put(i, i) {
+		v := []byte(strconv.Itoa(i))
+		if !tree.Put(v, v) {
 			log.Println("equal key", i)
 		}
 	}
 
-	for _, v := range tree.Values() {
-		if tree.Remove(v) != v {
+	for _, v := range tree.Slices() {
+		if bytes.Compare(tree.Remove(v.Key).Key, v.Key) != 0 {
 			t.Error("remove error check it")
 		}
 	}
 
 	if tree.Size() != 0 {
-		t.Error(tree.Values())
+		t.Error(tree.Slices())
 	}
 }
 
 func TestRemove2(t *testing.T) {
 	tree := New(compare.Int)
 	for _, i := range testutils.TestedBigArray {
-		if !tree.Put(i, i) {
+		v := []byte(strconv.Itoa(i))
+		if !tree.Put(v, v) {
 			log.Println("equal key", i)
 		}
 	}
 
 	if tree.Size() != int64(len(testutils.TestedBigArray)-4) {
-		t.Error(tree.Size(), tree.Values())
+		t.Error(tree.Size(), tree.Slices())
 	}
 
-	for _, v := range tree.Values() {
-		tree.Remove(v)
+	for _, v := range tree.Slices() {
+		tree.Remove(v.Key)
 	}
 
 	if tree.Size() != 0 {
-		t.Error(tree.Values())
+		t.Error(tree.Slices())
 	}
 }
