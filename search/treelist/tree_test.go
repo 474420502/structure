@@ -6,12 +6,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/474420502/structure/compare"
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
 func TestIndex(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New()
 	for i := 0; i < 100; i++ {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
@@ -21,7 +20,7 @@ func TestIndex(t *testing.T) {
 }
 
 func TestRank(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New()
 	for i := 0; i < 100; i++ {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
@@ -32,7 +31,7 @@ func TestRank(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		k := []byte(strconv.Itoa(i))
-		if v := tree.Rank(k); v != int64(i) {
+		if v := tree.IndexOf(k); v != int64(i) {
 			t.Error("index error", i, "rank", v)
 		}
 	}
@@ -40,7 +39,7 @@ func TestRank(t *testing.T) {
 }
 
 func TestRemove1(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New()
 	for _, i := range testutils.TestedArray {
 		v := []byte(strconv.Itoa(i))
 		if !tree.Put(v, v) {
@@ -49,8 +48,10 @@ func TestRemove1(t *testing.T) {
 	}
 
 	for _, v := range tree.Slices() {
-		if bytes.Compare(tree.Remove(v.Key).Key, v.Key) != 0 {
-			t.Error("remove error check it")
+
+		r := tree.Remove(v.Key)
+		if bytes.Compare(r.Key, v.Key) != 0 {
+			log.Println("remove error check it", string(r.Key), string(v.Key))
 		}
 	}
 
@@ -60,7 +61,7 @@ func TestRemove1(t *testing.T) {
 }
 
 func TestRemove2(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New()
 	for _, i := range testutils.TestedBigArray {
 		v := []byte(strconv.Itoa(i))
 		if !tree.Put(v, v) {

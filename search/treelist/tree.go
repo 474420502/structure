@@ -28,12 +28,12 @@ type Tree struct {
 	compare compare.Compare
 }
 
-func New(comp compare.Compare) *Tree {
-	return &Tree{compare: comp, root: &Node{}}
+func New() *Tree {
+	return &Tree{compare: compare.Bytes, root: &Node{}}
 }
 
-func (tree *Tree) getRoot() *Node {
-	return tree.root.Children[0]
+func (tree *Tree) Iterator() *Iterator {
+	return &Iterator{tree: tree}
 }
 
 func (tree *Tree) Size() int64 {
@@ -80,10 +80,18 @@ func (tree *Tree) getNodeWithIndex(key []byte) (node *Node, idx int64) {
 		switch {
 		case c < 0:
 			cur = cur.Children[L]
-			offset -= getSize(cur.Children[L]) + 1
+			if cur != nil {
+				offset -= getSize(cur.Children[L]) + 1
+			} else {
+				return nil, -1
+			}
 		case c > 0:
 			cur = cur.Children[R]
-			offset += getSize(cur.Children[L]) + 1
+			if cur != nil {
+				offset += getSize(cur.Children[L]) + 1
+			} else {
+				return nil, -1
+			}
 		default:
 			return cur, offset
 		}
@@ -91,16 +99,56 @@ func (tree *Tree) getNodeWithIndex(key []byte) (node *Node, idx int64) {
 	return nil, -1
 }
 
+func (tree *Tree) seekNodeWithIndex(key []byte) (node *Node, idx int64, dir int) {
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	var offset int64 = getSize(cur.Children[L])
+	var last *Node
+	var c int
+	for {
+		c = tree.compare(key, cur.Key)
+		last = cur
+
+		switch {
+		case c < 0:
+
+			cur = cur.Children[L]
+			if cur != nil {
+				offset -= getSize(cur.Children[L]) + 1
+			} else {
+				return last, offset, c
+			}
+
+		case c > 0:
+
+			cur = cur.Children[R]
+			if cur != nil {
+				offset += getSize(cur.Children[L]) + 1
+			} else {
+				return last, offset, c
+			}
+
+		default:
+			return cur, offset, c
+		}
+	}
+
+}
+
 func (tree *Tree) Put(key, value []byte) bool {
+	const L = 0
+	const R = 1
 
 	cur := tree.getRoot()
 	if cur == nil {
-		tree.root.Children[0] = &Node{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
+		node := &Node{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
+		tree.root.Children[0] = node
+		tree.root.Direct[L] = node
+		tree.root.Direct[R] = node
 		return true
 	}
-
-	const L = 0
-	const R = 1
 
 	var left *Node = nil
 	var right *Node = nil
@@ -110,6 +158,7 @@ func (tree *Tree) Put(key, value []byte) bool {
 		switch {
 		case c < 0:
 
+			right = cur
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
@@ -119,7 +168,16 @@ func (tree *Tree) Put(key, value []byte) bool {
 
 				if left != nil {
 					left.Direct[R] = node
+				} else {
+					tree.root.Direct[L] = node
 				}
+
+				if right != nil {
+					right.Direct[L] = node
+				} else {
+					tree.root.Direct[R] = node
+				}
+
 				node.Direct[L] = left
 				node.Direct[R] = right
 
@@ -129,14 +187,22 @@ func (tree *Tree) Put(key, value []byte) bool {
 
 		case c > 0:
 
+			left = cur
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
 				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
 				cur.Children[R] = node
 
+				if left != nil {
+					left.Direct[R] = node
+				} else {
+					tree.root.Direct[L] = node
+				}
 				if right != nil {
 					right.Direct[L] = node
+				} else {
+					tree.root.Direct[R] = node
 				}
 
 				node.Direct[L] = left
@@ -197,7 +263,7 @@ func (tree *Tree) IndexOf(key []byte) int64 {
 		switch {
 		case c < 0:
 			cur = cur.Children[L]
-			offset -= getSize(cur.Children[R]) + 1
+			offset -= getSize(cur.Children[L]) + 1
 		case c > 0:
 			cur = cur.Children[R]
 			offset += getSize(cur.Children[L]) + 1
@@ -256,25 +322,50 @@ func (tree *Tree) Traverse(every func(s *Slice) bool) {
 	traverasl(root)
 }
 
-func (tree *Tree) Slices() []*Slice {
+func (tree *Tree) Slices() []Slice {
 	var mszie int64
 	root := tree.getRoot()
 	if root != nil {
 		mszie = root.Size
 	}
-	result := make([]*Slice, 0, mszie)
+	result := make([]Slice, 0, mszie)
 	tree.Traverse(func(s *Slice) bool {
-		result = append(result, s)
+		result = append(result, *s)
 		return true
 	})
 	return result
 }
 
-func (tree *Tree) Remove(key []byte) *Slice {
+func (tree *Tree) Remove(key []byte) (s *Slice) {
 	const L = 0
 	const R = 1
 
 	if cur := tree.getNode(key); cur != nil {
+		s = &Slice{Key: cur.Key, Value: cur.Value}
+
+		if cur.Size == 1 {
+			parent := cur.Parent
+			if parent != tree.root {
+				parent.Children[getRelationship(cur)] = nil
+				tree.fixRemoveSize(parent)
+
+				dright := cur.Direct[R]
+				dleft := cur.Direct[L]
+				if dright != nil {
+					dright.Direct[L] = dleft
+				}
+				if dleft != nil {
+					dleft.Direct[R] = dright
+				}
+
+			} else {
+				parent.Children[0] = nil
+				tree.root.Direct[L] = nil
+				tree.root.Direct[R] = nil
+			}
+
+			return
+		}
 
 		lsize, rsize := getChildrenSize(cur)
 		if lsize > rsize {
@@ -289,11 +380,14 @@ func (tree *Tree) Remove(key []byte) *Slice {
 			prevParent := prev.Parent
 			if prevParent == cur {
 				cur.Children[L] = prev.Children[L]
-				if cur.Children[L] != nil {
-					cur.Children[L].Parent = cur
+				cleft := cur.Children[L]
+				if cleft != nil {
+					cleft.Parent = cur
 				}
+				// direct
 				tree.fixRemoveSize(cur)
 			} else {
+
 				prevParent.Children[R] = prev.Children[L]
 				if prevParent.Children[R] != nil {
 					prevParent.Children[R].Parent = prevParent
@@ -301,8 +395,13 @@ func (tree *Tree) Remove(key []byte) *Slice {
 				tree.fixRemoveSize(prevParent)
 			}
 
-			return &cur.Slice
-		} else if lsize < rsize {
+			dleft := cur.Direct[L].Direct[L]
+			if dleft != nil {
+				dleft.Direct[R] = cur
+			}
+			cur.Direct[L] = dleft
+
+		} else {
 
 			next := cur.Children[R]
 			for next.Children[L] != nil {
@@ -327,14 +426,14 @@ func (tree *Tree) Remove(key []byte) *Slice {
 				tree.fixRemoveSize(nextParent)
 			}
 
-			return &cur.Slice
-
-		} else {
-			parent := cur.Parent
-			parent.Children[getRelationship(cur)] = nil
-			tree.fixRemoveSize(parent)
-			return &cur.Slice
+			dright := cur.Direct[R].Direct[R]
+			if dright != nil {
+				dright.Direct[L] = cur
+			}
+			cur.Direct[R] = dright
 		}
+
+		return
 	}
 
 	return nil
@@ -342,6 +441,10 @@ func (tree *Tree) Remove(key []byte) *Slice {
 
 func (tree *Tree) Clear() {
 	tree.root.Children[0] = nil
+}
+
+func (tree *Tree) getRoot() *Node {
+	return tree.root.Children[0]
 }
 
 // func (tree *IndexTree) Range(start, end int64) (result [][2]interface{}) {

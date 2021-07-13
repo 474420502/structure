@@ -36,7 +36,7 @@ func TestRank(t *testing.T) {
 	// log.Println(tree.debugString(true))
 
 	for i := 0; i < 100; i++ {
-		if v := tree.Rank(i); v != int64(i) {
+		if v := tree.IndexOf(i); v != int64(i) {
 			t.Error("index error", i, "rank", v)
 		}
 	}

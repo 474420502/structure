@@ -207,6 +207,13 @@ func (tree *Tree) Remove(key interface{}) interface{} {
 
 	if cur := tree.getNode(key); cur != nil {
 
+		if cur.size == 1 {
+			parent := cur.Parent
+			parent.Children[getRelationship(cur)] = nil
+			tree.fixRemoveSize(parent)
+			return cur.Value
+		}
+
 		lsize, rsize := getChildrenSize(cur)
 		if lsize > rsize {
 			prev := cur.Children[L]
@@ -234,7 +241,7 @@ func (tree *Tree) Remove(key interface{}) interface{} {
 			}
 
 			return value
-		} else if lsize < rsize {
+		} else {
 
 			next := cur.Children[R]
 			for next.Children[L] != nil {
@@ -262,11 +269,6 @@ func (tree *Tree) Remove(key interface{}) interface{} {
 
 			return value
 
-		} else {
-			parent := cur.Parent
-			parent.Children[getRelationship(cur)] = nil
-			tree.fixRemoveSize(parent)
-			return cur.Value
 		}
 	}
 

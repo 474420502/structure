@@ -59,7 +59,7 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	if node.Parent == nil {
 		parentv = "nil"
 	} else {
-		parentv = spew.Sprint(node.Parent.Key)
+		parentv = spew.Sprint(string(node.Parent.Key))
 	}
 
 	// suffix += parentv + "|" + spew.Sprint(node.Size) + " " + ldirect + "<->" + rdirect + ")"
@@ -67,7 +67,7 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	// suffix = ""
 	k := node.Key
 
-	*str += spew.Sprint(k) + suffix + "\n"
+	*str += spew.Sprint(string(k)) + suffix + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -100,7 +100,7 @@ func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string)
 
 	k := node.Key
 
-	*str += spew.Sprint(k) + "\n"
+	*str += spew.Sprint(string(k)) + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix

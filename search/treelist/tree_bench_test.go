@@ -3,8 +3,6 @@ package treelist
 import (
 	"strconv"
 	"testing"
-
-	"github.com/474420502/structure/compare"
 )
 
 const Level0 = 100000
@@ -20,7 +18,7 @@ func init() {
 
 func BenchmarkPut(b *testing.B) {
 	b.StopTimer()
-	tree := New(compare.Int)
+	tree := New()
 	b.ResetTimer()
 	b.StartTimer()
 
@@ -32,7 +30,7 @@ func BenchmarkPut(b *testing.B) {
 
 func BenchmarkIndex(b *testing.B) {
 	b.StopTimer()
-	tree := New(compare.Int)
+	tree := New()
 
 	for i := 0; i < Level3; i++ {
 		v := []byte(strconv.Itoa(i))

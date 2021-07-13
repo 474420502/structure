@@ -7,29 +7,55 @@ type Iterator struct {
 }
 
 func (iter *Iterator) Seek(key []byte) {
-	iter.cur, iter.idx = iter.tree.getNodeWithIndex(key)
-}
-
-func (iter *Iterator) Prev() bool {
-	const L = 0
-	prev := iter.cur.Direct[L]
-	if prev != nil {
-		iter.cur = prev
-		iter.idx--
-		return true
-	}
-	return false
-}
-
-func (iter *Iterator) Next() bool {
 	const R = 1
-	next := iter.cur.Direct[R]
-	if next != nil {
-		iter.cur = next
+	cur, idx, dir := iter.tree.seekNodeWithIndex(key)
+	iter.idx = idx
+	if dir > 0 {
+		cur = cur.Direct[R]
 		iter.idx++
-		return true
 	}
-	return false
+	iter.cur = cur
+}
+
+func (iter *Iterator) SeekToPrev(key []byte) {
+	const L = 1
+	cur, idx, dir := iter.tree.seekNodeWithIndex(key)
+	iter.idx = idx
+	if dir < 0 {
+		cur = cur.Direct[L]
+		iter.idx--
+	}
+	iter.cur = cur
+}
+
+func (iter *Iterator) SeekToFirst() {
+	const L = 0
+	iter.cur = iter.tree.root.Direct[L]
+	iter.idx = 0
+}
+
+func (iter *Iterator) SeekToLast() {
+	const R = 1
+	iter.cur = iter.tree.root.Direct[R]
+	iter.idx = iter.tree.Size() - 1
+}
+
+func (iter *Iterator) Valid() bool {
+	return iter.cur != nil
+}
+
+func (iter *Iterator) Prev() {
+	const L = 0
+
+	iter.cur = iter.cur.Direct[L]
+	iter.idx--
+
+}
+
+func (iter *Iterator) Next() {
+	const R = 1
+	iter.cur = iter.cur.Direct[R]
+	iter.idx++
 }
 
 func (iter *Iterator) Slice() *Slice {
