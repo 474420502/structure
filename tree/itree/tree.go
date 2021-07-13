@@ -144,21 +144,31 @@ func (tree *Tree) IndexOf(key interface{}) int64 {
 	const R = 1
 
 	cur := tree.getRoot()
+	if cur == nil {
+		return -1
+	}
+
 	var offset int64 = getSize(cur.Children[L])
-	for cur != nil {
+	for {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
 			cur = cur.Children[L]
+			if cur == nil {
+				return -1
+			}
 			offset -= getSize(cur.Children[R]) + 1
 		case c > 0:
 			cur = cur.Children[R]
+			if cur == nil {
+				return -1
+			}
 			offset += getSize(cur.Children[L]) + 1
 		default:
 			return offset
 		}
 	}
-	return -1
+
 }
 
 // Traverse 遍历的方法 默认是LDR 从小到大 Compare 为 l < r

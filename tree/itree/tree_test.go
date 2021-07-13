@@ -40,7 +40,7 @@ func TestRank(t *testing.T) {
 			t.Error("index error", i, "rank", v)
 		}
 	}
-
+	tree.IndexOf(100)
 }
 
 func TestRemove1(t *testing.T) {

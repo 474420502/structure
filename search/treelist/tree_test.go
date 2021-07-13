@@ -29,7 +29,7 @@ func TestRank(t *testing.T) {
 
 	// log.Println(tree.debugString(true))
 
-	for i := 0; i < 100; i++ {
+	for i := 10; i < 100; i++ {
 		k := []byte(strconv.Itoa(i))
 		if v := tree.IndexOf(k); v != int64(i) {
 			t.Error("index error", i, "rank", v)

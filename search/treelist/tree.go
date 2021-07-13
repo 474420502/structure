@@ -257,21 +257,30 @@ func (tree *Tree) IndexOf(key []byte) int64 {
 	const R = 1
 
 	cur := tree.getRoot()
+	if cur == nil {
+		return -1
+	}
 	var offset int64 = getSize(cur.Children[L])
-	for cur != nil {
+	for {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
 			cur = cur.Children[L]
-			offset -= getSize(cur.Children[L]) + 1
+			if cur == nil {
+				return -1
+			}
+			offset -= getSize(cur.Children[R]) + 1
 		case c > 0:
 			cur = cur.Children[R]
+			if cur == nil {
+				return -1
+			}
 			offset += getSize(cur.Children[L]) + 1
 		default:
 			return offset
 		}
 	}
-	return -1
+
 }
 
 func (tree *Tree) rankNode(key []byte) (*Node, int64) {
