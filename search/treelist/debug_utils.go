@@ -1,6 +1,8 @@
 package treelist
 
 import (
+	"fmt"
+
 	"github.com/davecgh/go-spew/spew"
 )
 
@@ -140,3 +142,7 @@ func (tree *Tree) debugString(isSuffix bool) string {
 // 	log.Println(tree.debugString(true))
 // 	cur.Key = temp
 // }
+
+func colorNode(cur *Node, color int) {
+	cur.Key = []byte(fmt.Sprintf("\033[%dm%s\033[0m", color, cur.Key))
+}
