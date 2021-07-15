@@ -25,6 +25,10 @@ type Node struct {
 	Slice
 }
 
+func (n *Node) String() string {
+	return string(n.Key)
+}
+
 type Tree struct {
 	root    *Node
 	compare compare.Compare
@@ -473,7 +477,7 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 		Direct int
 	}
 
-	var startPath []*Path
+	var sPath []*Path // search start path(key1 path)
 
 	var last = 0
 	for cur != nil {
@@ -481,27 +485,27 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 		switch {
 		case c < 0:
 			if last != c {
-				startPath = append(startPath, &Path{cur, 0})
+				sPath = append(sPath, &Path{cur, 0})
 			}
 			cur = cur.Children[L]
 		case c > 0:
 			if cur.Children[R] == nil {
-				startPath = append(startPath, &Path{cur.Direct[R], 1})
+				sPath[len(sPath)-1] = &Path{cur.Direct[R], 1}
 			} else {
 				if last != c {
-					startPath = append(startPath, &Path{cur, 1})
+					sPath = append(sPath, &Path{cur, 1})
 				}
 			}
 			cur = cur.Children[R]
 		default:
-			startPath = append(startPath, &Path{cur, 1})
+			sPath[len(sPath)-1] = &Path{cur, 1}
 			cur = nil
 		}
 
 		last = c
 	}
 
-	var endPath []*Path
+	var ePath []*Path // search end path(key2 path)
 	cur = tree.getRoot()
 	last = 0
 	for cur != nil {
@@ -509,74 +513,137 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 		switch {
 		case c < 0:
 			if cur.Children[L] == nil {
-				endPath[len(endPath)-1] = &Path{cur.Direct[L], 0}
+				ePath[len(ePath)-1] = &Path{cur.Direct[L], 0}
 			} else {
 				if last != c {
-					endPath = append(endPath, &Path{cur, 0})
+					ePath = append(ePath, &Path{cur, 0})
 				}
 			}
 			cur = cur.Children[L]
 		case c > 0:
 			if last != c {
-				endPath = append(endPath, &Path{cur, 1})
+				ePath = append(ePath, &Path{cur, 1})
 			}
 			cur = cur.Children[R]
 		default:
-			endPath = append(endPath, &Path{cur, 0})
+			ePath[len(ePath)-1] = &Path{cur, 0}
 			cur = nil
 		}
 	}
 
-	for _, v := range startPath {
-		log.Println(string(v.N.Key))
+	for _, v := range sPath {
+
 		colorNode(v.N, 32)
-	}
-
-	var i = len(startPath) - 1
-	child := startPath[i]
-	lleft := child.N.Direct[L]
-
-	for i--; i > 0; i-- {
-		parent := startPath[i]
-		if parent.Direct == 1 {
-			left := child.N.Children[L]
-			parent.N.Children[R] = left
-			left.Parent = parent.N
-			parent.N.Size = getChildrenSumSize(parent.N) + 1
-		}
-		child = parent
-	}
-
-	i = len(endPath) - 1
-	child = endPath[i]
-	rright := child.N.Direct[R]
-	for i--; i > 0; i-- {
-		parent := endPath[i]
-		if parent.Direct == 0 {
-			right := child.N.Children[R]
-			parent.N.Children[L] = right
-			right.Parent = parent.N
-			parent.N.Size = getChildrenSumSize(parent.N) + 1
-		}
-		child = parent
-	}
-
-	rootRang := startPath[0].N
-	rootRang.Size = getChildrenSumSize(rootRang) + 1
-
-	for _, v := range endPath {
 		log.Println(string(v.N.Key))
+	}
+
+	for _, v := range ePath {
+
 		colorNode(v.N, 33)
+		log.Println(string(v.N.Key))
 	}
 
-	if lleft != nil {
-		lleft.Direct[R] = rootRang
-	}
-	if rright != nil {
-		rright.Direct[L] = rootRang
+	log.Println(tree.debugString(true))
+
+	var i = len(sPath) - 1
+	child := sPath[i]
+	// lleft := child.N.Direct[L]
+	log.Println(child.N)
+
+	var curGroup *Path
+	var lGroup *Path = &Path{child.N.Children[L], 1}
+	for i--; i > 0; i-- {
+		curGroup = sPath[i]
+		if curGroup.Direct == 1 {
+			left := child.N.Children[L]
+			curGroup.N.Children[R] = left
+			if left != nil {
+				left.Parent = curGroup.N
+			}
+			curGroup.N.Size = getChildrenSumSize(curGroup.N) + 1
+			lGroup = curGroup
+		}
+		log.Println(curGroup.N)
+		child = curGroup
 	}
 
-	tree.removeNode(rootRang)
+	i = len(ePath) - 1
+	child = ePath[i]
+	// rright := child.N.Direct[R]
+
+	var rGroup *Path = &Path{child.N.Children[R], 0}
+	for i--; i > 0; i-- {
+		curGroup = ePath[i]
+		if curGroup.Direct == 0 {
+			right := child.N.Children[R]
+			curGroup.N.Children[L] = right
+			if right != nil {
+				right.Parent = curGroup.N
+			}
+			curGroup.N.Size = getChildrenSumSize(curGroup.N) + 1
+			rGroup = curGroup
+		}
+		child = curGroup
+	}
+
+	log.Println(tree.debugString(true))
+	log.Println(rGroup.N)
+
+	rootRang := sPath[0].N
+	ls := getSize(lGroup.N)
+	rs := getSize(rGroup.N)
+	if ls > rs {
+		rootRang.Parent.Children[getRelationship(rootRang)] = lGroup.N
+		if lGroup.N != nil {
+			lGroup.N.Parent = rootRang.Parent
+			var rhand = lGroup.N
+			for rhand.Children[R] != nil {
+				rhand = rhand.Children[R]
+			}
+			rhand.Children[R] = rGroup.N
+			if rGroup.N != nil {
+				rGroup.N.Parent = rhand
+				cur := rhand
+				addSize := rGroup.N.Size
+				for cur != rootRang.Parent {
+					cur.Size += addSize
+					cur = cur.Parent
+				}
+			}
+
+		}
+
+	} else {
+
+		rootRang.Parent.Children[getRelationship(rootRang)] = rGroup.N
+		if rGroup.N != nil {
+			rGroup.N.Parent = rootRang.Parent
+			var lhand = rGroup.N
+			for lhand.Children[L] != nil {
+				lhand = lhand.Children[L]
+			}
+			lhand.Children[L] = lGroup.N
+			if lGroup.N != nil {
+				lGroup.N.Parent = lhand
+				cur := lhand
+				addSize := lGroup.N.Size
+				for cur != rootRang.Parent {
+					cur.Size += addSize
+					cur = cur.Parent
+				}
+			}
+		}
+	}
+	// rootRang.Size = getChildrenSumSize(rootRang) + 1
+
+	// if lleft != nil {
+	// 	lleft.Direct[R] = rootRang
+	// }
+	// if rright != nil {
+	// 	rright.Direct[L] = rootRang
+	// }
+
+	// tree.removeNode(rootRang)
 }
 
 func (tree *Tree) Clear() {
