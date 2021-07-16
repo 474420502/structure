@@ -166,3 +166,13 @@ func getRelationship(cur *Node) int {
 	}
 	return 0
 }
+
+func getRelationshipEx(cur *Node) int {
+	if cur.Parent.Size == 0 {
+		return -1
+	}
+	if cur.Parent.Children[1] == cur {
+		return 1
+	}
+	return 0
+}

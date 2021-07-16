@@ -91,8 +91,8 @@ func TestRange(t *testing.T) {
 		tree.Put(v, v)
 	}
 
-	start := []byte(strconv.Itoa(0)) // 41 63
-	end := []byte(strconv.Itoa(63))
+	start := []byte(strconv.Itoa(1)) // 41 63
+	end := []byte(strconv.Itoa(89))
 	log.Println(tree.debugString(false))
 	tree.RemoveRange(start, end)
 	log.Println(tree.debugString(true))

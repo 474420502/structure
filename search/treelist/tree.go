@@ -470,180 +470,70 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 	const L = 0
 	const R = 1
 
-	cur := tree.getRoot()
+	// cur := tree.getRoot()
+	// log.Println(cur)
 
 	type Path struct {
 		N      *Node
 		Direct int
 	}
 
-	var sPath []*Path // search start path(key1 path)
+	root, n1, n2 := tree.getRangeNode(key1, key2)
 
-	var last = 0
-	for cur != nil {
-		c := tree.compare(key1, cur.Key)
-		switch {
-		case c < 0:
-			if last != c {
-				sPath = append(sPath, &Path{cur, 0})
-			}
-			cur = cur.Children[L]
-		case c > 0:
-			if cur.Children[R] == nil {
-				sPath[len(sPath)-1] = &Path{cur.Direct[R], 1}
-			} else {
-				if last != c {
-					sPath = append(sPath, &Path{cur, 1})
-				}
-			}
-			cur = cur.Children[R]
-		default:
-			sPath[len(sPath)-1] = &Path{cur, 1}
-			cur = nil
-		}
-
-		last = c
-	}
-
-	var ePath []*Path // search end path(key2 path)
-	cur = tree.getRoot()
-	last = 0
-	for cur != nil {
-		c := tree.compare(key2, cur.Key)
-		switch {
-		case c < 0:
-			if cur.Children[L] == nil {
-				ePath[len(ePath)-1] = &Path{cur.Direct[L], 0}
-			} else {
-				if last != c {
-					ePath = append(ePath, &Path{cur, 0})
-				}
-			}
-			cur = cur.Children[L]
-		case c > 0:
-			if last != c {
-				ePath = append(ePath, &Path{cur, 1})
-			}
-			cur = cur.Children[R]
-		default:
-			ePath[len(ePath)-1] = &Path{cur, 0}
-			cur = nil
-		}
-	}
-
-	for _, v := range sPath {
-
-		colorNode(v.N, 32)
-		log.Println(string(v.N.Key))
-	}
-
-	for _, v := range ePath {
-
-		colorNode(v.N, 33)
-		log.Println(string(v.N.Key))
-	}
+	colorNode(root, 37)
+	colorNode(n1, 33)
+	colorNode(n2, 35)
 
 	log.Println(tree.debugString(true))
 
-	var i = len(sPath) - 1
-	child := sPath[i]
-	// lleft := child.N.Direct[L]
-	log.Println(child.N)
-
-	var curGroup *Path
-	var lGroup *Path = &Path{child.N.Children[L], 1}
-	for i--; i > 0; i-- {
-		curGroup = sPath[i]
-		if curGroup.Direct == 1 {
-			left := child.N.Children[L]
-			curGroup.N.Children[R] = left
-			if left != nil {
-				left.Parent = curGroup.N
+	lgroup := n1.Children[L]
+	parent := n1
+	var lastdir int = getRelationship(lgroup)
+	for parent != root.Parent {
+		dir := getRelationship(parent)
+		if dir == lastdir {
+			parent.Children[R] = lgroup
+			if lgroup != nil {
+				lgroup.Parent = parent
 			}
-			curGroup.N.Size = getChildrenSumSize(curGroup.N) + 1
-			lGroup = curGroup
+			parent.Size = getChildrenSumSize(parent) + 1
+			lgroup = parent
 		}
-		log.Println(curGroup.N)
-		child = curGroup
+		parent = parent.Parent
+		// lastdir = dir
+
 	}
 
-	i = len(ePath) - 1
-	child = ePath[i]
-	// rright := child.N.Direct[R]
+	log.Println(lgroup)
+	root.Children[L] = lgroup
+	if lgroup != nil {
+		lgroup.Parent = root
+	}
 
-	var rGroup *Path = &Path{child.N.Children[R], 0}
-	for i--; i > 0; i-- {
-		curGroup = ePath[i]
-		if curGroup.Direct == 0 {
-			right := child.N.Children[R]
-			curGroup.N.Children[L] = right
-			if right != nil {
-				right.Parent = curGroup.N
+	rgroup := n2.Children[R]
+	parent = n2
+	lastdir = getRelationship(lgroup)
+	log.Println(parent)
+	for parent != root {
+		dir := getRelationship(parent)
+		if dir == lastdir {
+			parent.Children[L] = rgroup
+			if rgroup != nil {
+				rgroup.Parent = parent
 			}
-			curGroup.N.Size = getChildrenSumSize(curGroup.N) + 1
-			rGroup = curGroup
+			parent.Size = getChildrenSumSize(parent) + 1
+			rgroup = parent
 		}
-		child = curGroup
+		parent = parent.Parent
+
+	}
+	log.Println(rgroup)
+	root.Children[R] = rgroup
+	if rgroup != nil {
+		rgroup.Parent = root
 	}
 
 	log.Println(tree.debugString(true))
-	log.Println(rGroup.N)
-
-	rootRang := sPath[0].N
-	ls := getSize(lGroup.N)
-	rs := getSize(rGroup.N)
-	if ls > rs {
-		rootRang.Parent.Children[getRelationship(rootRang)] = lGroup.N
-		if lGroup.N != nil {
-			lGroup.N.Parent = rootRang.Parent
-			var rhand = lGroup.N
-			for rhand.Children[R] != nil {
-				rhand = rhand.Children[R]
-			}
-			rhand.Children[R] = rGroup.N
-			if rGroup.N != nil {
-				rGroup.N.Parent = rhand
-				cur := rhand
-				addSize := rGroup.N.Size
-				for cur != rootRang.Parent {
-					cur.Size += addSize
-					cur = cur.Parent
-				}
-			}
-
-		}
-
-	} else {
-
-		rootRang.Parent.Children[getRelationship(rootRang)] = rGroup.N
-		if rGroup.N != nil {
-			rGroup.N.Parent = rootRang.Parent
-			var lhand = rGroup.N
-			for lhand.Children[L] != nil {
-				lhand = lhand.Children[L]
-			}
-			lhand.Children[L] = lGroup.N
-			if lGroup.N != nil {
-				lGroup.N.Parent = lhand
-				cur := lhand
-				addSize := lGroup.N.Size
-				for cur != rootRang.Parent {
-					cur.Size += addSize
-					cur = cur.Parent
-				}
-			}
-		}
-	}
-	// rootRang.Size = getChildrenSumSize(rootRang) + 1
-
-	// if lleft != nil {
-	// 	lleft.Direct[R] = rootRang
-	// }
-	// if rright != nil {
-	// 	rright.Direct[L] = rootRang
-	// }
-
-	// tree.removeNode(rootRang)
 }
 
 func (tree *Tree) Clear() {
@@ -652,4 +542,79 @@ func (tree *Tree) Clear() {
 
 func (tree *Tree) getRoot() *Node {
 	return tree.root.Children[0]
+}
+
+func (tree *Tree) getRangeNodeStart(root *Node, key []byte) *Node {
+	const L = 0
+	const R = 1
+
+	cur := root
+	for {
+		c := tree.compare(key, cur.Key)
+		switch {
+		case c < 0:
+			if cur.Children[L] == nil {
+				return cur
+			}
+			cur = cur.Children[L]
+		case c > 0:
+			if cur.Children[R] == nil {
+				return cur.Direct[R]
+			}
+			cur = cur.Children[R]
+		default:
+			return cur
+		}
+	}
+}
+
+func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) *Node {
+	const L = 0
+	const R = 1
+
+	cur := root
+	for {
+		c := tree.compare(key, cur.Key)
+		switch {
+		case c < 0:
+			if cur.Children[L] == nil {
+				return cur.Direct[L]
+			}
+			cur = cur.Children[L]
+		case c > 0:
+			if cur.Children[R] == nil {
+				return cur
+			}
+			cur = cur.Children[R]
+		default:
+			return cur
+		}
+	}
+}
+
+func (tree *Tree) getRangeNode(key1, key2 []byte) (root, start, end *Node) {
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	for {
+		c1 := tree.compare(key1, cur.Key)
+		c2 := tree.compare(key2, cur.Key)
+
+		if c1 != c2 {
+			return cur, tree.getRangeNodeStart(cur, key1), tree.getRangeNodeEnd(cur, key2)
+		}
+
+		switch {
+		case c1 < 0:
+			cur = cur.Children[L]
+		case c1 > 0:
+			cur = cur.Children[R]
+		default:
+		}
+	}
+}
+
+func getGroupParent() {
+
 }
