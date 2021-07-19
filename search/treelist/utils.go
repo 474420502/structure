@@ -82,7 +82,7 @@ func (tree *Tree) fixRemoveRange(cur *Node) {
 			tree.lrotate(cur.Children[L])
 		}
 		tree.rrotate(cur)
-		tree.fixRemoveRange(cur)
+		// tree.fixRemoveRange(cur)
 		// tree.fixRemoveRange(root, level+1)
 	} else if ls < rs && rs >= ls<<1 {
 		cls, crs := getChildrenSize(cur.Children[R])
@@ -90,7 +90,7 @@ func (tree *Tree) fixRemoveRange(cur *Node) {
 			tree.rrotate(cur.Children[R])
 		}
 		tree.lrotate(cur)
-		tree.fixRemoveRange(cur)
+		// tree.fixRemoveRange(cur)
 		// tree.fixRemoveRange(root, level+1)
 	}
 

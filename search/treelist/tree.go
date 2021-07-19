@@ -1,6 +1,8 @@
 package treelist
 
 import (
+	"log"
+
 	"github.com/474420502/structure/compare"
 )
 
@@ -481,57 +483,28 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 		tree.Clear()
 		return
 	}
-
+	log.Println(tree.debugString(true))
+	log.Println(starts, ends)
 	// 左右组　拼接
 	rsize := getSize(rgroup)
 	lsize := getSize(lgroup)
 	// rparent := root.Parent
 	if lsize > rsize {
-
 		tree.mergeGroups(root, lgroup, rgroup, rsize, R)
-
 	} else {
-		tree.mergeGroups(root, rgroup, lgroup, rsize, L)
-		// lhand := rgroup
-		// for lhand.Children[L] != nil {
-		// 	lhand = lhand.Children[L]
-		// }
-		// lhand.Children[L] = lgroup
-		// if lgroup != nil {
-		// 	lgroup.Parent = lhand
-		// }
-		// rparent.Children[getRelationship(root)] = rgroup
-		// if rgroup != nil {
-		// 	rgroup.Parent = rparent
-		// }
-
-		// if lgroup != nil {
-		// 	parent := lgroup.Parent
-		// 	for parent != rparent {
-		// 		parent.Size += lsize
-		// 		temp := parent.Parent
-		// 		tree.fixRemoveRange(parent)
-		// 		parent = temp
-		// 	}
-		// }
+		tree.mergeGroups(root, rgroup, lgroup, lsize, L)
 	}
-
-	// log.Println(starts, ends)
-	// log.Println(tree.debugString(true))
-
-	// log.Println(tree.debugString(true))
 }
 
 func (tree *Tree) mergeGroups(root *Node, group *Node, childGroup *Node, childSize int64, LR int) {
 	rparent := root.Parent
-	rhand := group
-
-	for rhand.Children[LR] != nil {
-		rhand = rhand.Children[LR]
+	hand := group
+	for hand.Children[LR] != nil {
+		hand = hand.Children[LR]
 	}
-	rhand.Children[LR] = childGroup
+	hand.Children[LR] = childGroup
 	if childGroup != nil {
-		childGroup.Parent = rhand
+		childGroup.Parent = hand
 	}
 	rparent.Children[getRelationship(root)] = group
 	if group != nil {
@@ -546,6 +519,12 @@ func (tree *Tree) mergeGroups(root *Node, group *Node, childGroup *Node, childSi
 			tree.fixRemoveRange(parent)
 			parent = temp
 		}
+	}
+
+	parent := rparent
+	for parent != tree.root {
+		parent.Size = getChildrenSumSize(parent) + 1
+		parent = parent.Parent
 	}
 }
 
@@ -563,11 +542,19 @@ func combineGroups(starts []*Node, LR int) *Node {
 	for i := nlen - 2; i >= 0; i-- {
 		group = starts[i]
 		if group != nil {
-			group.Children[LR] = child
-			if child != nil {
-				child.Parent = group
+			hand := group
+			for hand.Children[LR] != nil {
+				hand = hand.Children[LR]
 			}
-			group.Size = getChildrenSumSize(group) + 1
+			hand.Children[LR] = child
+			if child != nil {
+				child.Parent = hand
+			}
+
+			for hand != group.Parent {
+				hand.Size = getChildrenSumSize(hand) + 1
+				hand = hand.Parent
+			}
 		}
 		child = group
 	}
