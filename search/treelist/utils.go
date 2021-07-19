@@ -65,6 +65,37 @@ func (tree *Tree) fixPut(cur *Node) {
 	}
 }
 
+func (tree *Tree) fixRemoveRange(cur *Node) {
+	const L = 0
+	const R = 1
+
+	if cur.Size <= 2 {
+		return
+	}
+
+	// log.Println(tree.debugString(true))
+
+	ls, rs := getChildrenSize(cur)
+	if ls > rs && ls >= rs<<1 {
+		cls, crs := getChildrenSize(cur.Children[L])
+		if cls < crs {
+			tree.lrotate(cur.Children[L])
+		}
+		tree.rrotate(cur)
+		tree.fixRemoveRange(cur)
+		// tree.fixRemoveRange(root, level+1)
+	} else if ls < rs && rs >= ls<<1 {
+		cls, crs := getChildrenSize(cur.Children[R])
+		if cls > crs {
+			tree.rrotate(cur.Children[R])
+		}
+		tree.lrotate(cur)
+		tree.fixRemoveRange(cur)
+		// tree.fixRemoveRange(root, level+1)
+	}
+
+}
+
 func (tree *Tree) sizeRrotate(cur *Node) *Node {
 	const R = 1
 	llsize, lrsize := getChildrenSize(cur.Children[R])
@@ -84,6 +115,7 @@ func (tree *Tree) sizeLrotate(cur *Node) *Node {
 }
 
 func (tree *Tree) lrotate(cur *Node) *Node {
+	tree.rcount++
 
 	const L = 1
 	const R = 0
@@ -115,6 +147,7 @@ func (tree *Tree) lrotate(cur *Node) *Node {
 }
 
 func (tree *Tree) rrotate(cur *Node) *Node {
+	tree.rcount++
 
 	const L = 0
 	const R = 1
@@ -167,12 +200,30 @@ func getRelationship(cur *Node) int {
 	return 0
 }
 
-func getRelationshipEx(cur *Node) int {
-	if cur.Parent.Size == 0 {
-		return -1
+func (tree *Tree) getHeight() int {
+	root := tree.getRoot()
+	if root == nil {
+		return 0
 	}
-	if cur.Parent.Children[1] == cur {
-		return 1
+
+	var height = 1
+
+	var traverse func(cur *Node, h int)
+	traverse = func(cur *Node, h int) {
+
+		if cur == nil {
+			return
+		}
+
+		if h > height {
+			height = h
+		}
+
+		traverse(cur.Children[0], h+1)
+		traverse(cur.Children[1], h+1)
 	}
-	return 0
+
+	traverse(root, 1)
+
+	return height
 }

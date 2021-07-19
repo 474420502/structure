@@ -7,8 +7,13 @@ import (
 	"testing"
 
 	"github.com/474420502/structure/compare"
+	avl "github.com/474420502/structure/tree/avl"
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
+
+func init() {
+	log.SetFlags(log.Llongfile)
+}
 
 func TestIndex(t *testing.T) {
 	tree := New()
@@ -85,16 +90,27 @@ func TestRemove2(t *testing.T) {
 }
 
 func TestRange(t *testing.T) {
+	startkey := 41
+	endkey := 63
 	tree := New()
+	tree.compare = compare.BytesLen
+	avltree := avl.New(compare.Int)
 	for i := 0; i < 100; i += 2 {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
+		avltree.Put(i, i)
 	}
-
-	start := []byte(strconv.Itoa(5)) // 41 63
-	end := []byte(strconv.Itoa(99))
+	tree.rcount = 0
+	start := []byte(strconv.Itoa(startkey)) // 41 63
+	end := []byte(strconv.Itoa(endkey))
 	log.Println(tree.debugString(false))
 	tree.RemoveRange(start, end)
+	log.Println("rcount", tree.rcount, tree.getHeight(), tree.Size())
 	log.Println(tree.debugString(true))
-
+	for i := startkey; i <= endkey; i++ {
+		// k := []byte(strconv.Itoa(i))
+		avltree.Remove(i)
+	}
+	log.Println(avltree.Height(), avltree.Size(), avltree)
+	// log.Println(tree.debugString(true))
 }

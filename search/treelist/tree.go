@@ -1,8 +1,6 @@
 package treelist
 
 import (
-	"log"
-
 	"github.com/474420502/structure/compare"
 )
 
@@ -32,6 +30,8 @@ func (n *Node) String() string {
 type Tree struct {
 	root    *Node
 	compare compare.Compare
+
+	rcount int
 }
 
 func New() *Tree {
@@ -470,118 +470,108 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 	const L = 0
 	const R = 1
 
-	// cur := tree.getRoot()
-	// log.Println(cur)
-
-	type Path struct {
-		N      *Node
-		Direct int
-	}
-
 	root, starts, ends := tree.getRangeNode(key1, key2)
-
-	colorNode(root, 37)
-
-	var group *Node
-	var child *Node
-	for i := len(starts) - 1; i >= 0; i-- {
-		group = starts[i]
-		if group != nil {
-			colorNode(group, 33)
-		}
-
-		if group != nil {
-			// colorNode(group, 33)
-			group.Children[R] = child
-			if child != nil {
-				child.Parent = group
-			}
-			group.Size = getChildrenSumSize(group) + 1
-		}
-		child = group
+	if root == nil {
+		return
 	}
 
-	lgroup := group
-
-	group = nil
-	child = nil
-	for i := len(ends) - 1; i >= 0; i-- {
-		group = ends[i]
-		if group != nil {
-			colorNode(group, 35)
-		}
-
-		if group != nil {
-			// colorNode(n, 35)
-			group.Children[L] = child
-			if child != nil {
-				child.Parent = group
-			}
-
-			group.Size = getChildrenSumSize(group) + 1
-		}
-		child = group
-	}
-
-	rgroup := group
+	lgroup := combineGroups(starts, R)
+	rgroup := combineGroups(ends, L)
 	if lgroup == nil && rgroup == nil {
 		tree.Clear()
 		return
 	}
 
+	// 左右组　拼接
 	rsize := getSize(rgroup)
 	lsize := getSize(lgroup)
-	rparent := root.Parent
+	// rparent := root.Parent
 	if lsize > rsize {
-		rhand := lgroup
-		for rhand.Children[R] != nil {
-			rhand = rhand.Children[R]
-		}
-		rhand.Children[R] = rgroup
-		if rgroup != nil {
-			rgroup.Parent = rhand
-		}
-		rparent.Children[getRelationship(root)] = lgroup
-		if lgroup != nil {
-			lgroup.Parent = rparent
-		}
 
-		if rgroup != nil {
-			parent := rgroup.Parent
-			for parent != rparent {
-				parent.Size += rsize
-				parent = parent.Parent
-			}
-		}
+		tree.mergeGroups(root, lgroup, rgroup, rsize, R)
 
 	} else {
-		lhand := rgroup
-		for lhand.Children[L] != nil {
-			lhand = lhand.Children[L]
-		}
-		lhand.Children[L] = lgroup
-		if lgroup != nil {
-			lgroup.Parent = lhand
-		}
-		rparent.Children[getRelationship(root)] = rgroup
-		if rgroup != nil {
-			rgroup.Parent = rparent
-		}
+		tree.mergeGroups(root, rgroup, lgroup, rsize, L)
+		// lhand := rgroup
+		// for lhand.Children[L] != nil {
+		// 	lhand = lhand.Children[L]
+		// }
+		// lhand.Children[L] = lgroup
+		// if lgroup != nil {
+		// 	lgroup.Parent = lhand
+		// }
+		// rparent.Children[getRelationship(root)] = rgroup
+		// if rgroup != nil {
+		// 	rgroup.Parent = rparent
+		// }
 
-		if lgroup != nil {
-			parent := lgroup.Parent
-			for parent != rparent {
-				parent.Size += lsize
-				parent = parent.Parent
-			}
-		}
-
+		// if lgroup != nil {
+		// 	parent := lgroup.Parent
+		// 	for parent != rparent {
+		// 		parent.Size += lsize
+		// 		temp := parent.Parent
+		// 		tree.fixRemoveRange(parent)
+		// 		parent = temp
+		// 	}
+		// }
 	}
 
-	log.Println(starts, ends)
-	log.Println(tree.debugString(true))
+	// log.Println(starts, ends)
+	// log.Println(tree.debugString(true))
 
-	log.Println(tree.debugString(true))
+	// log.Println(tree.debugString(true))
+}
+
+func (tree *Tree) mergeGroups(root *Node, group *Node, childGroup *Node, childSize int64, LR int) {
+	rparent := root.Parent
+	rhand := group
+
+	for rhand.Children[LR] != nil {
+		rhand = rhand.Children[LR]
+	}
+	rhand.Children[LR] = childGroup
+	if childGroup != nil {
+		childGroup.Parent = rhand
+	}
+	rparent.Children[getRelationship(root)] = group
+	if group != nil {
+		group.Parent = rparent
+	}
+
+	if childGroup != nil {
+		parent := childGroup.Parent
+		for parent != rparent {
+			parent.Size += childSize
+			temp := parent.Parent
+			tree.fixRemoveRange(parent)
+			parent = temp
+		}
+	}
+}
+
+func combineGroups(starts []*Node, LR int) *Node {
+
+	var group *Node
+	var child *Node
+
+	nlen := len(starts)
+	if nlen == 0 {
+		return nil
+	}
+	group = starts[nlen-1]
+	child = group
+	for i := nlen - 2; i >= 0; i-- {
+		group = starts[i]
+		if group != nil {
+			group.Children[LR] = child
+			if child != nil {
+				child.Parent = group
+			}
+			group.Size = getChildrenSumSize(group) + 1
+		}
+		child = group
+	}
+	return group
 }
 
 func (tree *Tree) Clear() {
@@ -592,10 +582,11 @@ func (tree *Tree) getRoot() *Node {
 	return tree.root.Children[0]
 }
 
-func (tree *Tree) getRangeNodeStart(root *Node, key []byte, flag int) (groups []*Node) {
+func (tree *Tree) getRangeNodeStart(root *Node, key []byte) (groups []*Node) {
 	const L = 0
 	const R = 1
 
+	flag := L
 	cur := root
 	for cur != nil {
 		c := tree.compare(key, cur.Key)
@@ -623,11 +614,12 @@ func (tree *Tree) getRangeNodeStart(root *Node, key []byte, flag int) (groups []
 	return
 }
 
-func (tree *Tree) getRangeNodeEnd(root *Node, key []byte, flag int) (groups []*Node) {
+func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) (groups []*Node) {
 	const L = 0
 	const R = 1
 
 	cur := root
+	flag := R
 	for cur != nil {
 		c := tree.compare(key, cur.Key)
 		switch {
@@ -656,11 +648,11 @@ func (tree *Tree) getRangeNode(key1, key2 []byte) (root *Node, start, end []*Nod
 
 	cur := tree.getRoot()
 	for cur != nil {
+
 		c1 := tree.compare(key1, cur.Key)
 		c2 := tree.compare(key2, cur.Key)
-
 		if c1 != c2 {
-			return cur, tree.getRangeNodeStart(cur, key1, L), tree.getRangeNodeEnd(cur, key2, R)
+			return cur, tree.getRangeNodeStart(cur, key1), tree.getRangeNodeEnd(cur, key2)
 		}
 
 		switch {
@@ -669,11 +661,9 @@ func (tree *Tree) getRangeNode(key1, key2 []byte) (root *Node, start, end []*Nod
 		case c1 > 0:
 			cur = cur.Children[R]
 		default:
+			tree.removeNode(cur)
+			return
 		}
 	}
 	return
-}
-
-func getGroupParent() {
-
 }
