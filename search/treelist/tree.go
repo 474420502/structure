@@ -478,60 +478,108 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 		Direct int
 	}
 
-	root, n1, n2 := tree.getRangeNode(key1, key2)
+	root, starts, ends := tree.getRangeNode(key1, key2)
 
 	colorNode(root, 37)
-	colorNode(n1, 33)
-	colorNode(n2, 35)
 
+	var group *Node
+	var child *Node
+	for i := len(starts) - 1; i >= 0; i-- {
+		group = starts[i]
+		if group != nil {
+			colorNode(group, 33)
+		}
+
+		if group != nil {
+			// colorNode(group, 33)
+			group.Children[R] = child
+			if child != nil {
+				child.Parent = group
+			}
+			group.Size = getChildrenSumSize(group) + 1
+		}
+		child = group
+	}
+
+	lgroup := group
+
+	group = nil
+	child = nil
+	for i := len(ends) - 1; i >= 0; i-- {
+		group = ends[i]
+		if group != nil {
+			colorNode(group, 35)
+		}
+
+		if group != nil {
+			// colorNode(n, 35)
+			group.Children[L] = child
+			if child != nil {
+				child.Parent = group
+			}
+
+			group.Size = getChildrenSumSize(group) + 1
+		}
+		child = group
+	}
+
+	rgroup := group
+	if lgroup == nil && rgroup == nil {
+		tree.Clear()
+		return
+	}
+
+	rsize := getSize(rgroup)
+	lsize := getSize(lgroup)
+	rparent := root.Parent
+	if lsize > rsize {
+		rhand := lgroup
+		for rhand.Children[R] != nil {
+			rhand = rhand.Children[R]
+		}
+		rhand.Children[R] = rgroup
+		if rgroup != nil {
+			rgroup.Parent = rhand
+		}
+		rparent.Children[getRelationship(root)] = lgroup
+		if lgroup != nil {
+			lgroup.Parent = rparent
+		}
+
+		if rgroup != nil {
+			parent := rgroup.Parent
+			for parent != rparent {
+				parent.Size += rsize
+				parent = parent.Parent
+			}
+		}
+
+	} else {
+		lhand := rgroup
+		for lhand.Children[L] != nil {
+			lhand = lhand.Children[L]
+		}
+		lhand.Children[L] = lgroup
+		if lgroup != nil {
+			lgroup.Parent = lhand
+		}
+		rparent.Children[getRelationship(root)] = rgroup
+		if rgroup != nil {
+			rgroup.Parent = rparent
+		}
+
+		if lgroup != nil {
+			parent := lgroup.Parent
+			for parent != rparent {
+				parent.Size += lsize
+				parent = parent.Parent
+			}
+		}
+
+	}
+
+	log.Println(starts, ends)
 	log.Println(tree.debugString(true))
-
-	lgroup := n1.Children[L]
-	parent := n1
-	var lastdir int = getRelationship(lgroup)
-	for parent != root.Parent {
-		dir := getRelationship(parent)
-		if dir == lastdir {
-			parent.Children[R] = lgroup
-			if lgroup != nil {
-				lgroup.Parent = parent
-			}
-			parent.Size = getChildrenSumSize(parent) + 1
-			lgroup = parent
-		}
-		parent = parent.Parent
-		// lastdir = dir
-
-	}
-
-	log.Println(lgroup)
-	root.Children[L] = lgroup
-	if lgroup != nil {
-		lgroup.Parent = root
-	}
-
-	rgroup := n2.Children[R]
-	parent = n2
-	lastdir = getRelationship(lgroup)
-	log.Println(parent)
-	for parent != root {
-		dir := getRelationship(parent)
-		if dir == lastdir {
-			parent.Children[L] = rgroup
-			if rgroup != nil {
-				rgroup.Parent = parent
-			}
-			parent.Size = getChildrenSumSize(parent) + 1
-			rgroup = parent
-		}
-		parent = parent.Parent
-
-	}
-	log.Println(rgroup)
-	root.Children[R] = rgroup
-	if rgroup != nil {
-		rgroup.Parent = root
-	}
 
 	log.Println(tree.debugString(true))
 }
@@ -544,65 +592,75 @@ func (tree *Tree) getRoot() *Node {
 	return tree.root.Children[0]
 }
 
-func (tree *Tree) getRangeNodeStart(root *Node, key []byte) *Node {
+func (tree *Tree) getRangeNodeStart(root *Node, key []byte, flag int) (groups []*Node) {
 	const L = 0
 	const R = 1
 
 	cur := root
-	for {
+	for cur != nil {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
-			if cur.Children[L] == nil {
-				return cur
+			if flag == R {
+				flag = L
 			}
+
 			cur = cur.Children[L]
+
 		case c > 0:
-			if cur.Children[R] == nil {
-				return cur.Direct[R]
+			if flag == L {
+				flag = R
+				groups = append(groups, cur)
 			}
+
 			cur = cur.Children[R]
+
 		default:
-			return cur
+			groups = append(groups, cur.Children[L])
+			return
 		}
 	}
+	return
 }
 
-func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) *Node {
+func (tree *Tree) getRangeNodeEnd(root *Node, key []byte, flag int) (groups []*Node) {
 	const L = 0
 	const R = 1
 
 	cur := root
-	for {
+	for cur != nil {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
-			if cur.Children[L] == nil {
-				return cur.Direct[L]
+			if flag == R {
+				flag = L
+				groups = append(groups, cur)
 			}
 			cur = cur.Children[L]
 		case c > 0:
-			if cur.Children[R] == nil {
-				return cur
+			if flag == L {
+				flag = R
 			}
 			cur = cur.Children[R]
 		default:
-			return cur
+			groups = append(groups, cur.Children[R])
+			return
 		}
 	}
+	return
 }
 
-func (tree *Tree) getRangeNode(key1, key2 []byte) (root, start, end *Node) {
+func (tree *Tree) getRangeNode(key1, key2 []byte) (root *Node, start, end []*Node) {
 	const L = 0
 	const R = 1
 
 	cur := tree.getRoot()
-	for {
+	for cur != nil {
 		c1 := tree.compare(key1, cur.Key)
 		c2 := tree.compare(key2, cur.Key)
 
 		if c1 != c2 {
-			return cur, tree.getRangeNodeStart(cur, key1), tree.getRangeNodeEnd(cur, key2)
+			return cur, tree.getRangeNodeStart(cur, key1, L), tree.getRangeNodeEnd(cur, key2, R)
 		}
 
 		switch {
@@ -613,6 +671,7 @@ func (tree *Tree) getRangeNode(key1, key2 []byte) (root, start, end *Node) {
 		default:
 		}
 	}
+	return
 }
 
 func getGroupParent() {
