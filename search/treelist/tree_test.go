@@ -91,18 +91,18 @@ func TestRemove2(t *testing.T) {
 }
 
 func TestRange(t *testing.T) {
-	tree := New()
-	tree.compare = compare.BytesLen
-	for i := 0; i < 100; i += 2 {
-		v := []byte(strconv.Itoa(i))
-		tree.Put(v, v)
-	}
-	log.Println(tree.debugString(true))
+	// tree := New()
+	// tree.compare = compare.BytesLen
+	// for i := 0; i < 1000; i += 2 {
+	// 	v := []byte(strconv.Itoa(i))
+	// 	tree.Put(v, v)
+	// }
+	// log.Println(tree.debugString(true))
 
-	for n := 0; n < 10000; n++ {
+	for n := 0; n < 1000; n++ {
 
-		startkey := rand.Intn(100)
-		endkey := rand.Intn(100)
+		startkey := rand.Intn(1000)
+		endkey := rand.Intn(1000)
 		if startkey > endkey {
 			temp := startkey
 			startkey = endkey
@@ -111,7 +111,7 @@ func TestRange(t *testing.T) {
 		tree := New()
 		tree.compare = compare.BytesLen
 		avltree := avl.New(compare.Int)
-		for i := 0; i < 100; i += 2 {
+		for i := 0; i < 1000; i += 8 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
 			avltree.Put(i, i)
@@ -120,7 +120,7 @@ func TestRange(t *testing.T) {
 		start := []byte(strconv.Itoa(startkey)) // 41 63
 		end := []byte(strconv.Itoa(endkey))
 		// log.Println(tree.debugString(false))
-		log.Println("start:", startkey, "end:", endkey)
+		// log.Println("start:", startkey, "end:", endkey)
 		tree.RemoveRange(start, end)
 		// log.Println("rcount", tree.rcount, tree.getHeight(), tree.Size())
 		// log.Println(tree.debugString(true))
@@ -129,8 +129,8 @@ func TestRange(t *testing.T) {
 		}
 
 		if tree.Size() != int64(avltree.Size()) {
-			log.Println(avltree.Height(), avltree.Size(), avltree)
-			log.Println(tree.Size(), tree.debugString(true))
+			t.Error(avltree.Height(), avltree.Size(), avltree)
+			t.Error(tree.Size(), tree.debugString(true))
 		}
 
 		avltree.Traverse(func(k, v interface{}) bool {

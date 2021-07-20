@@ -1,8 +1,10 @@
 package treelist
 
 import (
+	"math/rand"
 	"strconv"
 	"testing"
+	"time"
 )
 
 const Level0 = 100000
@@ -44,4 +46,31 @@ func BenchmarkIndex(b *testing.B) {
 	for i := 0; i < Level3; i++ {
 		tree.Index(int64(i))
 	}
+}
+
+func TestRemoveRange(t *testing.T) {
+	var TreeListCountTime time.Duration = 0
+
+	for i := 0; i < Level0/10; i++ {
+
+		tree := New()
+		for i := 0; i < Level0; i += 10 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+		}
+
+		s := rand.Intn(Level0)
+		e := rand.Intn(Level0)
+		if s > e {
+			temp := s
+			s = e
+			e = temp
+		}
+
+		now := time.Now()
+		tree.RemoveRange([]byte(strconv.Itoa(s)), []byte(strconv.Itoa(e)))
+		TreeListCountTime += time.Since(now)
+	}
+
+	t.Error(TreeListCountTime.Nanoseconds()/Level0*10, "ns/op")
 }

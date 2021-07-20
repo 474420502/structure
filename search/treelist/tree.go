@@ -1,8 +1,6 @@
 package treelist
 
 import (
-	"log"
-
 	"github.com/474420502/structure/compare"
 )
 
@@ -358,14 +356,9 @@ func (tree *Tree) Slices() []Slice {
 }
 
 func (tree *Tree) Remove(key []byte) *Slice {
-	const L = 0
-	const R = 1
-
 	if cur := tree.getNode(key); cur != nil {
-		// direct
 		return tree.removeNode(cur)
 	}
-
 	return nil
 }
 
@@ -472,14 +465,17 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 	const L = 0
 	const R = 1
 
-	root, starts, ends := tree.getRangeNode(key1, key2)
+	root, starts, ends := tree.getRangeNodes(key1, key2)
 	if root == nil {
 		return
 	}
 
+	// 合并左树
 	lgroup := combineGroups(starts, R)
+	// 合并又树
 	rgroup := combineGroups(ends, L)
-	if lgroup == nil && rgroup == nil && root != nil {
+
+	if lgroup == nil && rgroup == nil {
 		rparent := root.Parent
 		size := root.Size
 		root.Parent.Children[getRelationship(root)] = nil
@@ -490,11 +486,12 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 		return
 	}
 	// log.Println(tree.debugString(true))
-	log.Println(root, starts, ends)
-	// 左右组　拼接
+	// log.Println(root, starts, ends)
+
+	// 左右树　拼接
 	rsize := getSize(rgroup)
 	lsize := getSize(lgroup)
-	// rparent := root.Parent
+
 	if lsize > rsize {
 		tree.mergeGroups(root, lgroup, rgroup, rsize, R)
 	} else {
@@ -577,26 +574,18 @@ func (tree *Tree) getRangeNodeStart(root *Node, key []byte) (groups []*Node) {
 	const L = 0
 	const R = 1
 
-	dir := 0
 	cur := root
 	for cur != nil {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
-
-			// groups = append(groups, cur.Children[L])
 			cur = cur.Children[L]
 			if cur == nil {
 				groups = append(groups, cur)
 			}
-			dir = 1
 		case c > 0:
-			if dir > 0 {
-				groups = append(groups, cur)
-				dir++
-			}
+			groups = append(groups, cur)
 			cur = cur.Children[R]
-
 		default:
 			groups = append(groups, cur.Children[L])
 			return
@@ -612,15 +601,12 @@ func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) (groups []*Node) {
 	cur := root
 	// flag := R
 
-	dir := 1
+	// dir := 0
 	for cur != nil {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
-			if dir > 0 {
-				groups = append(groups, cur)
-				dir++
-			}
+			groups = append(groups, cur)
 			cur = cur.Children[L]
 		case c > 0:
 
@@ -629,7 +615,7 @@ func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) (groups []*Node) {
 			if cur == nil {
 				groups = append(groups, cur)
 			}
-			dir = 1
+
 		default:
 			groups = append(groups, cur.Children[R])
 			return
@@ -638,19 +624,18 @@ func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) (groups []*Node) {
 	return
 }
 
-func (tree *Tree) getRangeNode(key1, key2 []byte) (root *Node, start, end []*Node) {
+// getRangeNodes 获取范围节点的左团和又团
+func (tree *Tree) getRangeNodes(key1, key2 []byte) (root *Node, start, end []*Node) {
 	const L = 0
 	const R = 1
 
 	cur := tree.getRoot()
 	for cur != nil {
-
 		c1 := tree.compare(key1, cur.Key)
 		c2 := tree.compare(key2, cur.Key)
 		if c1 != c2 {
 			return cur, tree.getRangeNodeStart(cur, key1), tree.getRangeNodeEnd(cur, key2)
 		}
-
 		switch {
 		case c1 < 0:
 			cur = cur.Children[L]
