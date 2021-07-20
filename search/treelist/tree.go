@@ -479,12 +479,18 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 
 	lgroup := combineGroups(starts, R)
 	rgroup := combineGroups(ends, L)
-	if lgroup == nil && rgroup == nil {
-		tree.Clear()
+	if lgroup == nil && rgroup == nil && root != nil {
+		rparent := root.Parent
+		size := root.Size
+		root.Parent.Children[getRelationship(root)] = nil
+		for rparent != tree.root {
+			rparent.Size -= size
+			rparent = rparent.Parent
+		}
 		return
 	}
-	log.Println(tree.debugString(true))
-	log.Println(starts, ends)
+	// log.Println(tree.debugString(true))
+	log.Println(root, starts, ends)
 	// 左右组　拼接
 	rsize := getSize(rgroup)
 	lsize := getSize(lgroup)
@@ -543,9 +549,7 @@ func combineGroups(starts []*Node, LR int) *Node {
 		group = starts[i]
 		if group != nil {
 			hand := group
-			for hand.Children[LR] != nil {
-				hand = hand.Children[LR]
-			}
+
 			hand.Children[LR] = child
 			if child != nil {
 				child.Parent = hand
@@ -573,24 +577,24 @@ func (tree *Tree) getRangeNodeStart(root *Node, key []byte) (groups []*Node) {
 	const L = 0
 	const R = 1
 
-	flag := L
+	dir := 0
 	cur := root
 	for cur != nil {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
-			if flag == R {
-				flag = L
-			}
 
+			// groups = append(groups, cur.Children[L])
 			cur = cur.Children[L]
-
-		case c > 0:
-			if flag == L {
-				flag = R
+			if cur == nil {
 				groups = append(groups, cur)
 			}
-
+			dir = 1
+		case c > 0:
+			if dir > 0 {
+				groups = append(groups, cur)
+				dir++
+			}
 			cur = cur.Children[R]
 
 		default:
@@ -606,21 +610,26 @@ func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) (groups []*Node) {
 	const R = 1
 
 	cur := root
-	flag := R
+	// flag := R
+
+	dir := 1
 	for cur != nil {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
-			if flag == R {
-				flag = L
+			if dir > 0 {
 				groups = append(groups, cur)
+				dir++
 			}
 			cur = cur.Children[L]
 		case c > 0:
-			if flag == L {
-				flag = R
-			}
+
+			// groups = append(groups, cur.Children[R])
 			cur = cur.Children[R]
+			if cur == nil {
+				groups = append(groups, cur)
+			}
+			dir = 1
 		default:
 			groups = append(groups, cur.Children[R])
 			return
