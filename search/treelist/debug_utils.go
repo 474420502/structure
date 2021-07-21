@@ -2,6 +2,7 @@ package treelist
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/davecgh/go-spew/spew"
 )
@@ -132,6 +133,19 @@ func (tree *Tree) debugString(isSuffix bool) string {
 	for cur.Children[0] != nil {
 		cur = cur.Children[0]
 	}
+
+	var i = 0
+	str += "\n"
+	start := cur
+	for start != nil {
+		str += spew.Sprint(string(start.Key)) + ","
+		start = start.Direct[1]
+		i++
+		if i >= 100 {
+			break
+		}
+	}
+	str = str[0:len(str)-1] + "(" + strconv.Itoa(i) + ")"
 
 	return str
 }

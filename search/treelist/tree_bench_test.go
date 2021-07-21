@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/474420502/structure/compare"
 )
 
 const Level0 = 100000
@@ -49,18 +51,22 @@ func BenchmarkIndex(b *testing.B) {
 }
 
 func TestRemoveRange(t *testing.T) {
+	// rand.Seed(time.Now().UnixNano())
 	var TreeListCountTime time.Duration = 0
+	level := Level0 / 10
 
-	for i := 0; i < Level0/10; i++ {
+	// t.StopTimer()
+	for i := 0; i < level; i++ {
 
 		tree := New()
-		for i := 0; i < Level0; i += 10 {
+		tree.compare = compare.BytesLen
+		for i := 0; i < level; i += rand.Intn(10) + 5 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
 		}
 
-		s := rand.Intn(Level0)
-		e := rand.Intn(Level0)
+		s := rand.Intn(level)
+		e := rand.Intn(level)
 		if s > e {
 			temp := s
 			s = e
@@ -70,7 +76,7 @@ func TestRemoveRange(t *testing.T) {
 		now := time.Now()
 		tree.RemoveRange([]byte(strconv.Itoa(s)), []byte(strconv.Itoa(e)))
 		TreeListCountTime += time.Since(now)
-	}
 
-	t.Error(TreeListCountTime.Nanoseconds()/Level0*10, "ns/op")
+	}
+	t.Error(TreeListCountTime.Nanoseconds()/int64(level), "ns/op")
 }

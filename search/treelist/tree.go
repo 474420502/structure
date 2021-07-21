@@ -31,7 +31,7 @@ type Tree struct {
 	root    *Node
 	compare compare.Compare
 
-	rcount int
+	// rcount int
 }
 
 func New() *Tree {
@@ -462,12 +462,29 @@ func (tree *Tree) removeNode(cur *Node) (s *Slice) {
 
 // RemoveRange
 func (tree *Tree) RemoveRange(key1, key2 []byte) {
+
 	const L = 0
 	const R = 1
 
-	root, starts, ends := tree.getRangeNodes(key1, key2)
+	c := tree.compare(key1, key2)
+	if c > 0 {
+		panic("key2 must greater than key1 or equal to")
+	} else if c == 0 {
+		tree.Remove(key1)
+		return
+	}
+
+	root, starts, dleft, ends, dright := tree.getRangeNodes(key1, key2)
 	if root == nil {
 		return
+	}
+
+	if dleft != nil {
+		dleft.Direct[R] = dright
+	}
+
+	if dright != nil {
+		dright.Direct[L] = dleft
 	}
 
 	// 合并左树
@@ -491,7 +508,6 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 	// 左右树　拼接
 	rsize := getSize(rgroup)
 	lsize := getSize(lgroup)
-
 	if lsize > rsize {
 		tree.mergeGroups(root, lgroup, rgroup, rsize, R)
 	} else {
@@ -574,53 +590,62 @@ func (tree *Tree) getRoot() *Node {
 	return tree.root.Children[0]
 }
 
-func (tree *Tree) getRangeNodeStart(root *Node, key []byte) (groups []*Node) {
+func (tree *Tree) getRangeNodeStart(cur *Node, key []byte) (groups []*Node, left *Node) {
 	const L = 0
 	const R = 1
 
-	cur := root
-	for cur != nil {
+	for {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
-			cur = cur.Children[L]
-			if cur == nil {
-				groups = append(groups, cur)
+			if cur.Children[L] == nil {
+				left = cur.Direct[L]
+				groups = append(groups, cur.Children[L])
+				return
 			}
+			cur = cur.Children[L]
+
 		case c > 0:
 			groups = append(groups, cur)
+			if cur.Children[R] == nil {
+				left = cur
+				return
+			}
 			cur = cur.Children[R]
+
 		default:
+			left = cur.Direct[L]
 			groups = append(groups, cur.Children[L])
 			return
 		}
 	}
-	return
 }
 
-func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) (groups []*Node) {
+func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) (groups []*Node, right *Node) {
 	const L = 0
 	const R = 1
 
 	cur := root
-	// flag := R
-
-	// dir := 0
 	for cur != nil {
 		c := tree.compare(key, cur.Key)
 		switch {
 		case c < 0:
 			groups = append(groups, cur)
+			if cur.Children[L] == nil {
+				right = cur
+				return
+			}
 			cur = cur.Children[L]
 		case c > 0:
-
-			// groups = append(groups, cur.Children[R])
-			cur = cur.Children[R]
-			if cur == nil {
-				groups = append(groups, cur)
+			if cur.Children[R] == nil {
+				right = cur.Direct[R]
+				groups = append(groups, cur.Children[R])
+				return
 			}
+			cur = cur.Children[R]
 
 		default:
+			right = cur.Direct[R]
 			groups = append(groups, cur.Children[R])
 			return
 		}
@@ -629,7 +654,7 @@ func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) (groups []*Node) {
 }
 
 // getRangeNodes 获取范围节点的左团和又团
-func (tree *Tree) getRangeNodes(key1, key2 []byte) (root *Node, start, end []*Node) {
+func (tree *Tree) getRangeNodes(key1, key2 []byte) (root *Node, start []*Node, left *Node, end []*Node, right *Node) {
 	const L = 0
 	const R = 1
 
@@ -638,67 +663,44 @@ func (tree *Tree) getRangeNodes(key1, key2 []byte) (root *Node, start, end []*No
 		c1 := tree.compare(key1, cur.Key)
 		c2 := tree.compare(key2, cur.Key)
 		if c1 != c2 {
-			return cur, tree.getRangeNodeStart(cur, key1), tree.getRangeNodeEnd(cur, key2)
+			starts, dleft := tree.getRangeNodeStart(cur, key1)
+			ends, dright := tree.getRangeNodeEnd(cur, key2)
+			return cur, starts, dleft, ends, dright
 		}
-		switch {
-		case c1 < 0:
+
+		if c1 < 0 {
 			cur = cur.Children[L]
-		case c1 > 0:
+		} else {
 			cur = cur.Children[R]
-		default:
-			tree.removeNode(cur)
-			return
 		}
+
 	}
 	return
 }
 
-func (tree *Tree) leftGroup(cur *Node, key []byte) *Node {
-
-	const L = 0
-	const R = 1
-
-	if cur == nil {
-		return cur
+func (tree *Tree) Trim(low, hight []byte) {
+	root := tree.getRoot()
+	croot := tree.trim(root, low, hight)
+	if root != croot {
+		tree.root.Children[0] = croot
 	}
-	c := tree.compare(key, cur.Key)
-	if c < 0 {
-		child := tree.leftGroup(cur.Children[L], key)
-		if child == nil {
-			combine(cur, child, R)
-		}
-	} else if c > 0 {
-		combine(cur, tree.leftGroup(cur.Children[R], key), R)
-	} else {
-		combine(cur, cur.Children[L], R)
-	}
-
-	// combine(cur, child, R)
-
-	return cur
 }
 
-// func (tree *Tree) rightGroup(cur *Node, key []byte) *Node {
+func (tree *Tree) trim(root *Node, low, hight []byte) *Node {
+	if root == nil {
+		return nil
+	}
 
-// 	const L = 0
-// 	const R = 1
+	if tree.compare(root.Key, hight) > 0 {
+		return tree.trim(root.Children[0], low, hight)
+	}
 
-// 	if cur == nil {
-// 		return cur
-// 	}
-// 	c := tree.compare(key, cur.Key)
-// 	if c < 0 {
-// 		child := tree.leftGroup(cur.Children[L], key)
-// 		if child == nil {
-// 			combine(cur, child, R)
-// 		}
-// 	} else if c > 0 {
-// 		combine(cur, tree.leftGroup(cur.Children[R], key), R)
-// 	} else {
-// 		combine(cur, cur.Children[L], R)
-// 	}
+	if tree.compare(root.Key, low) < 0 {
+		return tree.trim(root.Children[1], low, hight)
+	}
 
-// 	// combine(cur, child, R)
-
-// 	return cur
-// }
+	root.Children[0] = tree.trim(root.Children[0], low, hight)
+	root.Children[1] = tree.trim(root.Children[1], low, hight)
+	root.Size = getChildrenSumSize(root) + 1
+	return root
+}

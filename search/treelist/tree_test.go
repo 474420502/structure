@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/474420502/structure/compare"
 	avl "github.com/474420502/structure/tree/avl"
@@ -91,18 +92,17 @@ func TestRemove2(t *testing.T) {
 }
 
 func TestRange(t *testing.T) {
-	tree := New()
-	tree.compare = compare.BytesLen
-	for i := 0; i < 1000; i += 2 {
-		v := []byte(strconv.Itoa(i))
-		tree.Put(v, v)
-	}
-	log.Println(tree.debugString(true))
-
-	for n := 0; n < 1000; n++ {
-
-		startkey := rand.Intn(1000)
-		endkey := rand.Intn(1000)
+	// tree := New()
+	// tree.compare = compare.BytesLen
+	// for i := 0; i < 100; i += 4 {
+	// 	v := []byte(strconv.Itoa(i))
+	// 	tree.Put(v, v)
+	// }
+	// log.Println(tree.debugString(true))
+	rand.Seed(time.Now().Unix())
+	for n := 0; n < 100000; n++ {
+		startkey := rand.Intn(100)
+		endkey := rand.Intn(100)
 		if startkey > endkey {
 			temp := startkey
 			startkey = endkey
@@ -111,19 +111,21 @@ func TestRange(t *testing.T) {
 		tree := New()
 		tree.compare = compare.BytesLen
 		avltree := avl.New(compare.Int)
-		for i := 0; i < 1000; i += 4 {
+		for i := 0; i < 100; i += 1 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
 			avltree.Put(i, i)
 		}
-		tree.rcount = 0
+		// tree.rcount = 0
 		start := []byte(strconv.Itoa(startkey)) // 41 63
 		end := []byte(strconv.Itoa(endkey))
-		// log.Println(tree.debugString(false))
-		// log.Println("start:", startkey, "end:", endkey)
-		tree.RemoveRange(start, end)
+		log.Println(tree.debugString(true))
+		log.Println("start:", startkey, "end:", endkey)
+		// tree.RemoveRange(start, end)
+		tree.Trim(start, end)
 		// log.Println("rcount", tree.rcount, tree.getHeight(), tree.Size())
-		// log.Println(tree.debugString(true))
+		log.Println(tree.debugString(true))
+
 		for i := startkey; i <= endkey; i++ {
 			avltree.Remove(i)
 		}
@@ -131,6 +133,7 @@ func TestRange(t *testing.T) {
 		if tree.Size() != int64(avltree.Size()) {
 			t.Error(avltree.Height(), avltree.Size(), avltree)
 			t.Error(tree.Size(), tree.debugString(true))
+			return
 		}
 
 		avltree.Traverse(func(k, v interface{}) bool {
@@ -140,6 +143,16 @@ func TestRange(t *testing.T) {
 			}
 			return true
 		})
+
+		iter := tree.Iterator()
+		iter.SeekToFirst()
+		for iter.Valid() {
+			if _, ok := tree.Get(iter.Value()); !ok {
+				log.Println(tree.debugString(true))
+				log.Println("not ok", string(iter.Value()))
+			}
+			iter.Next()
+		}
 
 	}
 }

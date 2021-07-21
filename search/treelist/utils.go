@@ -115,7 +115,7 @@ func (tree *Tree) sizeLrotate(cur *Node) *Node {
 }
 
 func (tree *Tree) lrotate(cur *Node) *Node {
-	tree.rcount++
+	// tree.rcount++
 
 	const L = 1
 	const R = 0
@@ -147,7 +147,7 @@ func (tree *Tree) lrotate(cur *Node) *Node {
 }
 
 func (tree *Tree) rrotate(cur *Node) *Node {
-	tree.rcount++
+	// tree.rcount++
 
 	const L = 0
 	const R = 1

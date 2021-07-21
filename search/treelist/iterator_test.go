@@ -74,15 +74,13 @@ func TestFirstLast(t *testing.T) {
 	iter := tree.Iterator()
 	iter.SeekToLast()
 	for iter.Valid() {
-		v := string(iter.Value())
-		log.Println(v)
+		iter.Value()
 		iter.Prev()
 	}
 
 	iter.SeekToFirst()
 	for iter.Valid() {
-		v := string(iter.Value())
-		log.Println(v)
+		iter.Value()
 		iter.Next()
 	}
 }
