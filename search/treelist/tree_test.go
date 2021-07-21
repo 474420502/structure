@@ -91,13 +91,13 @@ func TestRemove2(t *testing.T) {
 }
 
 func TestRange(t *testing.T) {
-	// tree := New()
-	// tree.compare = compare.BytesLen
-	// for i := 0; i < 1000; i += 2 {
-	// 	v := []byte(strconv.Itoa(i))
-	// 	tree.Put(v, v)
-	// }
-	// log.Println(tree.debugString(true))
+	tree := New()
+	tree.compare = compare.BytesLen
+	for i := 0; i < 1000; i += 2 {
+		v := []byte(strconv.Itoa(i))
+		tree.Put(v, v)
+	}
+	log.Println(tree.debugString(true))
 
 	for n := 0; n < 1000; n++ {
 
@@ -111,7 +111,7 @@ func TestRange(t *testing.T) {
 		tree := New()
 		tree.compare = compare.BytesLen
 		avltree := avl.New(compare.Int)
-		for i := 0; i < 1000; i += 8 {
+		for i := 0; i < 1000; i += 4 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
 			avltree.Put(i, i)
@@ -141,6 +141,5 @@ func TestRange(t *testing.T) {
 			return true
 		})
 
-		// log.Println(tree.debugString(true))
 	}
 }

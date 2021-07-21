@@ -544,22 +544,26 @@ func combineGroups(starts []*Node, LR int) *Node {
 	child = group
 	for i := nlen - 2; i >= 0; i-- {
 		group = starts[i]
-		if group != nil {
-			hand := group
-
-			hand.Children[LR] = child
-			if child != nil {
-				child.Parent = hand
-			}
-
-			for hand != group.Parent {
-				hand.Size = getChildrenSumSize(hand) + 1
-				hand = hand.Parent
-			}
-		}
+		combine(group, child, LR)
 		child = group
 	}
 	return group
+}
+
+func combine(group *Node, child *Node, LR int) {
+	if group != nil {
+		hand := group
+
+		hand.Children[LR] = child
+		if child != nil {
+			child.Parent = hand
+		}
+
+		for hand != group.Parent {
+			hand.Size = getChildrenSumSize(hand) + 1
+			hand = hand.Parent
+		}
+	}
 }
 
 func (tree *Tree) Clear() {
@@ -648,3 +652,53 @@ func (tree *Tree) getRangeNodes(key1, key2 []byte) (root *Node, start, end []*No
 	}
 	return
 }
+
+func (tree *Tree) leftGroup(cur *Node, key []byte) *Node {
+
+	const L = 0
+	const R = 1
+
+	if cur == nil {
+		return cur
+	}
+	c := tree.compare(key, cur.Key)
+	if c < 0 {
+		child := tree.leftGroup(cur.Children[L], key)
+		if child == nil {
+			combine(cur, child, R)
+		}
+	} else if c > 0 {
+		combine(cur, tree.leftGroup(cur.Children[R], key), R)
+	} else {
+		combine(cur, cur.Children[L], R)
+	}
+
+	// combine(cur, child, R)
+
+	return cur
+}
+
+// func (tree *Tree) rightGroup(cur *Node, key []byte) *Node {
+
+// 	const L = 0
+// 	const R = 1
+
+// 	if cur == nil {
+// 		return cur
+// 	}
+// 	c := tree.compare(key, cur.Key)
+// 	if c < 0 {
+// 		child := tree.leftGroup(cur.Children[L], key)
+// 		if child == nil {
+// 			combine(cur, child, R)
+// 		}
+// 	} else if c > 0 {
+// 		combine(cur, tree.leftGroup(cur.Children[R], key), R)
+// 	} else {
+// 		combine(cur, cur.Children[L], R)
+// 	}
+
+// 	// combine(cur, child, R)
+
+// 	return cur
+// }
