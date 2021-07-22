@@ -460,21 +460,19 @@ func (tree *Tree) removeNode(cur *Node) (s *Slice) {
 	return
 }
 
-// RemoveRange
-func (tree *Tree) RemoveRange(key1, key2 []byte) {
-
+func (tree *Tree) removeRangeBad(low, hight []byte) {
 	const L = 0
 	const R = 1
 
-	c := tree.compare(key1, key2)
+	c := tree.compare(low, hight)
 	if c > 0 {
 		panic("key2 must greater than key1 or equal to")
 	} else if c == 0 {
-		tree.Remove(key1)
+		tree.Remove(low)
 		return
 	}
 
-	root, starts, dleft, ends, dright := tree.getRangeNodes(key1, key2)
+	root, starts, dleft, ends, dright := tree.getRangeNodes(low, hight)
 	if root == nil {
 		return
 	}
@@ -502,6 +500,128 @@ func (tree *Tree) RemoveRange(key1, key2 []byte) {
 		}
 		return
 	}
+	// log.Println(debugNode(lgroup), "\n", debugNode(rgroup))
+	// log.Println(tree.debugString(true))
+	// log.Println(root, starts, ends)
+
+	// 左右树　拼接
+	rsize := getSize(rgroup)
+	lsize := getSize(lgroup)
+	if lsize > rsize {
+		tree.mergeGroups(root, lgroup, rgroup, rsize, R)
+	} else {
+		tree.mergeGroups(root, rgroup, lgroup, lsize, L)
+	}
+}
+
+// RemoveRange
+func (tree *Tree) RemoveRange(low, hight []byte) {
+
+	const L = 0
+	const R = 1
+
+	c := tree.compare(low, hight)
+	if c > 0 {
+		panic("key2 must greater than key1 or equal to")
+	} else if c == 0 {
+		tree.Remove(low)
+		return
+	}
+
+	root := tree.getRangeRoot(low, hight)
+	if root == nil {
+		return
+	}
+
+	var ltrim, rtrim func(*Node) *Node
+	var dleft *Node
+	ltrim = func(root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+		c = tree.compare(low, root.Key)
+		if c > 0 {
+			child := ltrim(root.Children[R])
+			root.Children[R] = child
+			if child != nil {
+				child.Parent = root
+			} else {
+				dleft = root
+			}
+			root.Size = getChildrenSumSize(root) + 1
+			return root
+		} else if c < 0 {
+			if root.Children[L] == nil {
+				dleft = root.Direct[L]
+			}
+			return ltrim(root.Children[L])
+		} else {
+			dleft = root.Direct[L]
+			return root.Children[L]
+		}
+	}
+
+	var lgroup *Node
+	if root.Children[L] != nil {
+		lgroup = ltrim(root.Children[L])
+	} else {
+		dleft = root.Direct[L]
+	}
+
+	var dright *Node
+	rtrim = func(root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+		c = tree.compare(hight, root.Key)
+		if c < 0 {
+			child := rtrim(root.Children[L])
+			root.Children[L] = child
+			if child != nil {
+				child.Parent = root
+			} else {
+				dright = root
+			}
+			root.Size = getChildrenSumSize(root) + 1
+			return root
+		} else if c > 0 {
+			if root.Children[R] == nil {
+				dright = root.Direct[R]
+			}
+			return rtrim(root.Children[R])
+		} else {
+			dright = root.Direct[R]
+			return root.Children[R]
+		}
+	}
+
+	var rgroup *Node
+	if root.Children[R] != nil {
+		rgroup = rtrim(root.Children[R])
+	} else {
+		dright = root.Direct[R]
+	}
+
+	// log.Println(root, lgroup, rgroup, dleft, dright)
+	if dleft != nil {
+		dleft.Direct[R] = dright
+	}
+
+	if dright != nil {
+		dright.Direct[L] = dleft
+	}
+
+	if lgroup == nil && rgroup == nil {
+		rparent := root.Parent
+		size := root.Size
+		root.Parent.Children[getRelationship(root)] = nil
+		for rparent != tree.root {
+			rparent.Size -= size
+			rparent = rparent.Parent
+		}
+		return
+	}
+	// log.Println(debugNode(lgroup), "\n", debugNode(rgroup))
 	// log.Println(tree.debugString(true))
 	// log.Println(root, starts, ends)
 
@@ -666,7 +786,6 @@ func (tree *Tree) getRangeNodes(low, hight []byte) (root *Node, start []*Node, l
 		if c1 != c2 {
 			starts, dleft := tree.getRangeNodeStart(cur, low)
 			ends, dright := tree.getRangeNodeEnd(cur, hight)
-
 			return cur, starts, dleft, ends, dright
 		}
 
@@ -739,4 +858,27 @@ func (tree *Tree) trim(root *Node, low, hight []byte) *Node {
 	root.Children[1] = tree.trim(root.Children[1], low, hight)
 	root.Size = getChildrenSumSize(root) + 1
 	return root
+}
+
+// getRangeNodes 获取范围节点的左团和又团
+func (tree *Tree) getRangeRoot(low, hight []byte) (root *Node) {
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	for cur != nil {
+		c1 := tree.compare(low, cur.Key)
+		c2 := tree.compare(hight, cur.Key)
+
+		if c1 != c2 {
+			return cur
+		}
+
+		if c1 < 0 {
+			cur = cur.Children[L]
+		} else {
+			cur = cur.Children[R]
+		}
+	}
+	return
 }

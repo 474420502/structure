@@ -99,7 +99,9 @@ func TestRange(t *testing.T) {
 	// 	tree.Put(v, v)
 	// }
 	// log.Println(tree.debugString(true))
-	rand.Seed(time.Now().Unix())
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
 	for n := 0; n < 100000; n++ {
 		startkey := rand.Intn(100)
 		endkey := rand.Intn(100)
@@ -111,7 +113,7 @@ func TestRange(t *testing.T) {
 		tree := New()
 		tree.compare = compare.BytesLen
 		avltree := avl.New(compare.Int)
-		for i := 0; i < 100; i += 1 {
+		for i := 0; i < 100; i += 4 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
 			avltree.Put(i, i)
@@ -119,10 +121,13 @@ func TestRange(t *testing.T) {
 		// tree.rcount = 0
 		start := []byte(strconv.Itoa(startkey)) // 41 63
 		end := []byte(strconv.Itoa(endkey))
+
+		srctree := tree.debugString(true)
+
 		// log.Println(tree.debugString(true))
 		// log.Println("start:", startkey, "end:", endkey)
-		// tree.RemoveRange(start, end)
 		tree.RemoveRange(start, end)
+		// tree.debugString(true)
 		// log.Println("rcount", tree.rcount, tree.getHeight(), tree.Size())
 		// log.Println(tree.debugString(true))
 
@@ -148,8 +153,11 @@ func TestRange(t *testing.T) {
 		iter.SeekToFirst()
 		for iter.Valid() {
 			if _, ok := tree.Get(iter.Value()); !ok {
+				log.Println("start:", startkey, "end:", endkey)
+				log.Println(srctree)
 				log.Println(tree.debugString(true))
 				log.Println("not ok", string(iter.Value()))
+				panic("")
 			}
 			iter.Next()
 		}

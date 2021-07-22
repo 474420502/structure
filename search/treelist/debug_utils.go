@@ -117,6 +117,15 @@ func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string)
 	}
 }
 
+func debugNode(root *Node) string {
+	str := "\n"
+	if root == nil {
+		return str + "nil"
+	}
+	outputfordebug(root, "", true, &str)
+	return str
+}
+
 func (tree *Tree) debugString(isSuffix bool) string {
 	str := "BinarayList\n"
 	root := tree.getRoot()
@@ -147,7 +156,7 @@ func (tree *Tree) debugString(isSuffix bool) string {
 	}
 	str = str[0:len(str)-1] + "(" + strconv.Itoa(i) + ")"
 	if i != int(tree.Size()) {
-		log.Panic("error:list size is not equal tree size", i, tree.Size(), str)
+		log.Panicf("error:list size is not equal tree size %d, %d\n%s", i, tree.Size(), str)
 	}
 
 	return str
