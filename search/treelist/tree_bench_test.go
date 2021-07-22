@@ -1,6 +1,7 @@
 package treelist
 
 import (
+	"log"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -81,18 +82,24 @@ func TestRemoveRange(t *testing.T) {
 }
 
 func TestTrim(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
 	// rand.Seed(time.Now().UnixNano())
 	var TreeListCountTime time.Duration = 0
-	level := Level0
+	level := Level0 / 1000
 
 	// t.StopTimer()
 	for i := 0; i < level; i++ {
 
 		tree := New()
 		tree.compare = compare.BytesLen
-		for i := 0; i < level; i += rand.Intn(10) + 50 {
+		treeEx := New()
+		treeEx.compare = compare.BytesLen
+		for i := 0; i < level; i += rand.Intn(10) + 1 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
+			treeEx.Put(v, v)
 		}
 
 		s := rand.Intn(level)
@@ -102,9 +109,15 @@ func TestTrim(t *testing.T) {
 			s = e
 			e = temp
 		}
-
+		log.Println(i)
 		now := time.Now()
 		tree.Trim([]byte(strconv.Itoa(s)), []byte(strconv.Itoa(e)))
+		a := tree.debugString(true)
+		treeEx.TrimEx([]byte(strconv.Itoa(s)), []byte(strconv.Itoa(e)))
+		b := treeEx.debugString(true)
+		if a != b {
+			log.Println(a, b)
+		}
 		TreeListCountTime += time.Since(now)
 		// log.Println(tree.debugString(true), s, e)
 	}

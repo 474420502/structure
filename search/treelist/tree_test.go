@@ -124,7 +124,7 @@ func TestRange(t *testing.T) {
 
 		srctree := tree.debugString(true)
 
-		// log.Println(tree.debugString(true))
+		log.Println(tree.debugString(true))
 		// log.Println("start:", startkey, "end:", endkey)
 		tree.RemoveRange(start, end)
 		// tree.debugString(true)

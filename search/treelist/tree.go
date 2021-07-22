@@ -603,6 +603,7 @@ func (tree *Tree) RemoveRange(low, hight []byte) {
 	}
 
 	// log.Println(root, lgroup, rgroup, dleft, dright)
+
 	if dleft != nil {
 		dleft.Direct[R] = dright
 	}
@@ -881,4 +882,84 @@ func (tree *Tree) getRangeRoot(low, hight []byte) (root *Node) {
 		}
 	}
 	return
+}
+
+func (tree *Tree) TrimEx(low, hight []byte) {
+	// root := tree.getRoot()
+	const L = 0
+	const R = 1
+
+	// log.Println(tree.debugString(true), string(low), string(hight))
+	root := tree.getRangeRoot(low, hight)
+	if root == nil {
+		return
+	}
+
+	var ltrim func(root *Node) *Node
+	ltrim = func(root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+		c := tree.compare(low, root.Key)
+		if c > 0 {
+			return ltrim(root.Children[R])
+		} else if c < 0 {
+			child := ltrim(root.Children[L])
+			root.Children[L] = child
+			if child != nil {
+				child.Parent = root
+			}
+			root.Size = getChildrenSumSize(root) + 1
+			return root
+		} else {
+			root.Children[L] = nil
+			root.Size = getSize(root.Children[R]) + 1
+			return root
+		}
+	}
+
+	ltrim(root)
+
+	var rtrim func(root *Node) *Node
+	rtrim = func(root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+		c := tree.compare(hight, root.Key)
+		if c < 0 {
+			return rtrim(root.Children[L])
+		} else if c > 0 {
+			child := rtrim(root.Children[R])
+			root.Children[R] = child
+			if child != nil {
+				child.Parent = root
+			}
+			root.Size = getChildrenSumSize(root) + 1
+			return root
+		} else {
+			root.Children[R] = nil
+			root.Size = getSize(root.Children[L]) + 1
+			return root
+		}
+	}
+
+	rtrim(root)
+	// log.Println(debugNode(root))
+
+	if root != tree.root {
+		tree.root.Children[0] = root
+	}
+	// list
+
+	lhand := root
+	for lhand.Children[0] != nil {
+		lhand = lhand.Children[0]
+	}
+	lhand.Direct[0] = nil
+
+	rhand := root
+	for rhand.Children[1] != nil {
+		rhand = rhand.Children[1]
+	}
+	rhand.Direct[1] = nil
 }

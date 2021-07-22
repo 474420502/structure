@@ -151,8 +151,8 @@ func (tree *Tree) debugString(isSuffix bool) string {
 		i++
 		if i <= 100 {
 			str += spew.Sprint(string(start.Key)) + ","
-			start = start.Direct[1]
 		}
+		start = start.Direct[1]
 	}
 	str = str[0:len(str)-1] + "(" + strconv.Itoa(i) + ")"
 	if i != int(tree.Size()) {
