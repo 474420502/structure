@@ -60,7 +60,7 @@ func TestRemoveRange(t *testing.T) {
 
 		tree := New()
 		tree.compare = compare.BytesLen
-		for i := 0; i < level; i += rand.Intn(10) + 5 {
+		for i := 0; i < level; i += rand.Intn(10) + 10 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
 		}
@@ -77,6 +77,37 @@ func TestRemoveRange(t *testing.T) {
 		tree.RemoveRange([]byte(strconv.Itoa(s)), []byte(strconv.Itoa(e)))
 		TreeListCountTime += time.Since(now)
 
+	}
+	t.Error(TreeListCountTime.Nanoseconds()/int64(level), "ns/op")
+}
+
+func TestTrim(t *testing.T) {
+	// rand.Seed(time.Now().UnixNano())
+	var TreeListCountTime time.Duration = 0
+	level := Level0 / 10
+
+	// t.StopTimer()
+	for i := 0; i < level; i++ {
+
+		tree := New()
+		tree.compare = compare.BytesLen
+		for i := 0; i < level; i += rand.Intn(10) + 10 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+		}
+
+		s := rand.Intn(level)
+		e := rand.Intn(level)
+		if s > e {
+			temp := s
+			s = e
+			e = temp
+		}
+
+		now := time.Now()
+		tree.Trim([]byte(strconv.Itoa(s)), []byte(strconv.Itoa(e)))
+		TreeListCountTime += time.Since(now)
+		// log.Println(tree.debugString(true), s, e)
 	}
 	t.Error(TreeListCountTime.Nanoseconds()/int64(level), "ns/op")
 }

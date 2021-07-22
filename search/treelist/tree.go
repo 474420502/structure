@@ -654,17 +654,19 @@ func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) (groups []*Node, right
 }
 
 // getRangeNodes 获取范围节点的左团和又团
-func (tree *Tree) getRangeNodes(key1, key2 []byte) (root *Node, start []*Node, left *Node, end []*Node, right *Node) {
+func (tree *Tree) getRangeNodes(low, hight []byte) (root *Node, start []*Node, left *Node, end []*Node, right *Node) {
 	const L = 0
 	const R = 1
 
 	cur := tree.getRoot()
 	for cur != nil {
-		c1 := tree.compare(key1, cur.Key)
-		c2 := tree.compare(key2, cur.Key)
+		c1 := tree.compare(low, cur.Key)
+		c2 := tree.compare(hight, cur.Key)
+
 		if c1 != c2 {
-			starts, dleft := tree.getRangeNodeStart(cur, key1)
-			ends, dright := tree.getRangeNodeEnd(cur, key2)
+			starts, dleft := tree.getRangeNodeStart(cur, low)
+			ends, dright := tree.getRangeNodeEnd(cur, hight)
+
 			return cur, starts, dleft, ends, dright
 		}
 
@@ -680,9 +682,43 @@ func (tree *Tree) getRangeNodes(key1, key2 []byte) (root *Node, start []*Node, l
 
 func (tree *Tree) Trim(low, hight []byte) {
 	root := tree.getRoot()
-	croot := tree.trim(root, low, hight)
+	var trim func(root *Node) *Node
+	trim = func(root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+
+		if tree.compare(root.Key, hight) > 0 {
+			return trim(root.Children[0])
+		}
+
+		if tree.compare(root.Key, low) < 0 {
+			return trim(root.Children[1])
+		}
+
+		root.Children[0] = trim(root.Children[0])
+		root.Children[1] = trim(root.Children[1])
+		root.Size = getChildrenSumSize(root) + 1
+		return root
+	}
+
+	croot := trim(root)
 	if root != croot {
 		tree.root.Children[0] = croot
+	}
+	// list
+	if croot != nil {
+		lhand := croot
+		for lhand.Children[0] != nil {
+			lhand = lhand.Children[0]
+		}
+		lhand.Direct[0] = nil
+
+		rhand := croot
+		for rhand.Children[1] != nil {
+			rhand = rhand.Children[1]
+		}
+		rhand.Direct[1] = nil
 	}
 }
 

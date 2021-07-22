@@ -2,6 +2,7 @@ package treelist
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/davecgh/go-spew/spew"
@@ -138,14 +139,16 @@ func (tree *Tree) debugString(isSuffix bool) string {
 	str += "\n"
 	start := cur
 	for start != nil {
-		str += spew.Sprint(string(start.Key)) + ","
-		start = start.Direct[1]
 		i++
-		if i >= 100 {
-			break
+		if i <= 100 {
+			str += spew.Sprint(string(start.Key)) + ","
+			start = start.Direct[1]
 		}
 	}
 	str = str[0:len(str)-1] + "(" + strconv.Itoa(i) + ")"
+	if i != int(tree.Size()) {
+		log.Panic("error:list size is not equal tree size", i, tree.Size(), str)
+	}
 
 	return str
 }

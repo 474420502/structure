@@ -119,12 +119,12 @@ func TestRange(t *testing.T) {
 		// tree.rcount = 0
 		start := []byte(strconv.Itoa(startkey)) // 41 63
 		end := []byte(strconv.Itoa(endkey))
-		log.Println(tree.debugString(true))
-		log.Println("start:", startkey, "end:", endkey)
+		// log.Println(tree.debugString(true))
+		// log.Println("start:", startkey, "end:", endkey)
 		// tree.RemoveRange(start, end)
-		tree.Trim(start, end)
+		tree.RemoveRange(start, end)
 		// log.Println("rcount", tree.rcount, tree.getHeight(), tree.Size())
-		log.Println(tree.debugString(true))
+		// log.Println(tree.debugString(true))
 
 		for i := startkey; i <= endkey; i++ {
 			avltree.Remove(i)
