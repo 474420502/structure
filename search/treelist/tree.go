@@ -1,6 +1,9 @@
 package treelist
 
 import (
+	"bytes"
+	"compress/zlib"
+
 	"github.com/474420502/structure/compare"
 )
 
@@ -77,36 +80,6 @@ func (tree *Tree) getNode(key []byte) *Node {
 		}
 	}
 	return nil
-}
-
-func (tree *Tree) getNodeWithIndex(key []byte) (node *Node, idx int64) {
-	const L = 0
-	const R = 1
-
-	cur := tree.getRoot()
-	var offset int64 = getSize(cur.Children[L])
-	for cur != nil {
-		c := tree.compare(key, cur.Key)
-		switch {
-		case c < 0:
-			cur = cur.Children[L]
-			if cur != nil {
-				offset -= getSize(cur.Children[L]) + 1
-			} else {
-				return nil, -1
-			}
-		case c > 0:
-			cur = cur.Children[R]
-			if cur != nil {
-				offset += getSize(cur.Children[L]) + 1
-			} else {
-				return nil, -1
-			}
-		default:
-			return cur, offset
-		}
-	}
-	return nil, -1
 }
 
 func (tree *Tree) seekNodeWithIndex(key []byte) (node *Node, idx int64, dir int) {
@@ -293,28 +266,6 @@ func (tree *Tree) IndexOf(key []byte) int64 {
 
 }
 
-func (tree *Tree) rankNode(key []byte) (*Node, int64) {
-	const L = 0
-	const R = 1
-
-	cur := tree.getRoot()
-	var offset int64 = getSize(cur.Children[L])
-	for cur != nil {
-		c := tree.compare(key, cur.Key)
-		switch {
-		case c < 0:
-			cur = cur.Children[L]
-			offset -= getSize(cur.Children[R]) + 1
-		case c > 0:
-			cur = cur.Children[R]
-			offset += getSize(cur.Children[L]) + 1
-		default:
-			return cur, offset
-		}
-	}
-	return nil, -1
-}
-
 // Traverse 遍历的方法 默认是LDR 从小到大 Compare 为 l < r
 func (tree *Tree) Traverse(every func(s *Slice) bool) {
 	root := tree.getRoot()
@@ -460,60 +411,6 @@ func (tree *Tree) removeNode(cur *Node) (s *Slice) {
 	return
 }
 
-func (tree *Tree) removeRangeBad(low, hight []byte) {
-	const L = 0
-	const R = 1
-
-	c := tree.compare(low, hight)
-	if c > 0 {
-		panic("key2 must greater than key1 or equal to")
-	} else if c == 0 {
-		tree.Remove(low)
-		return
-	}
-
-	root, starts, dleft, ends, dright := tree.getRangeNodes(low, hight)
-	if root == nil {
-		return
-	}
-
-	if dleft != nil {
-		dleft.Direct[R] = dright
-	}
-
-	if dright != nil {
-		dright.Direct[L] = dleft
-	}
-
-	// 合并左树
-	lgroup := combineGroups(starts, R)
-	// 合并又树
-	rgroup := combineGroups(ends, L)
-
-	if lgroup == nil && rgroup == nil {
-		rparent := root.Parent
-		size := root.Size
-		root.Parent.Children[getRelationship(root)] = nil
-		for rparent != tree.root {
-			rparent.Size -= size
-			rparent = rparent.Parent
-		}
-		return
-	}
-	// log.Println(debugNode(lgroup), "\n", debugNode(rgroup))
-	// log.Println(tree.debugString(true))
-	// log.Println(root, starts, ends)
-
-	// 左右树　拼接
-	rsize := getSize(rgroup)
-	lsize := getSize(lgroup)
-	if lsize > rsize {
-		tree.mergeGroups(root, lgroup, rgroup, rsize, R)
-	} else {
-		tree.mergeGroups(root, rgroup, lgroup, lsize, L)
-	}
-}
-
 // RemoveRange
 func (tree *Tree) RemoveRange(low, hight []byte) {
 
@@ -602,8 +499,6 @@ func (tree *Tree) RemoveRange(low, hight []byte) {
 		dright = root.Direct[R]
 	}
 
-	// log.Println(root, lgroup, rgroup, dleft, dright)
-
 	if dleft != nil {
 		dleft.Direct[R] = dright
 	}
@@ -622,9 +517,6 @@ func (tree *Tree) RemoveRange(low, hight []byte) {
 		}
 		return
 	}
-	// log.Println(debugNode(lgroup), "\n", debugNode(rgroup))
-	// log.Println(tree.debugString(true))
-	// log.Println(root, starts, ends)
 
 	// 左右树　拼接
 	rsize := getSize(rgroup)
@@ -668,197 +560,12 @@ func (tree *Tree) mergeGroups(root *Node, group *Node, childGroup *Node, childSi
 	}
 }
 
-func combineGroups(starts []*Node, LR int) *Node {
-
-	var group *Node
-	var child *Node
-
-	nlen := len(starts)
-	if nlen == 0 {
-		return nil
-	}
-	group = starts[nlen-1]
-	child = group
-	for i := nlen - 2; i >= 0; i-- {
-		group = starts[i]
-		combine(group, child, LR)
-		child = group
-	}
-	return group
-}
-
-func combine(group *Node, child *Node, LR int) {
-	if group != nil {
-		hand := group
-
-		hand.Children[LR] = child
-		if child != nil {
-			child.Parent = hand
-		}
-
-		for hand != group.Parent {
-			hand.Size = getChildrenSumSize(hand) + 1
-			hand = hand.Parent
-		}
-	}
-}
-
 func (tree *Tree) Clear() {
 	tree.root.Children[0] = nil
 }
 
 func (tree *Tree) getRoot() *Node {
 	return tree.root.Children[0]
-}
-
-func (tree *Tree) getRangeNodeStart(cur *Node, key []byte) (groups []*Node, left *Node) {
-	const L = 0
-	const R = 1
-
-	for {
-		c := tree.compare(key, cur.Key)
-		switch {
-		case c < 0:
-			if cur.Children[L] == nil {
-				left = cur.Direct[L]
-				groups = append(groups, cur.Children[L])
-				return
-			}
-			cur = cur.Children[L]
-
-		case c > 0:
-			groups = append(groups, cur)
-			if cur.Children[R] == nil {
-				left = cur
-				return
-			}
-			cur = cur.Children[R]
-
-		default:
-			left = cur.Direct[L]
-			groups = append(groups, cur.Children[L])
-			return
-		}
-	}
-}
-
-func (tree *Tree) getRangeNodeEnd(root *Node, key []byte) (groups []*Node, right *Node) {
-	const L = 0
-	const R = 1
-
-	cur := root
-	for cur != nil {
-		c := tree.compare(key, cur.Key)
-		switch {
-		case c < 0:
-			groups = append(groups, cur)
-			if cur.Children[L] == nil {
-				right = cur
-				return
-			}
-			cur = cur.Children[L]
-		case c > 0:
-			if cur.Children[R] == nil {
-				right = cur.Direct[R]
-				groups = append(groups, cur.Children[R])
-				return
-			}
-			cur = cur.Children[R]
-
-		default:
-			right = cur.Direct[R]
-			groups = append(groups, cur.Children[R])
-			return
-		}
-	}
-	return
-}
-
-// getRangeNodes 获取范围节点的左团和又团
-func (tree *Tree) getRangeNodes(low, hight []byte) (root *Node, start []*Node, left *Node, end []*Node, right *Node) {
-	const L = 0
-	const R = 1
-
-	cur := tree.getRoot()
-	for cur != nil {
-		c1 := tree.compare(low, cur.Key)
-		c2 := tree.compare(hight, cur.Key)
-
-		if c1 != c2 {
-			starts, dleft := tree.getRangeNodeStart(cur, low)
-			ends, dright := tree.getRangeNodeEnd(cur, hight)
-			return cur, starts, dleft, ends, dright
-		}
-
-		if c1 < 0 {
-			cur = cur.Children[L]
-		} else {
-			cur = cur.Children[R]
-		}
-
-	}
-	return
-}
-
-func (tree *Tree) Trim(low, hight []byte) {
-	root := tree.getRoot()
-	var trim func(root *Node) *Node
-	trim = func(root *Node) *Node {
-		if root == nil {
-			return nil
-		}
-
-		if tree.compare(root.Key, hight) > 0 {
-			return trim(root.Children[0])
-		}
-
-		if tree.compare(root.Key, low) < 0 {
-			return trim(root.Children[1])
-		}
-
-		root.Children[0] = trim(root.Children[0])
-		root.Children[1] = trim(root.Children[1])
-		root.Size = getChildrenSumSize(root) + 1
-		return root
-	}
-
-	croot := trim(root)
-	if root != croot {
-		tree.root.Children[0] = croot
-	}
-	// list
-	if croot != nil {
-		lhand := croot
-		for lhand.Children[0] != nil {
-			lhand = lhand.Children[0]
-		}
-		lhand.Direct[0] = nil
-
-		rhand := croot
-		for rhand.Children[1] != nil {
-			rhand = rhand.Children[1]
-		}
-		rhand.Direct[1] = nil
-	}
-}
-
-func (tree *Tree) trim(root *Node, low, hight []byte) *Node {
-	if root == nil {
-		return nil
-	}
-
-	if tree.compare(root.Key, hight) > 0 {
-		return tree.trim(root.Children[0], low, hight)
-	}
-
-	if tree.compare(root.Key, low) < 0 {
-		return tree.trim(root.Children[1], low, hight)
-	}
-
-	root.Children[0] = tree.trim(root.Children[0], low, hight)
-	root.Children[1] = tree.trim(root.Children[1], low, hight)
-	root.Size = getChildrenSumSize(root) + 1
-	return root
 }
 
 // getRangeNodes 获取范围节点的左团和又团
@@ -877,23 +584,22 @@ func (tree *Tree) getRangeRoot(low, hight []byte) (root *Node) {
 
 		if c1 < 0 {
 			cur = cur.Children[L]
-		} else {
+		} else if c1 > 0 {
 			cur = cur.Children[R]
+		} else {
+			return cur
 		}
 	}
 	return
 }
 
-func (tree *Tree) TrimEx(low, hight []byte) {
+func (tree *Tree) Trim(low, hight []byte) {
 	// root := tree.getRoot()
 	const L = 0
 	const R = 1
 
 	// log.Println(tree.debugString(true), string(low), string(hight))
 	root := tree.getRangeRoot(low, hight)
-	if root == nil {
-		return
-	}
 
 	var ltrim func(root *Node) *Node
 	ltrim = func(root *Node) *Node {
@@ -949,17 +655,39 @@ func (tree *Tree) TrimEx(low, hight []byte) {
 	if root != tree.root {
 		tree.root.Children[0] = root
 	}
+
+	if root != nil {
+		root.Parent = tree.root
+
+		lhand := root
+		for lhand.Children[0] != nil {
+			lhand = lhand.Children[0]
+		}
+		lhand.Direct[0] = nil
+
+		rhand := root
+		for rhand.Children[1] != nil {
+			rhand = rhand.Children[1]
+		}
+		rhand.Direct[1] = nil
+	}
 	// list
 
-	lhand := root
-	for lhand.Children[0] != nil {
-		lhand = lhand.Children[0]
-	}
-	lhand.Direct[0] = nil
+}
 
-	rhand := root
-	for rhand.Children[1] != nil {
-		rhand = rhand.Children[1]
+func (tree *Tree) hashString() string {
+	var buf = bytes.NewBuffer(nil)
+	w := zlib.NewWriter(buf)
+
+	tree.Traverse(func(s *Slice) bool {
+		w.Write(s.Key)
+		return true
+	})
+
+	err := w.Close()
+	if err != nil {
+		panic(err)
 	}
-	rhand.Direct[1] = nil
+
+	return string(buf.Bytes())
 }

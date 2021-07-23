@@ -78,16 +78,58 @@ func TestRemoveRange(t *testing.T) {
 		tree.RemoveRange([]byte(strconv.Itoa(s)), []byte(strconv.Itoa(e)))
 		TreeListCountTime += time.Since(now)
 	}
-	t.Error(TreeListCountTime.Nanoseconds()/int64(level), "ns/op")
+	t.Log(TreeListCountTime.Nanoseconds()/int64(level), "ns/op")
 }
 
-func TestTrim(t *testing.T) {
+// func TestTrimBadBench(t *testing.T) {
+// 	seed := time.Now().UnixNano()
+// 	log.Println(seed)
+// 	rand.Seed(seed)
+// 	// rand.Seed(time.Now().UnixNano())
+// 	var TreeListCountTime time.Duration = 0
+// 	level := Level0 / 100
+
+// 	// t.StopTimer()
+// 	for i := 0; i < level; i++ {
+
+// 		// tree := New()
+// 		// tree.compare = compare.BytesLen
+// 		treeEx := New()
+// 		treeEx.compare = compare.BytesLen
+// 		for i := 0; i < level; i += rand.Intn(10) + 1 {
+// 			v := []byte(strconv.Itoa(i))
+// 			// tree.Put(v, v)
+// 			treeEx.Put(v, v)
+// 		}
+
+// 		s := rand.Intn(level)
+// 		e := rand.Intn(level)
+// 		if s > e {
+// 			temp := s
+// 			s = e
+// 			e = temp
+// 		}
+// 		// log.Println(i)
+// 		// if i == 81 {
+// 		// 	log.Println()
+// 		// }
+// 		ss := []byte(strconv.Itoa(s))
+// 		ee := []byte(strconv.Itoa(e))
+// 		now := time.Now()
+// 		treeEx.trimBad(ss, ee)
+// 		TreeListCountTime += time.Since(now)
+// 		// log.Println(tree.debugString(true), s, e)
+// 	}
+// 	t.Log(TreeListCountTime.Nanoseconds()/int64(level), "ns/op")
+// }
+
+func TestTrimBench(t *testing.T) {
 	seed := time.Now().UnixNano()
 	log.Println(seed)
 	rand.Seed(seed)
 	// rand.Seed(time.Now().UnixNano())
 	var TreeListCountTime time.Duration = 0
-	level := Level0 / 1000
+	level := Level0 / 100
 
 	// t.StopTimer()
 	for i := 0; i < level; i++ {
@@ -109,17 +151,24 @@ func TestTrim(t *testing.T) {
 			s = e
 			e = temp
 		}
-		log.Println(i)
+		// log.Println(i)
+		// if i == 81 {
+		// 	log.Println()
+		// }
 		now := time.Now()
-		tree.Trim([]byte(strconv.Itoa(s)), []byte(strconv.Itoa(e)))
-		a := tree.debugString(true)
-		treeEx.TrimEx([]byte(strconv.Itoa(s)), []byte(strconv.Itoa(e)))
-		b := treeEx.debugString(true)
+		ss := []byte(strconv.Itoa(s))
+		ee := []byte(strconv.Itoa(e))
+		tree.trimBad(ss, ee)
+		a := tree.hashString()
+		treeEx.Trim(ss, ee)
+		b := treeEx.hashString()
 		if a != b {
-			log.Println(a, b)
+			log.Println(tree.debugString(true))
+			log.Println(treeEx.debugString(true))
+			t.Error(string(ss), string(ee))
 		}
 		TreeListCountTime += time.Since(now)
 		// log.Println(tree.debugString(true), s, e)
 	}
-	t.Error(TreeListCountTime.Nanoseconds()/int64(level), "ns/op")
+	t.Log(TreeListCountTime.Nanoseconds()/int64(level), "ns/op")
 }

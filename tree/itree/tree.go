@@ -124,14 +124,15 @@ func (tree *Tree) index(i int64) *Node {
 
 	cur := tree.getRoot()
 
-	var offset int64 = getSize(cur.Children[L])
+	var offset int64 = 0
 	for {
-		if i < offset {
+		lsize := getSize(cur.Children[L])
+		idx := lsize + offset
+		if idx > i {
 			cur = cur.Children[L]
-			offset -= getSize(cur.Children[L]) + 1
-		} else if i > offset {
+		} else if idx < i {
 			cur = cur.Children[R]
-			offset += getSize(cur.Children[L]) + 1
+			offset += lsize + 1
 		} else {
 			return cur
 		}
@@ -288,28 +289,3 @@ func (tree *Tree) Remove(key interface{}) interface{} {
 func (tree *Tree) Clear() {
 	tree.root.Children[0] = nil
 }
-
-// func (tree *IndexTree) Range(start, end int64) (result [][2]interface{}) {
-// 	snode := tree.index(start)
-// 	result = append(result, [2]interface{}{snode.Key, snode.Value})
-// 	if
-// 	tree.traversal(snode, func(cur *Node) bool {
-// 		result = append(result, [2]interface{}{cur.Key, cur.Value})
-// 		if start == end {
-// 			return false
-// 		}
-// 		return true
-// 	})
-// }
-
-// func (tree *IndexTree) traversal(cur *Node, do func(cur *Node) bool) {
-// 	if cur == nil || cur == tree.root {
-// 		return
-// 	}
-
-// 	tree.traversal(cur.Children[0], do)
-// 	if do(cur) {
-// 		tree.traversal(cur.Children[1], do)
-// 	}
-// 	tree.traversal(cur.Parent, do)
-// }

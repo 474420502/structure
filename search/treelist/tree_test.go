@@ -122,9 +122,9 @@ func TestRange(t *testing.T) {
 		start := []byte(strconv.Itoa(startkey)) // 41 63
 		end := []byte(strconv.Itoa(endkey))
 
-		srctree := tree.debugString(true)
+		// srctree := tree.debugString(true)
 
-		log.Println(tree.debugString(true))
+		// log.Println(srctree)
 		// log.Println("start:", startkey, "end:", endkey)
 		tree.RemoveRange(start, end)
 		// tree.debugString(true)
@@ -154,13 +154,12 @@ func TestRange(t *testing.T) {
 		for iter.Valid() {
 			if _, ok := tree.Get(iter.Value()); !ok {
 				log.Println("start:", startkey, "end:", endkey)
-				log.Println(srctree)
+				// log.Println(srctree)
 				log.Println(tree.debugString(true))
 				log.Println("not ok", string(iter.Value()))
 				panic("")
 			}
 			iter.Next()
 		}
-
 	}
 }
