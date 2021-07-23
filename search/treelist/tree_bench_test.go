@@ -54,7 +54,7 @@ func BenchmarkIndex(b *testing.B) {
 func TestRemoveRange(t *testing.T) {
 	// rand.Seed(time.Now().UnixNano())
 	var TreeListCountTime time.Duration = 0
-	level := Level0 / 10
+	level := Level0 / 100
 
 	// t.StopTimer()
 	for i := 0; i < level; i++ {

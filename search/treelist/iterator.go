@@ -30,25 +30,18 @@ func (iter *Iterator) SeekToPrev(key []byte) {
 
 func (iter *Iterator) SeekToFirst() {
 	const L = 0
-	root := iter.tree.getRoot()
-	if root != nil {
-		iter.cur = root.Direct[L]
-		iter.idx = 0
-	} else {
-		iter.cur = nil
-	}
+	// root := iter.tree.getRoot()
+
+	iter.cur = iter.tree.root.Direct[L]
+	iter.idx = 0
 
 }
 
 func (iter *Iterator) SeekToLast() {
 	const R = 1
-	root := iter.tree.getRoot()
-	if root != nil {
-		iter.cur = root.Direct[R]
-		iter.idx = iter.tree.Size() - 1
-	} else {
-		iter.cur = nil
-	}
+
+	iter.cur = iter.tree.root.Direct[R]
+	iter.idx = iter.tree.Size() - 1
 
 }
 

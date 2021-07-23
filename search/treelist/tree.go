@@ -313,6 +313,11 @@ func (tree *Tree) Remove(key []byte) *Slice {
 	return nil
 }
 
+func (tree *Tree) RemoveHead() *Slice {
+
+	return nil
+}
+
 func (tree *Tree) removeNode(cur *Node) (s *Slice) {
 	const L = 0
 	const R = 1
@@ -326,11 +331,17 @@ func (tree *Tree) removeNode(cur *Node) (s *Slice) {
 
 			dright := cur.Direct[R]
 			dleft := cur.Direct[L]
-			if dright != nil {
-				dright.Direct[L] = dleft
-			}
+
 			if dleft != nil {
 				dleft.Direct[R] = dright
+			} else {
+				tree.root.Direct[L] = dright
+			}
+
+			if dright != nil {
+				dright.Direct[L] = dleft
+			} else {
+				tree.root.Direct[R] = dleft
 			}
 
 		} else {
@@ -373,7 +384,10 @@ func (tree *Tree) removeNode(cur *Node) (s *Slice) {
 		dleft := cur.Direct[L].Direct[L]
 		if dleft != nil {
 			dleft.Direct[R] = cur
+		} else {
+			tree.root.Direct[L] = cur
 		}
+
 		cur.Direct[L] = dleft
 
 	} else {
@@ -404,6 +418,8 @@ func (tree *Tree) removeNode(cur *Node) (s *Slice) {
 		dright := cur.Direct[R].Direct[R]
 		if dright != nil {
 			dright.Direct[L] = cur
+		} else {
+			tree.root.Direct[R] = cur
 		}
 		cur.Direct[R] = dright
 	}
@@ -501,10 +517,14 @@ func (tree *Tree) RemoveRange(low, hight []byte) {
 
 	if dleft != nil {
 		dleft.Direct[R] = dright
+	} else {
+		tree.root.Direct[L] = dright
 	}
 
 	if dright != nil {
 		dright.Direct[L] = dleft
+	} else {
+		tree.root.Direct[R] = dleft
 	}
 
 	if lgroup == nil && rgroup == nil {
@@ -660,16 +680,18 @@ func (tree *Tree) Trim(low, hight []byte) {
 		root.Parent = tree.root
 
 		lhand := root
-		for lhand.Children[0] != nil {
-			lhand = lhand.Children[0]
+		for lhand.Children[L] != nil {
+			lhand = lhand.Children[L]
 		}
-		lhand.Direct[0] = nil
+		lhand.Direct[L] = nil
+		tree.root.Direct[L] = lhand
 
 		rhand := root
-		for rhand.Children[1] != nil {
-			rhand = rhand.Children[1]
+		for rhand.Children[R] != nil {
+			rhand = rhand.Children[R]
 		}
-		rhand.Direct[1] = nil
+		rhand.Direct[R] = nil
+		tree.root.Direct[R] = rhand
 	}
 	// list
 

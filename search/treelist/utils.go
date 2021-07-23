@@ -200,30 +200,30 @@ func getRelationship(cur *Node) int {
 	return 0
 }
 
-func (tree *Tree) getHeight() int {
-	root := tree.getRoot()
-	if root == nil {
-		return 0
-	}
+// func (tree *Tree) getHeight() int {
+// 	root := tree.getRoot()
+// 	if root == nil {
+// 		return 0
+// 	}
 
-	var height = 1
+// 	var height = 1
 
-	var traverse func(cur *Node, h int)
-	traverse = func(cur *Node, h int) {
+// 	var traverse func(cur *Node, h int)
+// 	traverse = func(cur *Node, h int) {
 
-		if cur == nil {
-			return
-		}
+// 		if cur == nil {
+// 			return
+// 		}
 
-		if h > height {
-			height = h
-		}
+// 		if h > height {
+// 			height = h
+// 		}
 
-		traverse(cur.Children[0], h+1)
-		traverse(cur.Children[1], h+1)
-	}
+// 		traverse(cur.Children[0], h+1)
+// 		traverse(cur.Children[1], h+1)
+// 	}
 
-	traverse(root, 1)
+// 	traverse(root, 1)
 
-	return height
-}
+// 	return height
+// }

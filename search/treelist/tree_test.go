@@ -19,10 +19,23 @@ func init() {
 
 func TestIndex(t *testing.T) {
 	tree := New()
+	tree.compare = compare.BytesLen
 	for i := 0; i < 100; i++ {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
 
+		s := tree.Index(int64(i))
+		if bytes.Compare(s.Key, v) != 0 {
+			t.Error(s, v)
+		}
+		iter := tree.Iterator()
+		iter.Seek(v)
+		if iter.Index() != int64(i) {
+			t.Error("iterator index error")
+		}
+		if bytes.Compare(iter.Key(), v) != 0 {
+			t.Error("iterator key error")
+		}
 	}
 
 }
@@ -91,6 +104,44 @@ func TestRemove2(t *testing.T) {
 	}
 }
 
+func TestRemoveNode(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+	for n := 0; n < 1000; n++ {
+
+		tree := New()
+		tree.compare = compare.BytesLen
+
+		var dmap map[int]int = make(map[int]int)
+
+		for i := 0; i < 200; i += rand.Intn(8) + 2 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+			dmap[i] = i
+		}
+
+		for i := 0; i < 200; i += rand.Intn(8) + 2 {
+			v := []byte(strconv.Itoa(i))
+			if _, ok := dmap[i]; ok {
+				r := tree.Remove(v)
+				if r == nil {
+					t.Error(r)
+				}
+				if bytes.Compare(r.Key, v) != 0 {
+					t.Error()
+				}
+			} else {
+				r := tree.Remove(v)
+				if r != nil {
+					t.Error(r)
+				}
+			}
+		}
+
+	}
+}
+
 func TestRange(t *testing.T) {
 	// tree := New()
 	// tree.compare = compare.BytesLen
@@ -102,9 +153,9 @@ func TestRange(t *testing.T) {
 	seed := time.Now().UnixNano()
 	log.Println(seed)
 	rand.Seed(seed)
-	for n := 0; n < 100000; n++ {
-		startkey := rand.Intn(100)
-		endkey := rand.Intn(100)
+	for n := 0; n < 1000; n++ {
+		startkey := rand.Intn(200)
+		endkey := rand.Intn(200)
 		if startkey > endkey {
 			temp := startkey
 			startkey = endkey
@@ -113,18 +164,20 @@ func TestRange(t *testing.T) {
 		tree := New()
 		tree.compare = compare.BytesLen
 		avltree := avl.New(compare.Int)
-		for i := 0; i < 100; i += 4 {
+		for i := 0; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
 			avltree.Put(i, i)
 		}
 		// tree.rcount = 0
-		start := []byte(strconv.Itoa(startkey)) // 41 63
+		start := []byte(strconv.Itoa(startkey))
 		end := []byte(strconv.Itoa(endkey))
 
 		// srctree := tree.debugString(true)
-
-		// log.Println(srctree)
+		// if n == 3449 {
+		// 	log.Println()
+		// }
+		// log.Println(tree.root.Direct, n)
 		// log.Println("start:", startkey, "end:", endkey)
 		tree.RemoveRange(start, end)
 		// tree.debugString(true)
@@ -150,7 +203,36 @@ func TestRange(t *testing.T) {
 		})
 
 		iter := tree.Iterator()
+		iter.SeekToLast()
+		root := tree.getRoot()
+		if root == nil {
+			if tree.root.Direct[0] != nil {
+				log.Panicln(tree.root.Direct[0], tree.debugString(true))
+			}
+			if tree.root.Direct[1] != nil {
+				log.Panicln(tree.root.Direct[1], tree.debugString(true))
+			}
+		} else {
+			hand := root
+			for hand.Children[1] != nil {
+				hand = hand.Children[1]
+			}
+			if hand != iter.cur {
+				log.Panicln(root, hand, iter.cur, tree.debugString(true))
+			}
+		}
+
 		iter.SeekToFirst()
+		if root != nil {
+			hand := root
+			for hand.Children[0] != nil {
+				hand = hand.Children[0]
+			}
+			if hand != iter.cur {
+				log.Panicln(hand, iter.cur, tree.debugString(true))
+			}
+		}
+
 		for iter.Valid() {
 			if _, ok := tree.Get(iter.Value()); !ok {
 				log.Println("start:", startkey, "end:", endkey)
