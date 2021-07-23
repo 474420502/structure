@@ -313,8 +313,33 @@ func (tree *Tree) Remove(key []byte) *Slice {
 	return nil
 }
 
-func (tree *Tree) RemoveHead() *Slice {
+func (tree *Tree) Head() *Slice {
+	h := tree.root.Direct[0]
+	if h != nil {
+		return &h.Slice
+	}
+	return nil
+}
 
+func (tree *Tree) RemoveHead() *Slice {
+	if tree.getRoot() != nil {
+		return tree.removeNode(tree.root.Direct[0])
+	}
+	return nil
+}
+
+func (tree *Tree) Tail() *Slice {
+	t := tree.root.Direct[1]
+	if t != nil {
+		return &t.Slice
+	}
+	return nil
+}
+
+func (tree *Tree) RemoveTail() *Slice {
+	if tree.getRoot() != nil {
+		return tree.removeNode(tree.root.Direct[1])
+	}
 	return nil
 }
 

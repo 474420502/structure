@@ -115,13 +115,13 @@ func TestRemoveNode(t *testing.T) {
 
 		var dmap map[int]int = make(map[int]int)
 
-		for i := 0; i < 200; i += rand.Intn(8) + 2 {
+		for i := 0; i < 200; i += rand.Intn(4) + 1 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
 			dmap[i] = i
 		}
 
-		for i := 0; i < 200; i += rand.Intn(8) + 2 {
+		for i := 0; i < 200; i += rand.Intn(4) + 1 {
 			v := []byte(strconv.Itoa(i))
 			if _, ok := dmap[i]; ok {
 				r := tree.Remove(v)
@@ -164,6 +164,7 @@ func TestRange(t *testing.T) {
 		tree := New()
 		tree.compare = compare.BytesLen
 		avltree := avl.New(compare.Int)
+
 		for i := 0; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
@@ -243,5 +244,100 @@ func TestRange(t *testing.T) {
 			}
 			iter.Next()
 		}
+	}
+}
+
+func TestHeadTail(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+	for n := 0; n < 1000; n++ {
+
+		tree := New()
+		tree.compare = compare.BytesLen
+
+		var min, max int
+		for i := 0; i < 500; i += rand.Intn(8) + 1 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+			if min > i {
+				min = i
+			}
+			if max < i {
+				max = i
+			}
+
+			if compare.BytesLen(tree.Head().Key, []byte(strconv.Itoa(min))) != 0 {
+				t.Error("test the seed")
+			}
+
+			if compare.BytesLen(tree.Tail().Key, []byte(strconv.Itoa(max))) != 0 {
+				t.Error("test the seed")
+			}
+		}
+	}
+}
+
+func TestRemoveHeadTail(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+	for n := 0; n < 1000; n++ {
+
+		tree := New()
+		tree.compare = compare.BytesLen
+
+		var min, max int
+		for i := 0; i < rand.Intn(500); i += rand.Intn(4) + 1 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+			if min > i {
+				min = i
+			}
+			if max < i {
+				max = i
+			}
+		}
+
+		// log.Println(n)
+		// if n == 306 {
+		// 	log.Println(tree.Size())
+		// }
+
+		tree.RemoveHead()
+		if s := tree.Size(); s > 0 {
+			if compare.BytesLen(tree.Head().Key, []byte(strconv.Itoa(min))) == 0 {
+				t.Error("test the seed")
+			}
+
+			if s == 1 {
+				if compare.BytesLen(tree.Head().Key, tree.Tail().Key) != 0 {
+					t.Error(n, "head is should be equal to tail")
+				}
+			}
+		} else {
+			if tree.Head() != nil && tree.Tail() != nil {
+				t.Error("head tail should be nil", n)
+			}
+
+		}
+
+		tree.RemoveTail()
+		if s := tree.Size(); s > 0 {
+			if compare.BytesLen(tree.Tail().Key, []byte(strconv.Itoa(max))) == 0 {
+				t.Error("test the seed")
+			}
+
+			if s == 1 {
+				if compare.BytesLen(tree.Head().Key, tree.Tail().Key) != 0 {
+					t.Error(n, "head is should be equal to tail")
+				}
+			}
+		} else {
+			if tree.Head() != nil && tree.Tail() != nil {
+				t.Error("head tail should be nil", n)
+			}
+		}
+
 	}
 }

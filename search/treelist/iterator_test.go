@@ -1,12 +1,72 @@
 package treelist
 
 import (
+	"bytes"
 	"log"
+	"math/rand"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/474420502/structure/compare"
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
+
+func TestSeekRand(t *testing.T) {
+
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(1627035676273838749)
+	for n := 0; n < 1000; n++ {
+
+		tree := New()
+		tree.compare = compare.BytesLen
+		var plist []int
+		for i := 0; i < 200; i += rand.Intn(4) + 1 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+			plist = append(plist, i)
+		}
+
+		plen := len(plist)
+		i := rand.Intn(plen)
+		m := plist[i]
+		iter := tree.Iterator()
+		mid := []byte(strconv.Itoa(m))
+		iter.Seek(mid)
+		if bytes.Compare(iter.Key(), mid) != 0 {
+			t.Error("seek error")
+		}
+		if i > 0 {
+			v := plist[i-1]
+			iter.Prev()
+			if bytes.Compare(iter.Key(), []byte(strconv.Itoa(v))) != 0 {
+				t.Error("seek error", string(iter.Key()), plist, v)
+			}
+
+		}
+
+		iter.Seek(mid)
+		if i < plen-1 {
+			v := plist[i+1]
+			iter.Next()
+			if bytes.Compare(iter.Key(), []byte(strconv.Itoa(v))) != 0 {
+				t.Error("seek error", string(iter.Key()), plist, v)
+			}
+
+			// log.Println(v - 1)
+			p := []byte(strconv.Itoa(v - 1))
+			iter.SeekForPrev(p)
+			if iter.Valid() {
+				if bytes.Compare(iter.Key(), []byte(strconv.Itoa(m))) != 0 {
+					log.Panicln("seek error", string(iter.Key()), plist, m, string(p))
+				}
+			}
+		}
+	}
+
+}
 
 func TestSeek(t *testing.T) {
 
@@ -47,7 +107,7 @@ func TestSeek(t *testing.T) {
 	var correctResult = []string{"1", "10", "11", "14"}
 	var result []string
 	iter = tree.Iterator()
-	iter.SeekToPrev([]byte("1"))
+	iter.SeekForPrev([]byte("1"))
 	for iter.Valid() {
 		v := string(iter.Value())
 		if strings.HasPrefix(v, "1") {
