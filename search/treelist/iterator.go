@@ -18,7 +18,7 @@ func (iter *Iterator) Seek(key []byte) {
 }
 
 func (iter *Iterator) SeekForPrev(key []byte) {
-	const L = 1
+	const L = 0
 	cur, idx, dir := iter.tree.seekNodeWithIndex(key)
 	iter.idx = idx
 	if dir < 0 {

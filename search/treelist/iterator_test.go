@@ -17,8 +17,8 @@ func TestSeekRand(t *testing.T) {
 
 	seed := time.Now().UnixNano()
 	log.Println(seed)
-	rand.Seed(1627035676273838749)
-	for n := 0; n < 1000; n++ {
+	rand.Seed(seed)
+	for n := 0; n < 2000; n++ {
 
 		tree := New()
 		tree.compare = compare.BytesLen
@@ -44,7 +44,12 @@ func TestSeekRand(t *testing.T) {
 			if bytes.Compare(iter.Key(), []byte(strconv.Itoa(v))) != 0 {
 				t.Error("seek error", string(iter.Key()), plist, v)
 			}
-
+		} else {
+			v := plist[i]
+			iter.Prev()
+			if iter.Valid() {
+				t.Error(v)
+			}
 		}
 
 		iter.Seek(mid)
@@ -60,8 +65,15 @@ func TestSeekRand(t *testing.T) {
 			iter.SeekForPrev(p)
 			if iter.Valid() {
 				if bytes.Compare(iter.Key(), []byte(strconv.Itoa(m))) != 0 {
-					log.Panicln("seek error", string(iter.Key()), plist, m, string(p))
+					log.Panicln("seek error key:", string(iter.Key()), plist, "mid:", m, string(p))
 				}
+			}
+
+		} else {
+			v := plist[i]
+			iter.Next()
+			if iter.Valid() {
+				t.Error(v)
 			}
 		}
 	}
