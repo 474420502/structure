@@ -27,6 +27,10 @@ func New(comp compare.Compare) *Tree {
 	return &Tree{compare: comp, root: &Node{}}
 }
 
+func (tree *Tree) String() string {
+	return tree.debugString(true)
+}
+
 func (tree *Tree) getRoot() *Node {
 	return tree.root.Children[0]
 }
