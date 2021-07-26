@@ -1,8 +1,6 @@
 package indextree
 
-import (
-	"github.com/davecgh/go-spew/spew"
-)
+import "fmt"
 
 func output(node *Node, prefix string, isTail bool, str *string) {
 
@@ -22,7 +20,7 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 		*str += "\033[31;40m┌── \033[0m"
 	}
 
-	*str += "(" + spew.Sprint(node.Key) + "->" + spew.Sprint(node.Value) + ")" + "\n"
+	*str += "(" + fmt.Sprintf("%v", node.Key) + "->" + fmt.Sprintf("%v", node.Value) + ")" + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -59,15 +57,15 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	if node.Parent == nil {
 		parentv = "nil"
 	} else {
-		parentv = spew.Sprint(node.Parent.Key)
+		parentv = fmt.Sprintf("%v", node.Parent.Key)
 	}
 
-	// suffix += parentv + "|" + spew.Sprint(node.Size) + " " + ldirect + "<->" + rdirect + ")"
-	suffix += parentv + "|" + spew.Sprint(node.size) + ")"
+	// suffix += parentv + "|" + fmt.Sprintf("%v",node.Size) + " " + ldirect + "<->" + rdirect + ")"
+	suffix += parentv + "|" + fmt.Sprintf("%v", node.size) + ")"
 	// suffix = ""
 	k := node.Key
 
-	*str += spew.Sprint(k) + suffix + "\n"
+	*str += fmt.Sprintf("%v", k) + suffix + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -100,7 +98,7 @@ func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string)
 
 	k := node.Key
 
-	*str += spew.Sprint(k) + "\n"
+	*str += fmt.Sprintf("%v", k) + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix

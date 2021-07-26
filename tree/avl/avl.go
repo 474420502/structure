@@ -1,9 +1,9 @@
 package avl
 
 import (
-	"github.com/474420502/structure/compare"
+	"fmt"
 
-	"github.com/davecgh/go-spew/spew"
+	"github.com/474420502/structure/compare"
 )
 
 const HeightDiff = 1
@@ -22,9 +22,9 @@ func (n *Node) String() string {
 
 	p := "nil"
 	if n.Parent != nil {
-		p = spew.Sprint(n.Parent.Value)
+		p = fmt.Sprintf("%v", n.Parent.Value)
 	}
-	return spew.Sprint(n.Value) + "(" + p + "|" + spew.Sprint(n.height) + ")"
+	return fmt.Sprintf("%v", n.Value) + "(" + p + "|" + fmt.Sprintf("%v", n.height) + ")"
 }
 
 type Tree struct {
@@ -524,9 +524,9 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 
 	switch k := node.Key.(type) {
 	case []byte:
-		*str += spew.Sprint(string(k)) + "\n"
+		*str += fmt.Sprintf("%v", string(k)) + "\n"
 	default:
-		*str += spew.Sprint(k) + "\n"
+		*str += fmt.Sprintf("%v", k) + "\n"
 	}
 
 	if node.Children[0] != nil {
@@ -564,10 +564,10 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	if node.Parent == nil {
 		parentv = "nil"
 	} else {
-		parentv = spew.Sprint(node.Parent.Value)
+		parentv = fmt.Sprintf("%v", node.Parent.Value)
 	}
-	suffix += parentv + "|" + spew.Sprint(node.height) + ")"
-	*str += spew.Sprint(node.Value) + suffix + "\n"
+	suffix += parentv + "|" + fmt.Sprintf("%v", node.height) + ")"
+	*str += fmt.Sprintf("%v", node.Value) + suffix + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix

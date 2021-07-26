@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 func output(node *Node, prefix string, isTail bool, str *string) {
@@ -26,7 +24,7 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 		*str += "\033[31;40m┌── \033[0m"
 	}
 
-	*str += "(" + spew.Sprint(node.Key) + "->" + spew.Sprint(node.Value) + ")" + "\n"
+	*str += "(" + fmt.Sprintf("%v", node.Key) + "->" + fmt.Sprintf("%v", node.Value) + ")" + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -63,15 +61,15 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	if node.Parent == nil {
 		parentv = "nil"
 	} else {
-		parentv = spew.Sprint(string(node.Parent.Key))
+		parentv = fmt.Sprintf("%v", string(node.Parent.Key))
 	}
 
-	// suffix += parentv + "|" + spew.Sprint(node.Size) + " " + ldirect + "<->" + rdirect + ")"
-	suffix += parentv + "|" + spew.Sprint(node.Size) + ")"
+	// suffix += parentv + "|" + fmt.Sprintf("%v",node.Size) + " " + ldirect + "<->" + rdirect + ")"
+	suffix += parentv + "|" + fmt.Sprintf("%v", node.Size) + ")"
 	// suffix = ""
 	k := node.Key
 
-	*str += spew.Sprint(string(k)) + suffix + "\n"
+	*str += fmt.Sprintf("%v", string(k)) + suffix + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -104,7 +102,7 @@ func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string)
 
 	k := node.Key
 
-	*str += spew.Sprint(string(k)) + "\n"
+	*str += fmt.Sprintf("%v", string(k)) + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -150,7 +148,7 @@ func (tree *Tree) debugString(isSuffix bool) string {
 	for start != nil {
 		i++
 		if i <= 100 {
-			str += spew.Sprint(string(start.Key)) + ","
+			str += fmt.Sprintf("%v", string(start.Key)) + ","
 		}
 		start = start.Direct[1]
 	}

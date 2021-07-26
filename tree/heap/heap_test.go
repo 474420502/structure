@@ -8,15 +8,18 @@ import (
 	"math/rand"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/474420502/structure/compare"
 )
 
 func TestHeapGrowSlimming(t *testing.T) {
 
-	rand.Seed(505)
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
 
-	for ii := 0; ii < 1000; ii++ {
+	for ii := 0; ii < 2000; ii++ {
 
 		h := New(compare.Int)
 		var results []int
@@ -153,8 +156,8 @@ func TestHeapPushTopPop(t *testing.T) {
 // 			gods.Push(v)
 // 		}
 
-// 		r1 := spew.Sprint(h.Values())
-// 		r2 := spew.Sprint(gods.Values())
+// 		r1 := fmt.Sprintf("%v",h.Values())
+// 		r2 := fmt.Sprintf("%v",gods.Values())
 // 		if r1 != r2 {
 // 			t.Error(r1)
 // 			t.Error(r2)
@@ -194,8 +197,8 @@ func TestHeapPushTopPop(t *testing.T) {
 // 			}
 // 		}
 
-// 		r1 := spew.Sprint(h.Values())
-// 		r2 := spew.Sprint(gods.Values())
+// 		r1 := fmt.Sprintf("%v",h.Values())
+// 		r2 := fmt.Sprintf("%v",gods.Values())
 // 		if r1 != r2 {
 // 			t.Error(r1)
 // 			t.Error(r2)
