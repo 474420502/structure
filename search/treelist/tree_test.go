@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"math/rand"
+	"sort"
 	"strconv"
 	"testing"
 	"time"
@@ -15,6 +16,35 @@ import (
 
 func init() {
 	log.SetFlags(log.Llongfile)
+}
+
+func TestIndexForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		tree := New()
+		tree.compare = compare.BytesLen
+		var arr []int = make([]int, 0, 50)
+		for i := 0; i < 50; i++ {
+			r := rand.Intn(1000)
+
+			v := []byte(strconv.Itoa(r))
+			if tree.Put(v, v) {
+				arr = append(arr, r)
+			}
+		}
+		sort.Ints(arr)
+		for i, v := range arr {
+			vv := []byte(strconv.Itoa(v))
+			s := tree.Index(int64(i))
+			if bytes.Compare(s.Key, vv) != 0 {
+				t.Error("error ", string(vv), string(s.Key))
+			}
+		}
+	}
+
 }
 
 func TestIndex(t *testing.T) {

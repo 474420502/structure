@@ -18,6 +18,6 @@ func TestCase(t *testing.T) {
 
 	for i := 0; i < 1000; i++ {
 		tree.Put(i, i)
-
+		log.Println(tree.debugString(true))
 	}
 }

@@ -3,6 +3,7 @@ package treelist
 import (
 	"bytes"
 	"compress/zlib"
+	"log"
 
 	"github.com/474420502/structure/compare"
 )
@@ -210,7 +211,7 @@ func (tree *Tree) index(i int64) *Node {
 
 	defer func() {
 		if err := recover(); err != nil {
-			panic(ErrOutOfIndex)
+			log.Panicln(ErrOutOfIndex, i)
 		}
 	}()
 
@@ -218,16 +219,14 @@ func (tree *Tree) index(i int64) *Node {
 	const R = 1
 
 	cur := tree.getRoot()
-
-	var offset int64 = 0
+	var idx int64 = getSize(cur.Children[L])
 	for {
-		lsize := getSize(cur.Children[L])
-		idx := lsize + offset
 		if idx > i {
 			cur = cur.Children[L]
+			idx -= getSize(cur.Children[R]) + 1
 		} else if idx < i {
 			cur = cur.Children[R]
-			offset += lsize + 1
+			idx += getSize(cur.Children[L]) + 1
 		} else {
 			return cur
 		}

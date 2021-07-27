@@ -3,7 +3,9 @@ package indextree
 import (
 	"log"
 	"math/rand"
+	"sort"
 	"testing"
+	"time"
 
 	"github.com/474420502/structure/compare"
 	testutils "github.com/474420502/structure/tree/test_utils"
@@ -17,6 +19,33 @@ func TestGet(t *testing.T) {
 			t.Error("not ok", i)
 		}
 	}
+}
+
+func TestIndexForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		tree := New(compare.Int)
+
+		var arr []int = make([]int, 0, 50)
+		for i := 0; i < 50; i++ {
+			r := rand.Intn(1000)
+
+			if tree.Put(r, r) {
+				arr = append(arr, r)
+			}
+		}
+		sort.Ints(arr)
+		for i, v := range arr {
+			key, _ := tree.Index(int64(i))
+			if key != v {
+				t.Error("error ", v, key)
+			}
+		}
+	}
+
 }
 
 func TestIndex(t *testing.T) {
@@ -34,6 +63,30 @@ func TestIndex(t *testing.T) {
 		}
 	}
 
+}
+
+func TestRankForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		tree := New(compare.Int)
+		var arr []int = make([]int, 0, 50)
+		for i := 0; i < 50; i++ {
+			r := rand.Intn(1000)
+			if tree.Put(r, r) {
+				arr = append(arr, r)
+			}
+		}
+		sort.Ints(arr)
+		for i, v := range arr {
+			idx := tree.IndexOf(v)
+			if idx != int64(i) {
+				t.Error("error ", i, idx)
+			}
+		}
+	}
 }
 
 func TestRank(t *testing.T) {
