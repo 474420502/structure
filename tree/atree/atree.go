@@ -8,9 +8,10 @@ import (
 )
 
 type Tree struct {
-	compare compare.Compare
-	size    int64
-	datas   []Node
+	compare   compare.Compare
+	size      int64
+	limitSize int64
+	datas     []Node
 }
 
 type Slice struct {
@@ -28,8 +29,8 @@ func (n *Node) String() string {
 }
 
 func New() *Tree {
-	tree := &Tree{compare: compare.Int}
-	tree.datas = make([]Node, 1<<3-1)
+	tree := &Tree{compare: compare.Int, limitSize: 1 << 3}
+	tree.datas = make([]Node, tree.limitSize-1)
 	return tree
 }
 
