@@ -61,7 +61,7 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	}
 
 	// suffix += parentv + "|" + fmt.Sprintf("%v",node.Size) + " " + ldirect + "<->" + rdirect + ")"
-	suffix += parentv + "|" + fmt.Sprintf("%v", node.size) + ")"
+	suffix += parentv + "|" + fmt.Sprintf("%v", node.Size) + ")"
 	// suffix = ""
 	k := node.Key
 
@@ -122,11 +122,6 @@ func (tree *Tree) debugString(isSuffix bool) string {
 		outputfordebug(root, "", true, &str)
 	} else {
 		outputfordebugNoSuffix(root, "", true, &str)
-	}
-
-	var cur = root
-	for cur.Children[0] != nil {
-		cur = cur.Children[0]
 	}
 
 	return str

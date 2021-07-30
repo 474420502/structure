@@ -2,6 +2,7 @@ package heap
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/gob"
 	"io/ioutil"
 	"log"
@@ -117,17 +118,69 @@ func TestHeapPushTopPop(t *testing.T) {
 	}
 }
 
+func TestCase(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	var buf = bytes.NewBuffer(nil)
+	err := binary.Write(buf, binary.BigEndian, []byte("12313"))
+	if err != nil {
+		panic(err)
+	}
+
+	var source []int
+	for i := 0; i < 1000; i++ {
+		source = append(source, i)
+	}
+
+	for n := 0; n < 10; n++ {
+		min := New(compare.Int)
+		max := New(compare.IntDesc)
+
+		rand.Shuffle(len(source), func(i, j int) {
+			source[i], source[j] = source[j], source[i]
+		})
+
+		for i := 0; i < rand.Intn(90)+100; i++ {
+			v := source[i]
+			min.Put(v)
+			max.Put(v)
+		}
+
+		minlist := min.Values()
+		maxlist := max.Values()
+
+		log.Println(min.debugString())
+		log.Println(minlist)
+		log.Println(max.debugString())
+		log.Println(maxlist)
+
+		var count = 0
+		for i, v := range minlist {
+			if minlist[i] == maxlist[i] {
+				log.Println(i, v)
+				count++
+			}
+
+		}
+	}
+}
+
 // func BenchmarkPush(b *testing.B) {
 // 	h := New(compare.Int)
 // 	b.N = 40000000
 // 	var results []int
 // 	for i := 0; i < b.N; i++ {
-// 		results = append(results, randomdata.Number(0, 1000000000))
+// 		results = append(results, rand.Int())
 // 	}
 
 // 	b.ResetTimer()
 // 	for _, v := range results {
 // 		h.Put(v)
+// 	}
+// 	if h.Size() != b.N {
+// 		b.Error(h.Size())
 // 	}
 // }
 

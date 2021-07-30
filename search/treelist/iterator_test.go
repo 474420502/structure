@@ -92,7 +92,7 @@ func TestSeek(t *testing.T) {
 	iter.Seek([]byte("wor"))
 	log.Println(string(iter.cur.Key))
 	for iter.Valid() {
-		v := string(iter.Value())
+		v := string(iter.Key())
 		if !strings.HasPrefix(v, "wor") {
 			t.Error(v)
 		}
@@ -121,7 +121,7 @@ func TestSeek(t *testing.T) {
 	iter = tree.Iterator()
 	iter.SeekForPrev([]byte("1"))
 	for iter.Valid() {
-		v := string(iter.Value())
+		v := string(iter.Key())
 		if strings.HasPrefix(v, "1") {
 			result = append(result, v)
 		} else {

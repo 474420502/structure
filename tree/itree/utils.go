@@ -2,14 +2,14 @@ package indextree
 
 func (tree *Tree) fixPutSize(cur *Node) {
 	for cur != tree.root {
-		cur.size++
+		cur.Size++
 		cur = cur.Parent
 	}
 }
 
 func (tree *Tree) fixRemoveSize(cur *Node) {
 	for cur != tree.root {
-		cur.size--
+		cur.Size--
 		cur = cur.Parent
 	}
 }
@@ -17,7 +17,7 @@ func (tree *Tree) fixRemoveSize(cur *Node) {
 func (tree *Tree) fixPut(cur *Node) {
 
 	tree.fixPutSize(cur)
-	if cur.size == 3 {
+	if cur.Size == 3 {
 		return
 	}
 
@@ -36,7 +36,7 @@ func (tree *Tree) fixPut(cur *Node) {
 
 		root2nsize := (int64(1) << height)
 		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
-		if cur.size < root2nsize {
+		if cur.Size < root2nsize {
 
 			child2nsize := root2nsize >> 2
 			bottomsize := child2nsize + child2nsize>>(height>>1)
@@ -109,8 +109,8 @@ func (tree *Tree) lrotate(cur *Node) *Node {
 	mov.Children[R] = cur
 	cur.Parent = mov
 
-	cur.size = getChildrenSumSize(cur) + 1
-	mov.size = getChildrenSumSize(mov) + 1
+	cur.Size = getChildrenSumSize(cur) + 1
+	mov.Size = getChildrenSumSize(mov) + 1
 
 	return mov
 }
@@ -140,8 +140,8 @@ func (tree *Tree) rrotate(cur *Node) *Node {
 	mov.Children[R] = cur
 	cur.Parent = mov
 
-	cur.size = getChildrenSumSize(cur) + 1
-	mov.size = getChildrenSumSize(mov) + 1
+	cur.Size = getChildrenSumSize(cur) + 1
+	mov.Size = getChildrenSumSize(mov) + 1
 
 	return mov
 }
@@ -158,7 +158,7 @@ func getSize(cur *Node) int64 {
 	if cur == nil {
 		return 0
 	}
-	return cur.size
+	return cur.Size
 }
 
 func getRelationship(cur *Node) int {
@@ -166,4 +166,83 @@ func getRelationship(cur *Node) int {
 		return 1
 	}
 	return 0
+}
+
+func (tree *Tree) getRangeRoot(low, hight interface{}) (root *Node) {
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	for cur != nil {
+		c1 := tree.compare(low, cur.Key)
+		c2 := tree.compare(hight, cur.Key)
+		if c1 != c2 {
+			return cur
+		}
+
+		if c1 < 0 {
+			cur = cur.Children[L]
+		} else if c1 > 0 {
+			cur = cur.Children[R]
+		} else {
+			return cur
+		}
+	}
+	return
+}
+
+func (tree *Tree) mergeGroups(root *Node, group *Node, childGroup *Node, childSize int64, LR int) {
+	rparent := root.Parent
+	hand := group
+	for hand.Children[LR] != nil {
+		hand = hand.Children[LR]
+	}
+	hand.Children[LR] = childGroup
+	if childGroup != nil {
+		childGroup.Parent = hand
+	}
+	rparent.Children[getRelationship(root)] = group
+	if group != nil {
+		group.Parent = rparent
+	}
+
+	if childGroup != nil {
+		parent := childGroup.Parent
+		for parent != rparent {
+			parent.Size += childSize
+			temp := parent.Parent
+			tree.fixRemoveRange(parent)
+			parent = temp
+		}
+	}
+
+	parent := rparent
+	for parent != tree.root {
+		parent.Size = getChildrenSumSize(parent) + 1
+		parent = parent.Parent
+	}
+}
+
+func (tree *Tree) fixRemoveRange(cur *Node) {
+	const L = 0
+	const R = 1
+
+	if cur.Size <= 2 {
+		return
+	}
+
+	ls, rs := getChildrenSize(cur)
+	if ls > rs && ls >= rs<<1 {
+		cls, crs := getChildrenSize(cur.Children[L])
+		if cls < crs {
+			tree.lrotate(cur.Children[L])
+		}
+		tree.rrotate(cur)
+	} else if ls < rs && rs >= ls<<1 {
+		cls, crs := getChildrenSize(cur.Children[R])
+		if cls > crs {
+			tree.rrotate(cur.Children[R])
+		}
+		tree.lrotate(cur)
+	}
 }

@@ -13,9 +13,8 @@ func init() {
 type Node struct {
 	Parent   *Node
 	Children [2]*Node
-	// direct   [2]*Node
 
-	size  int64
+	Size  int64
 	Key   interface{}
 	Value interface{}
 }
@@ -39,7 +38,7 @@ func (tree *Tree) getRoot() *Node {
 
 func (tree *Tree) Size() int64 {
 	if root := tree.getRoot(); root != nil {
-		return root.size
+		return root.Size
 	}
 	return 0
 }
@@ -74,7 +73,7 @@ func (tree *Tree) Put(key, value interface{}) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		tree.root.Children[0] = &Node{Key: key, Value: value, size: 1, Parent: tree.root}
+		tree.root.Children[0] = &Node{Key: key, Value: value, Size: 1, Parent: tree.root}
 		return true
 	}
 
@@ -89,7 +88,7 @@ func (tree *Tree) Put(key, value interface{}) bool {
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
-				node := &Node{Parent: cur, Key: key, Value: value, size: 1}
+				node := &Node{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[L] = node
 				tree.fixPut(cur)
 				return true
@@ -100,7 +99,7 @@ func (tree *Tree) Put(key, value interface{}) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &Node{Parent: cur, Key: key, Value: value, size: 1}
+				node := &Node{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[R] = node
 				tree.fixPut(cur)
 				return true
@@ -206,7 +205,7 @@ func (tree *Tree) Values() []interface{} {
 	var mszie int64
 	root := tree.getRoot()
 	if root != nil {
-		mszie = root.size
+		mszie = root.Size
 	}
 	result := make([]interface{}, 0, mszie)
 	tree.Traverse(func(k, v interface{}) bool {
@@ -222,7 +221,7 @@ func (tree *Tree) Remove(key interface{}) interface{} {
 
 	if cur := tree.getNode(key); cur != nil {
 
-		if cur.size == 1 {
+		if cur.Size == 1 {
 			parent := cur.Parent
 			parent.Children[getRelationship(cur)] = nil
 			tree.fixRemoveSize(parent)
@@ -288,6 +287,168 @@ func (tree *Tree) Remove(key interface{}) interface{} {
 	}
 
 	return nil
+}
+
+func (tree *Tree) RemoveRange(low, hight interface{}) {
+
+	const L = 0
+	const R = 1
+
+	c := tree.compare(low, hight)
+	if c > 0 {
+		panic("key2 must greater than key1 or equal to")
+	} else if c == 0 {
+		tree.Remove(low)
+		return
+	}
+
+	root := tree.getRangeRoot(low, hight)
+	if root == nil {
+		return
+	}
+
+	var ltrim, rtrim func(*Node) *Node
+	ltrim = func(root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+		c = tree.compare(low, root.Key)
+		if c > 0 {
+			child := ltrim(root.Children[R])
+			root.Children[R] = child
+			if child != nil {
+				child.Parent = root
+			}
+			root.Size = getChildrenSumSize(root) + 1
+			return root
+		} else if c < 0 {
+
+			return ltrim(root.Children[L])
+		} else {
+
+			return root.Children[L]
+		}
+	}
+
+	var lgroup *Node
+	if root.Children[L] != nil {
+		lgroup = ltrim(root.Children[L])
+	}
+
+	rtrim = func(root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+		c = tree.compare(hight, root.Key)
+		if c < 0 {
+			child := rtrim(root.Children[L])
+			root.Children[L] = child
+			if child != nil {
+				child.Parent = root
+			}
+			root.Size = getChildrenSumSize(root) + 1
+			return root
+		} else if c > 0 {
+
+			return rtrim(root.Children[R])
+		} else {
+
+			return root.Children[R]
+		}
+	}
+
+	var rgroup *Node
+	if root.Children[R] != nil {
+		rgroup = rtrim(root.Children[R])
+	}
+
+	if lgroup == nil && rgroup == nil {
+		rparent := root.Parent
+		size := root.Size
+		root.Parent.Children[getRelationship(root)] = nil
+		for rparent != tree.root {
+			rparent.Size -= size
+			rparent = rparent.Parent
+		}
+		return
+	}
+
+	// 左右树　拼接
+	rsize := getSize(rgroup)
+	lsize := getSize(lgroup)
+	if lsize > rsize {
+		tree.mergeGroups(root, lgroup, rgroup, rsize, R)
+	} else {
+		tree.mergeGroups(root, rgroup, lgroup, lsize, L)
+	}
+}
+
+func (tree *Tree) Trim(low, hight interface{}) {
+	// root := tree.getRoot()
+	const L = 0
+	const R = 1
+
+	root := tree.getRangeRoot(low, hight)
+
+	var ltrim func(root *Node) *Node
+	ltrim = func(root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+		c := tree.compare(low, root.Key)
+		if c > 0 {
+			return ltrim(root.Children[R])
+		} else if c < 0 {
+			child := ltrim(root.Children[L])
+			root.Children[L] = child
+			if child != nil {
+				child.Parent = root
+			}
+			root.Size = getChildrenSumSize(root) + 1
+			return root
+		} else {
+			root.Children[L] = nil
+			root.Size = getSize(root.Children[R]) + 1
+			return root
+		}
+	}
+
+	ltrim(root)
+
+	var rtrim func(root *Node) *Node
+	rtrim = func(root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+		c := tree.compare(hight, root.Key)
+		if c < 0 {
+			return rtrim(root.Children[L])
+		} else if c > 0 {
+			child := rtrim(root.Children[R])
+			root.Children[R] = child
+			if child != nil {
+				child.Parent = root
+			}
+			root.Size = getChildrenSumSize(root) + 1
+			return root
+		} else {
+			root.Children[R] = nil
+			root.Size = getSize(root.Children[L]) + 1
+			return root
+		}
+	}
+
+	rtrim(root)
+
+	if root != tree.root {
+		tree.root.Children[0] = root
+	}
+
+	if root != nil {
+		root.Parent = tree.root
+	}
+	// list
+
 }
 
 func (tree *Tree) Clear() {

@@ -265,11 +265,11 @@ func TestRange(t *testing.T) {
 		}
 
 		for iter.Valid() {
-			if _, ok := tree.Get(iter.Value()); !ok {
+			if _, ok := tree.Get(iter.Key()); !ok {
 				log.Println("start:", startkey, "end:", endkey)
 				// log.Println(srctree)
 				log.Println(tree.debugString(true))
-				log.Println("not ok", string(iter.Value()))
+				log.Println("not ok", string(iter.Key()))
 				panic("")
 			}
 			iter.Next()

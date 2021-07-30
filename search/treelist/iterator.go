@@ -75,6 +75,6 @@ func (iter *Iterator) Key() []byte {
 	return iter.cur.Key
 }
 
-func (iter *Iterator) Value() []byte {
+func (iter *Iterator) Value() interface{} {
 	return iter.cur.Value
 }

@@ -14,7 +14,7 @@ func init() {
 
 type Slice struct {
 	Key   []byte
-	Value []byte
+	Value interface{}
 }
 
 type Node struct {

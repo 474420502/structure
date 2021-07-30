@@ -108,6 +108,84 @@ func TestCasePushPop(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+func TestCaseContains(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		l := New()
+		count := rand.Intn(50)
+		var temp map[int]bool = make(map[int]bool)
+		for i := 0; i < count; i++ {
+			v := rand.Intn(1000)
+			if i%2 == 0 {
+				l.PushFront(v)
+			} else {
+				l.PushBack(v)
+			}
+			temp[v] = true
+		}
+		for v := range temp {
+			if !l.Contains(v) {
+				t.Error("?")
+			}
+		}
+	}
+}
+
+func TestCaseCircularIterator(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		l := New()
+		gl := list.New()
+		count := rand.Intn(50)
+
+		for i := 0; i < count; i++ {
+			v := rand.Intn(1000)
+			if i%2 == 0 {
+				l.PushFront(v)
+				gl.PushFront(v)
+			} else {
+				l.PushBack(v)
+				gl.PushBack(v)
+			}
+		}
+
+		gcur := gl.Front()
+		cur := l.CircularIterator()
+		cur.Next()
+		for gcur != nil {
+			if gcur.Value != cur.Value() {
+				t.Error("?")
+			}
+			gcur = gcur.Next()
+			cur.Next()
+		}
+
+		gcur = gl.Front()
+		for gcur != nil {
+			if gcur.Value != cur.Value() {
+				t.Error("?")
+			}
+			gcur = gcur.Next()
+			cur.Next()
+		}
+
+		gcur = gl.Front()
+		for gcur != nil {
+			if gcur.Value != cur.Value() {
+				t.Error("?")
+			}
+			gcur = gcur.Next()
+			cur.Next()
+		}
 
 	}
 }

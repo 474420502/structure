@@ -1,6 +1,7 @@
 package indextree
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"sort"
@@ -167,7 +168,84 @@ func TestRemove3(t *testing.T) {
 				}
 			}
 		}
-
 	}
+}
 
+func TestRemoveRange(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	tree := New(compare.Int)
+	for n := 0; n < 2000; n++ {
+		tree.Clear()
+		var sarr []int
+		for i := 0; i < 100; i += rand.Intn(3) + 1 {
+			tree.Put(i, i)
+			sarr = append(sarr, i)
+		}
+
+		sort.Ints(sarr)
+
+		for i := 0; i < 5; i++ {
+			s := rand.Intn(100)
+			e := s + rand.Intn(20) + 15
+			tree.RemoveRange(s, e)
+			r1 := sort.Search(len(sarr), func(i int) bool { return sarr[i] >= s })
+			r2 := sort.Search(len(sarr), func(i int) bool { return sarr[i] > e })
+			sarr = append(sarr[0:r1], sarr[r2:len(sarr)]...)
+
+			result1 := fmt.Sprintf("%v", sarr)
+			result2 := fmt.Sprintf("%v", tree.Values())
+			if result1 != result2 {
+				t.Error(result1)
+				t.Error(result2)
+			}
+		}
+	}
+}
+
+func TestTrim(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	tree := New(compare.Int)
+	for n := 0; n < 2000; n++ {
+		tree.Clear()
+		var sarr []int
+		for i := 0; i < 100; i += rand.Intn(3) + 1 {
+			tree.Put(i, i)
+			sarr = append(sarr, i)
+		}
+
+		sort.Ints(sarr)
+
+		// log.Println(tree.debugString(true))
+
+		for i := 0; i < 5; i++ {
+			if len(sarr) == 0 {
+				return
+			}
+			s := rand.Intn(len(sarr))
+			e := rand.Intn(len(sarr))
+			if s > e {
+				s, e = e, s
+			}
+			r1 := sarr[s]
+			r2 := sarr[e]
+
+			sarr = sarr[s:e]
+			sarr = append(sarr, r2)
+			tree.Trim(r1, r2)
+			// log.Println(tree.debugString(true))
+
+			result1 := fmt.Sprintf("%v", sarr)
+			result2 := fmt.Sprintf("%v", tree.Values())
+			if result1 != result2 {
+				t.Error(result1)
+				t.Error(result2)
+			}
+		}
+	}
 }
