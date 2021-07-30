@@ -121,7 +121,7 @@ func (tree *Tree) seekNodeWithIndex(key []byte) (node *Node, idx int64, dir int)
 
 }
 
-func (tree *Tree) Put(key, value []byte) bool {
+func (tree *Tree) Put(key []byte, value interface{}) bool {
 	const L = 0
 	const R = 1
 
