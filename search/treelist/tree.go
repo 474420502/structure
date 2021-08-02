@@ -688,6 +688,148 @@ func (tree *Tree) mergeGroups(root *Node, group *Node, childGroup *Node, childSi
 	}
 }
 
+// RemoveRange
+func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Panicln(ErrOutOfIndex, low, hight)
+		}
+	}()
+
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	var idx int64 = getSize(cur.Children[L])
+	for {
+		if idx > low && idx > hight {
+			cur = cur.Children[L]
+			idx -= getSize(cur.Children[R]) + 1
+		} else if idx < hight && idx < low {
+			cur = cur.Children[R]
+			idx += getSize(cur.Children[L]) + 1
+		} else {
+			break
+		}
+	}
+
+	root := cur
+	// log.Println(low, hight, "low:", tree.index(low), "hight:", tree.index(hight), "root:", root)
+	var ltrim, rtrim func(idx int64, dir int, root *Node) *Node
+	var dleft *Node
+	ltrim = func(idx int64, dir int, root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+
+		if dir == R {
+			idx += getSize(root.Children[L]) + 1
+		} else {
+			idx -= getSize(root.Children[R]) + 1
+		}
+
+		if idx < low {
+			child := ltrim(idx, R, root.Children[R])
+			root.Children[R] = child
+			if child != nil {
+				child.Parent = root
+			} else {
+				dleft = root
+			}
+			root.Size = getChildrenSumSize(root) + 1
+			return root
+		} else if idx > low {
+			if root.Children[L] == nil {
+				dleft = root.Direct[L]
+			}
+			return ltrim(idx, L, root.Children[L])
+		} else {
+			dleft = root.Direct[L]
+			return root.Children[L]
+		}
+	}
+
+	var lgroup *Node
+	if root.Children[L] != nil {
+		lgroup = ltrim(idx, L, root.Children[L])
+	} else {
+		dleft = root.Direct[L]
+	}
+
+	var dright *Node
+	rtrim = func(idx int64, dir int, root *Node) *Node {
+		if root == nil {
+			return nil
+		}
+
+		if dir == R {
+			idx += getSize(root.Children[L]) + 1
+		} else {
+			idx -= getSize(root.Children[R]) + 1
+		}
+
+		if idx > hight {
+			child := rtrim(idx, L, root.Children[L])
+			root.Children[L] = child
+			if child != nil {
+				child.Parent = root
+			} else {
+				dright = root
+			}
+			root.Size = getChildrenSumSize(root) + 1
+			return root
+		} else if idx < hight {
+			if root.Children[R] == nil {
+				dright = root.Direct[R]
+			}
+			return rtrim(idx, R, root.Children[R])
+		} else {
+			dright = root.Direct[R]
+			return root.Children[R]
+		}
+	}
+
+	var rgroup *Node
+	if root.Children[R] != nil {
+		rgroup = rtrim(idx, R, root.Children[R])
+	} else {
+		dright = root.Direct[R]
+	}
+
+	if dleft != nil {
+		dleft.Direct[R] = dright
+	} else {
+		tree.root.Direct[L] = dright
+	}
+
+	if dright != nil {
+		dright.Direct[L] = dleft
+	} else {
+		tree.root.Direct[R] = dleft
+	}
+
+	if lgroup == nil && rgroup == nil {
+		rparent := root.Parent
+		size := root.Size
+		root.Parent.Children[getRelationship(root)] = nil
+		for rparent != tree.root {
+			rparent.Size -= size
+			rparent = rparent.Parent
+		}
+		return
+	}
+
+	// 左右树　拼接
+	rsize := getSize(rgroup)
+	lsize := getSize(lgroup)
+	if lsize > rsize {
+		tree.mergeGroups(root, lgroup, rgroup, rsize, R)
+	} else {
+		tree.mergeGroups(root, rgroup, lgroup, lsize, L)
+	}
+}
+
 func (tree *Tree) Clear() {
 	tree.root.Children[0] = nil
 }
