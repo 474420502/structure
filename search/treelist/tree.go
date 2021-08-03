@@ -1061,3 +1061,42 @@ func (tree *Tree) hashString() string {
 
 	return string(buf.Bytes())
 }
+
+func (tree *Tree) intersection(other *Tree) []*Slice {
+
+	const L = 0
+	const R = 1
+
+	t1 := tree
+	t2 := other
+	if t1.Size() > t2.Size() {
+		t1, t2 = t2, t1
+	}
+
+	low := t1.root.Direct[0]
+	hight := t1.root.Direct[1]
+	if low == nil {
+		return nil
+	}
+
+	root := t2.getRoot()
+	cur := root
+	for cur != nil {
+		c1 := tree.compare(low.Key, cur.Key)
+		c2 := tree.compare(hight.Key, cur.Key)
+
+		if c1 != c2 {
+			// return cur
+		}
+
+		if c1 < 0 {
+			cur = cur.Children[L]
+		} else if c1 > 0 {
+			cur = cur.Children[R]
+		} else {
+			// return cur
+		}
+	}
+
+	return nil
+}

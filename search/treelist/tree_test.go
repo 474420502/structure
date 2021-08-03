@@ -571,3 +571,27 @@ func TestTrimIndex(t *testing.T) {
 		t.Error()
 	}
 }
+
+func TestCase(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		tree1 := New()
+		tree1.compare = compare.BytesLen
+		tree2 := New()
+		tree2.compare = compare.BytesLen
+
+		for i := 0; i < 200; i += rand.Intn(8) + 1 {
+			v := []byte(strconv.Itoa(i))
+			tree1.Put(v, v)
+
+		}
+
+		for i := 0; i < 200; i += rand.Intn(8) + 1 {
+			v := []byte(strconv.Itoa(i))
+			tree2.Put(v, v)
+		}
+	}
+}
