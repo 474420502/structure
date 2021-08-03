@@ -14,6 +14,53 @@ import (
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
+func TestIteratorIndexForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+	for n := 0; n < 2000; n++ {
+		tree := New()
+		tree.compare = compare.BytesLen
+		var plist []int
+		for i := 0; i < 200; i += rand.Intn(8) + 2 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+			plist = append(plist, i)
+		}
+		plen := len(plist)
+		i := rand.Intn(plen)
+
+		iter := tree.Iterator()
+		iter.Seek([]byte(strconv.Itoa(plist[i])))
+		if iter.Index() != int64(i) {
+			t.Error()
+		}
+
+		iter.SeekToFirst()
+		for iter.Valid() {
+
+			if tree.compare([]byte(strconv.Itoa(plist[i])), iter.Key()) == 0 {
+				break
+			}
+			iter.Next()
+		}
+		if iter.Index() != int64(i) {
+			log.Panic()
+		}
+
+		iter.SeekToLast()
+		for iter.Valid() {
+			if tree.compare([]byte(strconv.Itoa(plist[i])), iter.Key()) == 0 {
+				break
+			}
+			iter.Prev()
+		}
+		if iter.Index() != int64(i) {
+			log.Panic()
+		}
+	}
+}
+
 func TestSeekRand(t *testing.T) {
 
 	seed := time.Now().UnixNano()
