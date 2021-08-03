@@ -2,6 +2,7 @@ package treelist
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"math/rand"
 	"sort"
@@ -365,6 +366,28 @@ func TestRemoveHeadTail(t *testing.T) {
 
 func TestRemoveRangeIndex(t *testing.T) {
 
+	tree := New()
+	tree.compare = compare.BytesLen
+
+	v := []byte(strconv.Itoa(0))
+	tree.Put(v, v)
+	tree.RemoveRangeByIndex(0, 0)
+	if tree.Size() != 0 {
+		t.Error()
+	}
+
+	for i := 0; i < 10; i++ {
+		v := []byte(strconv.Itoa(i))
+		tree.Put(v, v)
+	}
+	tree.RemoveRangeByIndex(-1, 20)
+	if tree.Size() != 0 {
+		t.Error()
+	}
+}
+
+func TestRemoveRangeIndexForce(t *testing.T) {
+
 	seed := time.Now().UnixNano()
 	log.Println(seed)
 	rand.Seed(seed)
@@ -426,5 +449,115 @@ func TestRemoveRangeIndex(t *testing.T) {
 		}
 
 		// log.Println()
+	}
+}
+
+func TestTrimIndexForce(t *testing.T) {
+
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+
+		tree := New()
+		tree.compare = compare.BytesLen
+		tree2 := New()
+		tree2.compare = compare.BytesLen
+
+		for i := 0; i < 200; i += rand.Intn(4) + 1 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+			tree2.Put(v, v)
+		}
+
+		s := rand.Int63n(tree.Size())
+		e := rand.Int63n(tree.Size())
+		if s > e {
+			s, e = e, s
+		}
+
+		size := tree.Size()
+		// log.Println(tree.debugString(true))
+
+		tree.TrimByIndex(s, e)
+		skey := tree2.index(s).Key
+		ekey := tree2.Index(e).Key
+		tree2.Trim(skey, ekey)
+		// log.Println(tree.debugString(true), s, e)
+		// log.Println(tree2.debugString(true), s, e)
+		if e-s+1 != tree.Size() && tree.Size() != tree2.Size() {
+			log.Panic(e, s, tree.Size(), size)
+		}
+
+		iter1 := tree.Iterator()
+		iter2 := tree2.Iterator()
+
+		iter1.SeekToFirst()
+		iter2.SeekToFirst()
+
+		for iter1.Valid() {
+			if tree.compare(iter1.Key(), iter2.Key()) != 0 {
+				panic("")
+			}
+			iter1.Next()
+			iter2.Next()
+		}
+
+		iter1.SeekToLast()
+		iter2.SeekToLast()
+
+		for iter1.Valid() {
+			if tree.compare(iter1.Key(), iter2.Key()) != 0 {
+				panic("")
+			}
+			iter1.Prev()
+			iter2.Prev()
+		}
+
+		// log.Println()
+	}
+}
+
+func TestTrimIndex(t *testing.T) {
+
+	tree := New()
+	tree.compare = compare.BytesLen
+
+	v := []byte(strconv.Itoa(0))
+	tree.Put(v, v)
+	tree.TrimByIndex(0, 0)
+	if tree.Size() != 1 {
+		t.Error()
+	}
+
+	for i := 0; i < 10; i++ {
+		v := []byte(strconv.Itoa(i))
+		tree.Put(v, v)
+	}
+
+	if tree.Size() != 10 {
+		t.Error()
+	}
+	tree.TrimByIndex(8, 9)
+	if tree.Size() != 2 {
+		t.Error()
+	}
+	if tree.IndexOf([]byte(strconv.Itoa(8))) != 0 {
+		t.Error()
+	}
+	if tree.IndexOf([]byte(strconv.Itoa(9))) != 1 {
+		t.Error()
+	}
+
+	var result []string
+	tree.Traverse(func(s *Slice) bool {
+		result = append(result, string(s.Key))
+		return true
+	})
+
+	s := fmt.Sprintf("%v", result)
+	if s != "[8 9]" {
+		t.Error()
 	}
 }
