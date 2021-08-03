@@ -384,6 +384,16 @@ func TestRemoveRangeIndex(t *testing.T) {
 	if tree.Size() != 0 {
 		t.Error()
 	}
+
+	for i := 0; i < 10; i++ {
+		v := []byte(strconv.Itoa(i))
+		tree.Put(v, v)
+	}
+
+	tree.RemoveRangeByIndex(0, tree.Size()-2)
+	if tree.Size() != 1 || string(tree.Index(0).Key) == "0" {
+		t.Error()
+	}
 }
 
 func TestRemoveRangeIndexForce(t *testing.T) {

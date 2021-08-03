@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"math/rand"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -78,6 +79,54 @@ func TestSeekRand(t *testing.T) {
 		}
 	}
 
+}
+
+func TestSeekByIndexForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+	for n := 0; n < 2000; n++ {
+
+		tree := New()
+		tree.compare = compare.BytesLen
+		var plist []int
+		for i := 0; i < 200; i += rand.Intn(8) + 4 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+			plist = append(plist, i)
+		}
+
+		sort.Ints(plist)
+		for i := 0; i < 5; i++ {
+			iter := tree.Iterator()
+			idx := int64(rand.Intn(len(plist)))
+			iter.SeekByIndex(idx)
+			if !iter.Valid() {
+				t.Error()
+				panic(idx)
+			}
+			if tree.compare([]byte(strconv.Itoa(plist[idx])), iter.Key()) != 0 {
+				log.Panicln(idx, strconv.Itoa(plist[idx]), iter.Key())
+			}
+
+			citer := iter.Clone()
+			for x := idx + 1; x < tree.Size(); x++ {
+				iter.Next()
+				if tree.compare([]byte(strconv.Itoa(plist[x])), iter.Key()) != 0 {
+					log.Panicln(x, strconv.Itoa(plist[x]), iter.Key())
+				}
+			}
+
+			for x := idx - 1; x >= 0; x-- {
+				citer.Prev()
+				if tree.compare([]byte(strconv.Itoa(plist[x])), citer.Key()) != 0 {
+					log.Panicln(x, strconv.Itoa(plist[x]), citer.Key())
+				}
+			}
+
+		}
+
+	}
 }
 
 func TestSeek(t *testing.T) {

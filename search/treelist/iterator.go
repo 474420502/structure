@@ -17,6 +17,12 @@ func (iter *Iterator) Seek(key []byte) {
 	iter.cur = cur
 }
 
+func (iter *Iterator) SeekByIndex(index int64) {
+	cur := iter.tree.index(index)
+	iter.idx = index
+	iter.cur = cur
+}
+
 func (iter *Iterator) SeekForPrev(key []byte) {
 	const L = 0
 	cur, idx, dir := iter.tree.seekNodeWithIndex(key)
@@ -77,4 +83,8 @@ func (iter *Iterator) Key() []byte {
 
 func (iter *Iterator) Value() interface{} {
 	return iter.cur.Value
+}
+
+func (iter *Iterator) Clone() *Iterator {
+	return &Iterator{tree: iter.tree, cur: iter.cur, idx: iter.idx}
 }
