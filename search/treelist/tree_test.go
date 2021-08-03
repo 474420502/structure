@@ -204,16 +204,7 @@ func TestRange(t *testing.T) {
 		start := []byte(strconv.Itoa(startkey))
 		end := []byte(strconv.Itoa(endkey))
 
-		// srctree := tree.debugString(true)
-		// if n == 3449 {
-		// 	log.Println()
-		// }
-		// log.Println(tree.root.Direct, n)
-		// log.Println("start:", startkey, "end:", endkey)
 		tree.RemoveRange(start, end)
-		// tree.debugString(true)
-		// log.Println("rcount", tree.rcount, tree.getHeight(), tree.Size())
-		// log.Println(tree.debugString(true))
 
 		for i := startkey; i <= endkey; i++ {
 			avltree.Remove(i)
@@ -373,16 +364,11 @@ func TestRemoveHeadTail(t *testing.T) {
 }
 
 func TestRemoveRangeIndex(t *testing.T) {
-	// tree := New()
-	// tree.compare = compare.BytesLen
-	// for i := 0; i < 100; i += 4 {
-	// 	v := []byte(strconv.Itoa(i))
-	// 	tree.Put(v, v)
-	// }
-	// log.Println(tree.debugString(true))
+
 	seed := time.Now().UnixNano()
 	log.Println(seed)
 	rand.Seed(seed)
+
 	for n := 0; n < 2000; n++ {
 
 		tree := New()
@@ -390,7 +376,7 @@ func TestRemoveRangeIndex(t *testing.T) {
 		tree2 := New()
 		tree2.compare = compare.BytesLen
 
-		for i := 0; i < 200; i += rand.Intn(8) + 2 {
+		for i := 0; i < 200; i += rand.Intn(8) + 1 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
 			tree2.Put(v, v)
@@ -426,6 +412,17 @@ func TestRemoveRangeIndex(t *testing.T) {
 			}
 			iter1.Next()
 			iter2.Next()
+		}
+
+		iter1.SeekToLast()
+		iter2.SeekToLast()
+
+		for iter1.Valid() {
+			if tree.compare(iter1.Key(), iter2.Key()) != 0 {
+				panic("")
+			}
+			iter1.Prev()
+			iter2.Prev()
 		}
 
 		// log.Println()
