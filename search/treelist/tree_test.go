@@ -575,7 +575,7 @@ func TestTrimIndex(t *testing.T) {
 func TestCase(t *testing.T) {
 	seed := time.Now().UnixNano()
 	log.Println(seed)
-	rand.Seed(seed)
+	rand.Seed(1628072906398592992)
 
 	for n := 0; n < 2000; n++ {
 		tree1 := New()
@@ -583,15 +583,73 @@ func TestCase(t *testing.T) {
 		tree2 := New()
 		tree2.compare = compare.BytesLen
 
-		for i := 0; i < 200; i += rand.Intn(8) + 1 {
+		for i := 0; i < 100; i += rand.Intn(8) + 3 {
 			v := []byte(strconv.Itoa(i))
 			tree1.Put(v, v)
 
 		}
 
-		for i := 0; i < 200; i += rand.Intn(8) + 1 {
+		for i := 0; i < 100; i += rand.Intn(8) + 3 {
 			v := []byte(strconv.Itoa(i))
 			tree2.Put(v, v)
 		}
+
+		content := ""
+		tree1.Traverse(func(s *Slice) bool {
+			content += string(s.Key) + ","
+			return true
+		})
+		log.Println(content)
+
+		var a1 []*Slice
+		var a2 []*Slice
+		content = ""
+		tree2.Traverse(func(s *Slice) bool {
+			content += string(s.Key) + ","
+			a1 = append(a1, s)
+			return true
+		})
+		log.Println(content)
+		for _, s := range tree1.Intersection(tree2) {
+			a2 = append(a2, s)
+			log.Println(string(s.Key))
+		}
+
+		for _, s := range tree1.find(a1, a2) {
+			log.Print(string(s.Key))
+		}
+
+		log.Println(tree1.debugString(false))
+		log.Println(tree2.debugString(false))
+		log.Println()
 	}
+}
+
+func (tree *Tree) find(a1, a2 []*Slice) (result []*Slice) {
+
+	var key *Slice
+
+	if tree.compare(a2[0].Key, a1[0].Key) > 0 {
+		a1, a2 = a2, a1
+	}
+	var count = 1
+	for len(a1) > 0 && len(a2) > 0 {
+		key = a2[0]
+
+		i := sort.Search(len(a1), func(i int) bool {
+			c := tree.compare(a1[i].Key, key.Key)
+			count++
+			if c == 0 {
+				result = append(result, a1[i])
+			}
+			if c > 0 {
+				return true
+			}
+			return false
+		})
+		a1 = a1[i:]
+		a1, a2 = a2, a1
+	}
+	log.Println("count:", count)
+	return
 }

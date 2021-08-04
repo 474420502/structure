@@ -404,6 +404,14 @@ func (tree *Tree) Head() *Slice {
 	return nil
 }
 
+func (tree *Tree) head() *Node {
+	return tree.root.Direct[0]
+}
+
+func (tree *Tree) tail() *Node {
+	return tree.root.Direct[1]
+}
+
 func (tree *Tree) RemoveHead() *Slice {
 	if tree.getRoot() != nil {
 		return tree.removeNode(tree.root.Direct[0])
@@ -1062,41 +1070,37 @@ func (tree *Tree) hashString() string {
 	return string(buf.Bytes())
 }
 
-func (tree *Tree) intersection(other *Tree) []*Slice {
+func (tree *Tree) Intersection(other *Tree) (result []*Slice) {
 
 	const L = 0
 	const R = 1
 
-	t1 := tree
-	t2 := other
-	if t1.Size() > t2.Size() {
-		t1, t2 = t2, t1
-	}
-
-	low := t1.root.Direct[0]
-	hight := t1.root.Direct[1]
-	if low == nil {
-		return nil
-	}
-
-	root := t2.getRoot()
-	cur := root
-	for cur != nil {
-		c1 := tree.compare(low.Key, cur.Key)
-		c2 := tree.compare(hight.Key, cur.Key)
-
-		if c1 != c2 {
-			// return cur
+	count := 0
+	var intersection func(root1, root2 *Node)
+	intersection = func(root1, root2 *Node) {
+		if root1 == nil {
+			return
+		}
+		if root2 == nil {
+			return
 		}
 
-		if c1 < 0 {
-			cur = cur.Children[L]
-		} else if c1 > 0 {
-			cur = cur.Children[R]
+		c := tree.compare(root1.Key, root2.Key)
+		count++
+		if c > 0 {
+			intersection(root1.Children[L], root2)
+			intersection(root1, root2.Children[R])
+		} else if c < 0 {
+			intersection(root1, root2.Children[L])
+			intersection(root1.Children[R], root2)
 		} else {
-			// return cur
+			result = append(result, &root1.Slice)
+			intersection(root1.Children[L], root2.Children[L])
+			intersection(root1.Children[R], root2.Children[R])
 		}
 	}
 
-	return nil
+	intersection(tree.getRoot(), other.getRoot())
+	log.Println("count:", count, tree.Size(), other.Size())
+	return
 }
