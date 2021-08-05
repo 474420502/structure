@@ -572,10 +572,10 @@ func TestTrimIndex(t *testing.T) {
 	}
 }
 
-func TestCase(t *testing.T) {
+func TestIntersectionSlice(t *testing.T) {
 	seed := time.Now().UnixNano()
 	log.Println(seed)
-	rand.Seed(1628072906398592992)
+	rand.Seed(seed)
 
 	for n := 0; n < 2000; n++ {
 		tree1 := New()
@@ -583,73 +583,231 @@ func TestCase(t *testing.T) {
 		tree2 := New()
 		tree2.compare = compare.BytesLen
 
-		for i := 0; i < 100; i += rand.Intn(8) + 3 {
+		var table1 map[string]bool = make(map[string]bool)
+		var table2 map[string]bool = make(map[string]bool)
+
+		for i := 0; i < 1000; i += rand.Intn(100) + 10 {
 			v := []byte(strconv.Itoa(i))
+			table1[string(v)] = true
 			tree1.Put(v, v)
 
 		}
 
-		for i := 0; i < 100; i += rand.Intn(8) + 3 {
+		for i := 0; i < 1000; i += rand.Intn(100) + 10 {
 			v := []byte(strconv.Itoa(i))
+			table2[string(v)] = true
 			tree2.Put(v, v)
 		}
 
-		content := ""
-		tree1.Traverse(func(s *Slice) bool {
-			content += string(s.Key) + ","
-			return true
-		})
-		log.Println(content)
-
-		var a1 []*Slice
-		var a2 []*Slice
-		content = ""
-		tree2.Traverse(func(s *Slice) bool {
-			content += string(s.Key) + ","
-			a1 = append(a1, s)
-			return true
-		})
-		log.Println(content)
-		for _, s := range tree1.Intersection(tree2) {
-			a2 = append(a2, s)
-			log.Println(string(s.Key))
+		var result1 []string
+		for _, s := range tree1.intersectionSlice(tree2) {
+			result1 = append(result1, string(s.Key))
 		}
 
-		for _, s := range tree1.find(a1, a2) {
-			log.Print(string(s.Key))
+		var result2 []string
+		for k := range table2 {
+			if _, ok := table1[k]; ok {
+				result2 = append(result2, k)
+			}
 		}
+		sort.Slice(result2, func(i, j int) bool {
+			return tree1.compare([]byte(result2[i]), []byte(result2[j])) < 0
+		})
 
-		log.Println(tree1.debugString(false))
-		log.Println(tree2.debugString(false))
-		log.Println()
+		if fmt.Sprintf("%v", result1) != fmt.Sprintf("%v", result2) {
+			log.Panic(result1, result2)
+		}
 	}
 }
 
-func (tree *Tree) find(a1, a2 []*Slice) (result []*Slice) {
+func TestIntersection(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
 
-	var key *Slice
+	for n := 0; n < 2000; n++ {
+		tree1 := New()
+		tree1.compare = compare.BytesLen
+		tree2 := New()
+		tree2.compare = compare.BytesLen
 
-	if tree.compare(a2[0].Key, a1[0].Key) > 0 {
-		a1, a2 = a2, a1
-	}
-	var count = 1
-	for len(a1) > 0 && len(a2) > 0 {
-		key = a2[0]
+		var table1 map[string]bool = make(map[string]bool)
+		var table2 map[string]bool = make(map[string]bool)
 
-		i := sort.Search(len(a1), func(i int) bool {
-			c := tree.compare(a1[i].Key, key.Key)
-			count++
-			if c == 0 {
-				result = append(result, a1[i])
-			}
-			if c > 0 {
-				return true
-			}
-			return false
+		for i := 0; i < 1000; i += rand.Intn(100) + 1 {
+			v := []byte(strconv.Itoa(i))
+			table1[string(v)] = true
+			tree1.Put(v, v)
+
+		}
+
+		for i := 0; i < 1000; i += rand.Intn(100) + 1 {
+			v := []byte(strconv.Itoa(i))
+			table2[string(v)] = true
+			tree2.Put(v, v)
+		}
+
+		var result1 []string
+		tree1.Intersection(tree2).Traverse(func(s *Slice) bool {
+			result1 = append(result1, string(s.Key))
+			return true
 		})
-		a1 = a1[i:]
-		a1, a2 = a2, a1
+
+		var result2 []string
+		for k := range table2 {
+			if _, ok := table1[k]; ok {
+				result2 = append(result2, k)
+			}
+		}
+		sort.Slice(result2, func(i, j int) bool {
+			return tree1.compare([]byte(result2[i]), []byte(result2[j])) < 0
+		})
+
+		if fmt.Sprintf("%v", result1) != fmt.Sprintf("%v", result2) {
+			log.Panic(result1, result2)
+		}
 	}
-	log.Println("count:", count)
-	return
+}
+
+func TestUnionSetSlice(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		tree1 := New()
+		tree1.compare = compare.BytesLen
+		tree2 := New()
+		tree2.compare = compare.BytesLen
+
+		var table1 map[string]bool = make(map[string]bool)
+		// var table2 map[string]bool = make(map[string]bool)
+
+		for i := 0; i < 1000; i += rand.Intn(100) + 10 {
+			v := []byte(strconv.Itoa(i))
+			table1[string(v)] = true
+			tree1.Put(v, v)
+
+		}
+
+		for i := 0; i < 1000; i += rand.Intn(100) + 10 {
+			v := []byte(strconv.Itoa(i))
+			table1[string(v)] = true
+			tree2.Put(v, v)
+		}
+
+		var result1 []string
+		for _, s := range tree1.unionSetSlice(tree2) {
+			result1 = append(result1, string(s.Key))
+		}
+
+		var result2 []string
+		for k := range table1 {
+			result2 = append(result2, k)
+		}
+		sort.Slice(result2, func(i, j int) bool {
+			return tree1.compare([]byte(result2[i]), []byte(result2[j])) < 0
+		})
+
+		if fmt.Sprintf("%v", result1) != fmt.Sprintf("%v", result2) {
+			log.Panic(result1, result2)
+		}
+	}
+}
+
+func TestUnionSet(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		tree1 := New()
+		tree1.compare = compare.BytesLen
+		tree2 := New()
+		tree2.compare = compare.BytesLen
+
+		var table1 map[string]bool = make(map[string]bool)
+		// var table2 map[string]bool = make(map[string]bool)
+
+		for i := 0; i < 1000; i += rand.Intn(100) + 1 {
+			v := []byte(strconv.Itoa(i))
+			table1[string(v)] = true
+			tree1.Put(v, v)
+
+		}
+
+		for i := 0; i < 1000; i += rand.Intn(100) + 1 {
+			v := []byte(strconv.Itoa(i))
+			table1[string(v)] = true
+			tree2.Put(v, v)
+		}
+
+		var result1 []string
+		tree1.UnionSets(tree2).Traverse(func(s *Slice) bool {
+			result1 = append(result1, string(s.Key))
+			return true
+		})
+
+		var result2 []string
+		for k := range table1 {
+			result2 = append(result2, k)
+		}
+		sort.Slice(result2, func(i, j int) bool {
+			return tree1.compare([]byte(result2[i]), []byte(result2[j])) < 0
+		})
+
+		if fmt.Sprintf("%v", result1) != fmt.Sprintf("%v", result2) {
+			log.Panic(result1, result2)
+		}
+	}
+}
+
+func TestDifferenceSets(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000000; n++ {
+		tree1 := New()
+		tree1.compare = compare.BytesLen
+		tree2 := New()
+		tree2.compare = compare.BytesLen
+
+		var table1 map[string]bool = make(map[string]bool)
+		var table2 map[string]bool = make(map[string]bool)
+
+		for i := 0; i < 1000; i += rand.Intn(100) + 1 {
+			v := []byte(strconv.Itoa(i))
+			table1[string(v)] = true
+			tree1.Put(v, v)
+
+		}
+
+		for i := 0; i < 1000; i += rand.Intn(100) + 1 {
+			v := []byte(strconv.Itoa(i))
+			table2[string(v)] = true
+			tree2.Put(v, v)
+		}
+
+		var result1 []string
+		tree1.DifferenceSets(tree2).Traverse(func(s *Slice) bool {
+			result1 = append(result1, string(s.Key))
+			return true
+		})
+
+		var result2 []string
+		for k := range table1 {
+			if _, ok := table2[k]; !ok {
+				result2 = append(result2, k)
+			}
+		}
+
+		sort.Slice(result2, func(i, j int) bool {
+			return tree1.compare([]byte(result2[i]), []byte(result2[j])) < 0
+		})
+
+		if fmt.Sprintf("%v", result1) != fmt.Sprintf("%v", result2) {
+			log.Panic(result1, result2)
+		}
+	}
 }

@@ -172,3 +172,74 @@ func TestTrimBench(t *testing.T) {
 	}
 	t.Log(TreeListCountTime.Nanoseconds()/int64(level), "ns/op")
 }
+
+// 优化交集测试
+func estIntersectionP(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(seed)
+	rand.Seed(seed)
+
+	var cost1 time.Duration
+	var cost2 time.Duration
+
+	for n := 0; n < 2000; n++ {
+
+		var table1 map[string]bool = make(map[string]bool)
+		var table2 map[string]bool = make(map[string]bool)
+
+		tree1 := New()
+		tree1.compare = compare.BytesLen
+		tree2 := New()
+		tree2.compare = compare.BytesLen
+
+		for i := 0; i < 100000; i += rand.Intn(1000) + 1 {
+			v := []byte(strconv.Itoa(i))
+			// now := time.Now()
+			table1[string(v)] = true
+			// cost2 += time.Since(now)
+
+			// now = time.Now()
+			tree1.Put(v, v)
+			// cost1 += time.Since(now)
+		}
+
+		for i := 0; i < 100000; i += rand.Intn(1000) + 1 {
+			v := []byte(strconv.Itoa(i))
+			// now := time.Now()
+			table2[string(v)] = true
+			// cost2 += time.Since(now)
+
+			// now = time.Now()
+			tree2.Put(v, v)
+			// cost1 += time.Since(now)
+		}
+
+		// var a1 []*Slice
+		// var a2 []*Slice
+
+		// tree1.Traverse(func(s *Slice) bool {
+		// 	a2 = append(a2, s)
+		// 	return true
+		// })
+
+		// tree2.Traverse(func(s *Slice) bool {
+		// 	a1 = append(a1, s)
+		// 	return true
+		// })
+
+		now := time.Now()
+		tree1.intersectionSlice(tree2)
+		cost1 += time.Since(now)
+
+		now = time.Now()
+		var result []string
+		for k := range table2 {
+			if _, ok := table1[k]; ok {
+				result = append(result, k)
+			}
+		}
+		cost2 += time.Since(now)
+	}
+
+	log.Println(cost1, cost2)
+}

@@ -17,6 +17,10 @@ type Slice struct {
 	Value interface{}
 }
 
+func (s *Slice) String() string {
+	return string(s.Key)
+}
+
 type Node struct {
 	Parent   *Node
 	Children [2]*Node
@@ -1067,40 +1071,119 @@ func (tree *Tree) hashString() string {
 		panic(err)
 	}
 
-	return string(buf.Bytes())
+	return buf.String()
 }
 
-func (tree *Tree) Intersection(other *Tree) (result []*Slice) {
+func (tree *Tree) Intersection(other *Tree) *Tree {
 
 	const L = 0
 	const R = 1
 
-	count := 0
-	var intersection func(root1, root2 *Node)
-	intersection = func(root1, root2 *Node) {
-		if root1 == nil {
-			return
-		}
-		if root2 == nil {
-			return
-		}
+	// count := 0
 
-		c := tree.compare(root1.Key, root2.Key)
-		count++
-		if c > 0 {
-			intersection(root1.Children[L], root2)
-			intersection(root1, root2.Children[R])
-		} else if c < 0 {
-			intersection(root1, root2.Children[L])
-			intersection(root1.Children[R], root2)
-		} else {
-			result = append(result, &root1.Slice)
-			intersection(root1.Children[L], root2.Children[L])
-			intersection(root1.Children[R], root2.Children[R])
+	head1 := tree.head()
+	head2 := other.head()
+
+	result := New()
+	result.compare = tree.compare
+
+	for head1 != nil && head2 != nil {
+		c := tree.compare(head1.Key, head2.Key)
+		// count++
+
+		switch {
+		case c < 0:
+			head1 = head1.Direct[R]
+		case c > 0:
+			head2 = head2.Direct[R]
+		default:
+			result.Put(head1.Key, head1.Value)
+			head1 = head1.Direct[R]
+			head2 = head2.Direct[R]
 		}
 	}
 
-	intersection(tree.getRoot(), other.getRoot())
-	log.Println("count:", count, tree.Size(), other.Size())
-	return
+	// log.Println("count:", count, tree.Size(), other.Size())
+	return result
+}
+
+func (tree *Tree) UnionSets(other *Tree) *Tree {
+	const L = 0
+	const R = 1
+
+	// count := 0
+
+	head1 := tree.head()
+	head2 := other.head()
+
+	result := New()
+	result.compare = tree.compare
+
+	for head1 != nil && head2 != nil {
+		c := tree.compare(head1.Key, head2.Key)
+		// count++
+		switch {
+		case c < 0:
+			result.Put(head1.Key, head1.Value)
+			head1 = head1.Direct[R]
+
+		case c > 0:
+			result.Put(head2.Key, head2.Value)
+			head2 = head2.Direct[R]
+
+		default:
+			result.Put(head1.Key, head1.Value)
+			head1 = head1.Direct[R]
+			head2 = head2.Direct[R]
+		}
+	}
+
+	for head1 != nil {
+		result.Put(head1.Key, head1.Value)
+		head1 = head1.Direct[R]
+	}
+
+	for head2 != nil {
+		result.Put(head2.Key, head2.Value)
+		head2 = head2.Direct[R]
+	}
+
+	return result
+}
+
+// DifferenceSets
+func (tree *Tree) DifferenceSets(other *Tree) *Tree {
+	const L = 0
+	const R = 1
+
+	// count := 0
+
+	head1 := tree.head()
+	head2 := other.head()
+
+	result := New()
+	result.compare = tree.compare
+
+	for head1 != nil && head2 != nil {
+		c := tree.compare(head1.Key, head2.Key)
+		// count++
+		switch {
+		case c < 0:
+			result.Put(head1.Key, head1.Value)
+			head1 = head1.Direct[R]
+
+		case c > 0:
+			head2 = head2.Direct[R]
+		default:
+			head1 = head1.Direct[R]
+			head2 = head2.Direct[R]
+		}
+	}
+
+	for head1 != nil {
+		result.Put(head1.Key, head1.Value)
+		head1 = head1.Direct[R]
+	}
+
+	return result
 }

@@ -227,3 +227,102 @@ func getRelationship(cur *Node) int {
 
 // 	return height
 // }
+
+func (tree *Tree) find(a1, a2 []*Slice) (result []*Slice) {
+
+	h1 := 0
+	h2 := 0
+
+	// var count = 0
+
+	for h1 < len(a1) && h2 < len(a2) {
+		c := tree.compare(a1[h1].Key, a2[h2].Key)
+		// count++
+		switch {
+		case c < 0:
+			h1++
+		case c > 0:
+			h2++
+		default:
+			result = append(result, a1[h1])
+			h1++
+			h2++
+		}
+	}
+
+	// log.Println("count:", count)
+	return
+}
+
+func (tree *Tree) unionSetSlice(other *Tree) (result []*Slice) {
+
+	const L = 0
+	const R = 1
+
+	// count := 0
+
+	head1 := tree.head()
+	head2 := other.head()
+
+	for head1 != nil && head2 != nil {
+		c := tree.compare(head1.Key, head2.Key)
+		// count++
+		switch {
+		case c < 0:
+			result = append(result, &head1.Slice)
+			// result = append(result, &head2.Slice)
+			head1 = head1.Direct[R]
+		case c > 0:
+			// result = append(result, &head1.Slice)
+			result = append(result, &head2.Slice)
+			head2 = head2.Direct[R]
+
+		default:
+			result = append(result, &head1.Slice)
+			head1 = head1.Direct[R]
+			head2 = head2.Direct[R]
+		}
+	}
+
+	for head1 != nil {
+		result = append(result, &head1.Slice)
+		head1 = head1.Direct[R]
+	}
+
+	for head2 != nil {
+		result = append(result, &head2.Slice)
+		head2 = head2.Direct[R]
+	}
+
+	return
+}
+
+func (tree *Tree) intersectionSlice(other *Tree) (result []*Slice) {
+
+	const L = 0
+	const R = 1
+
+	// count := 0
+
+	head1 := tree.head()
+	head2 := other.head()
+
+	for head1 != nil && head2 != nil {
+		c := tree.compare(head1.Key, head2.Key)
+		// count++
+
+		switch {
+		case c < 0:
+			head1 = head1.Direct[R]
+		case c > 0:
+			head2 = head2.Direct[R]
+		default:
+			result = append(result, &head1.Slice)
+			head1 = head1.Direct[R]
+			head2 = head2.Direct[R]
+		}
+	}
+
+	// log.Println("count:", count, tree.Size(), other.Size())
+	return
+}
