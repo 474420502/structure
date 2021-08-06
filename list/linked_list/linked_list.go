@@ -405,7 +405,7 @@ func (l *LinkedList) Remove(idx int) (interface{}, bool) {
 		}
 	}
 
-	panic(fmt.Sprintf("unknown error"))
+	panic(fmt.Errorf("unknown error"))
 }
 
 // RemoveState RemoveIf的every函数的枚举

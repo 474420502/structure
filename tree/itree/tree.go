@@ -383,7 +383,7 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			panic(fmt.Sprintln(errOutOfIndex, low, hight))
+			panic(fmt.Errorf(errOutOfIndex, low, hight))
 		}
 	}()
 
@@ -561,7 +561,7 @@ func (tree *Tree) Trim(low, hight interface{}) {
 func (tree *Tree) TrimByIndex(low, hight int64) {
 	defer func() {
 		if err := recover(); err != nil {
-			panic(fmt.Sprintln(errOutOfIndex, low, hight))
+			panic(fmt.Errorf(errOutOfIndex, low, hight))
 		}
 	}()
 

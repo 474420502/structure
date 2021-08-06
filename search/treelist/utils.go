@@ -383,7 +383,7 @@ func (tree *Tree) index(i int64) *Node {
 
 	defer func() {
 		if err := recover(); err != nil {
-			log.Panicln(ErrOutOfIndex, i)
+			log.Panicln(errOutOfIndex, i)
 		}
 	}()
 
