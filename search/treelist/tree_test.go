@@ -767,7 +767,7 @@ func TestDifferenceSets(t *testing.T) {
 	log.Println(seed)
 	rand.Seed(seed)
 
-	for n := 0; n < 2000000; n++ {
+	for n := 0; n < 2000; n++ {
 		tree1 := New()
 		tree1.compare = compare.BytesLen
 		tree2 := New()
