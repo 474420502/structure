@@ -1,7 +1,7 @@
 package treelist
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/474420502/structure/compare"
 )
@@ -470,7 +470,7 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			log.Panicln(ErrOutOfIndex, low, hight)
+			panic(fmt.Sprintln(errOutOfIndex, low, hight))
 		}
 	}()
 
@@ -697,7 +697,7 @@ func (tree *Tree) Trim(low, hight []byte) {
 func (tree *Tree) TrimByIndex(low, hight int64) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Panicln(ErrOutOfIndex, low, hight)
+			panic(fmt.Sprintln(errOutOfIndex, low, hight))
 		}
 	}()
 

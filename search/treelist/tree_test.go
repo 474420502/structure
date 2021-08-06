@@ -21,7 +21,7 @@ func init() {
 
 func TestIndexForce(t *testing.T) {
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 
 	for n := 0; n < 2000; n++ {
@@ -137,7 +137,7 @@ func TestRemove2(t *testing.T) {
 
 func TestRemoveNode(t *testing.T) {
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 	for n := 0; n < 1000; n++ {
 
@@ -182,7 +182,7 @@ func TestRange(t *testing.T) {
 	// }
 	// log.Println(tree.debugString(true))
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 	for n := 0; n < 1000; n++ {
 		startkey := rand.Intn(200)
@@ -271,7 +271,7 @@ func TestRange(t *testing.T) {
 
 func TestHeadTail(t *testing.T) {
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 	for n := 0; n < 1000; n++ {
 
@@ -302,7 +302,7 @@ func TestHeadTail(t *testing.T) {
 
 func TestRemoveHeadTail(t *testing.T) {
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 	for n := 0; n < 1000; n++ {
 
@@ -399,7 +399,7 @@ func TestRemoveRangeIndex(t *testing.T) {
 func TestRemoveRangeIndexForce(t *testing.T) {
 
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 
 	for n := 0; n < 2000; n++ {
@@ -465,7 +465,7 @@ func TestRemoveRangeIndexForce(t *testing.T) {
 func TestTrimIndexForce(t *testing.T) {
 
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 
 	for n := 0; n < 2000; n++ {
@@ -574,7 +574,7 @@ func TestTrimIndex(t *testing.T) {
 
 func TestIntersectionSlice(t *testing.T) {
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 
 	for n := 0; n < 2000; n++ {
@@ -622,7 +622,7 @@ func TestIntersectionSlice(t *testing.T) {
 
 func TestIntersection(t *testing.T) {
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 
 	for n := 0; n < 2000; n++ {
@@ -671,7 +671,7 @@ func TestIntersection(t *testing.T) {
 
 func TestUnionSetSlice(t *testing.T) {
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 
 	for n := 0; n < 2000; n++ {
@@ -717,7 +717,7 @@ func TestUnionSetSlice(t *testing.T) {
 
 func TestUnionSet(t *testing.T) {
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 
 	for n := 0; n < 2000; n++ {
@@ -764,7 +764,7 @@ func TestUnionSet(t *testing.T) {
 
 func TestDifferenceSets(t *testing.T) {
 	seed := time.Now().UnixNano()
-	log.Println(seed)
+	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 
 	for n := 0; n < 2000; n++ {

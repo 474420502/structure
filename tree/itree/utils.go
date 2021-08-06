@@ -1,5 +1,9 @@
 package indextree
 
+import (
+	"log"
+)
+
 func (tree *Tree) fixPutSize(cur *Node) {
 	for cur != tree.root {
 		cur.Size++
@@ -245,4 +249,91 @@ func (tree *Tree) fixRemoveRange(cur *Node) {
 		}
 		tree.lrotate(cur)
 	}
+}
+
+func (tree *Tree) index(i int64) *Node {
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Panicln(errOutOfIndex, i)
+		}
+	}()
+
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	var idx int64 = getSize(cur.Children[L])
+	for {
+		if idx > i {
+			cur = cur.Children[L]
+			idx -= getSize(cur.Children[R]) + 1
+		} else if idx < i {
+			cur = cur.Children[R]
+			idx += getSize(cur.Children[L]) + 1
+		} else {
+			return cur
+		}
+	}
+
+}
+
+func (tree *Tree) getNode(key interface{}) *Node {
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	for cur != nil {
+		c := tree.compare(key, cur.Key)
+		switch {
+		case c < 0:
+			cur = cur.Children[L]
+		case c > 0:
+			cur = cur.Children[R]
+		default:
+			return cur
+		}
+	}
+	return nil
+}
+
+func (tree *Tree) getRoot() *Node {
+	return tree.root.Children[0]
+}
+
+func (tree *Tree) check() {
+	const L = 0
+	const R = 1
+
+	root := tree.getRoot()
+
+	var tcheck func(root *Node)
+	tcheck = func(root *Node) {
+
+		if root == nil {
+			return
+		}
+
+		size := root.Size
+		if size != getSize(root.Children[L])+getSize(root.Children[R])+1 {
+			log.Panic("size error")
+		}
+
+		if root.Children[L] != nil {
+			if root.Children[L].Parent != root {
+				log.Panic("parent error")
+			}
+		}
+
+		if root.Children[R] != nil {
+			if root.Children[R].Parent != root {
+				log.Panic("parent error")
+			}
+		}
+
+		tcheck(root.Children[L])
+		tcheck(root.Children[R])
+	}
+	tcheck(root)
+
 }
