@@ -420,3 +420,33 @@ func TestTrimIndex(t *testing.T) {
 		t.Error()
 	}
 }
+
+func TestAllForce(t *testing.T) {
+
+	seed := time.Now().UnixNano()
+	log.Println(t.Name(), seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+
+		tree1 := New(compare.Int)
+		var dict map[int]int = make(map[int]int)
+
+		for i := 0; i < 100; i++ {
+			v := rand.Intn(100)
+			dict[v] = i
+			tree1.PutCover(v, i)
+
+		}
+
+		for k, v := range dict {
+			if r, ok := tree1.Get(k); !ok || r != v {
+				panic("")
+			}
+		}
+
+		tree1.check()
+
+		// log.Println()
+	}
+}

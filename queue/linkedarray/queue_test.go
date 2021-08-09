@@ -178,10 +178,18 @@ func TestForce(t *testing.T) {
 		}
 
 		for n := 0; n < 50; n++ {
-			if queue1.Size() == int64(queue2.Len()) && queue1.Size() != 0 {
+
+			if queue1.Size() != int64(queue2.Len()) {
+				panic("")
+			}
+
+			if queue1.Size() != 0 {
 				if rand.Int()%2 == 0 {
-					queue1.PopBack()
-					queue2.Remove(queue2.Back())
+					back := queue2.Back()
+					if queue1.PopBack() != back.Value {
+						panic("")
+					}
+					queue2.Remove(back)
 				}
 			} else {
 				break
@@ -200,10 +208,17 @@ func TestForce(t *testing.T) {
 				}
 			}
 
-			if queue1.Size() == int64(queue2.Len()) && queue1.Size() != 0 {
+			if queue1.Size() != int64(queue2.Len()) {
+				panic("")
+			}
+
+			if queue1.Size() != 0 {
 				if rand.Int()%2 == 0 {
-					queue1.PopFront()
-					queue2.Remove(queue2.Front())
+					front := queue2.Front()
+					if front.Value != queue1.PopFront() {
+						panic("")
+					}
+					queue2.Remove(front)
 				}
 			} else {
 				break
