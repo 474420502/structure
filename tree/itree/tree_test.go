@@ -450,3 +450,55 @@ func TestAllForce(t *testing.T) {
 		// log.Println()
 	}
 }
+
+func TestSimpleForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(t.Name(), seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		tree1 := New(compare.Int)
+		tree2 := make(map[int]int)
+
+		for i := 0; i < 10; i++ {
+			v := rand.Intn(100)
+			tree1.Put(v, v)
+			tree2[v] = v
+		}
+
+		for k, v2 := range tree2 {
+			if v1, ok := tree1.Get(k); !ok || v1 != v2 {
+				panic("")
+			}
+		}
+
+		for len(tree2) != 0 {
+			i := rand.Intn(int(tree1.Size()))
+
+			k, v1 := tree1.Index(int64(i))
+			if v2, ok := tree2[k.(int)]; !ok || v1 != v2 {
+				panic("")
+			}
+
+			if v3, ok := tree1.Get(k); !ok || v1 != v3 {
+				panic("")
+			}
+
+			tree1.Remove(k)
+			delete(tree2, k.(int))
+
+			if rand.Intn(2) == 0 {
+				v := rand.Intn(100)
+				if rand.Intn(2) == 0 {
+					tree1.Put(v, v)
+				} else {
+					tree1.PutCover(v, v)
+				}
+				tree2[v] = v
+			}
+
+			tree1.check()
+		}
+
+	}
+}

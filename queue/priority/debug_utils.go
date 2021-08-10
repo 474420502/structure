@@ -53,16 +53,8 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	}
 
 	suffix := "("
-	parentv := ""
-	if node.Parent == nil {
-		parentv = "nil"
-	} else {
-		parentv = fmt.Sprintf("%v", node.Parent.Key)
-	}
+	suffix += fmt.Sprintf("%v", node.Value) + ")"
 
-	// suffix += parentv + "|" + fmt.Sprintf("%v",node.Size) + " " + ldirect + "<->" + rdirect + ")"
-	suffix += parentv + "|" + fmt.Sprintf("%v", node.Size) + ")"
-	// suffix = ""
 	k := node.Key
 
 	*str += fmt.Sprintf("%v", k) + suffix + "\n"
