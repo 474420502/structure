@@ -728,6 +728,109 @@ func (tree *Tree) TrimByIndex(low, hight int64) {
 	}
 }
 
+// Trim 保留区间
+func (tree *Tree) SplitContain(key interface{}) *Tree {
+	// root := tree.getRoot()
+	const L = 0
+	const R = 1
+
+	// 寻找左右根
+	var lroot, rroot *Node
+	cur := tree.getRoot()
+	for cur != nil {
+		c := tree.compare(cur.Key, key)
+		if c > 0 {
+			rroot = cur
+			cur = cur.Children[L]
+			if lroot != nil {
+				break
+			}
+		} else {
+			lroot = cur
+			cur = cur.Children[R]
+			if rroot != nil {
+				break
+			}
+
+		}
+	}
+
+	var traverse func(cur *Node, lroot, rroot *Node)
+	traverse = func(cur, lroot, rroot *Node) {
+		if cur == nil {
+			return
+		}
+
+		c := tree.compare(cur.Key, key)
+		if c > 0 {
+			rroot.Children[L] = cur
+			traverse(cur.Children[L], lroot, cur)
+			rroot.Size = getChildrenSumSize(rroot) + 1
+		} else {
+			lroot.Children[R] = cur
+			traverse(cur.Children[R], cur, rroot)
+			lroot.Size = getChildrenSumSize(lroot) + 1
+		}
+
+	}
+
+	if lroot == nil {
+		tree.root.Children[0] = nil
+		rtree := New(tree.compare)
+		rtree.root.Children[0] = rroot
+		return rtree
+	}
+
+	if rroot == nil {
+		tree.root.Children[0] = lroot
+		return nil
+	}
+
+	lroot.Children[R] = nil
+	rroot.Children[L] = nil
+	traverse(cur, lroot, rroot)
+
+	if lroot.Children[R] == nil {
+		lroot.Size = getChildrenSumSize(lroot) + 1
+	}
+
+	if rroot.Children[L] == nil {
+		rroot.Size = getChildrenSumSize(rroot) + 1
+	}
+
+	// log.Println(lookTree(lroot))
+	// log.Println(lookTree(rroot))
+
+	tree.root.Children[0] = lroot
+	rtree := New(tree.compare)
+	rtree.root.Children[0] = rroot
+
+	return rtree
+
+	// log.Println(tree.debugString(true))
+	// log.Println(lroot.Key, rroot.Key)
+	// log.Println()
+	// var ltrim func(root *Node, lc int) *Node
+	// ltrim = func(root *Node, lc int) *Node {
+	// 	if root == nil {
+	// 		return nil
+	// 	}
+	// 	c := tree.compare(key, root.Key)
+	// 	if c > 0 {
+	// 		root.Children[L] = ltrim(root.Children[L], c)
+	// 		return root
+	// 	} else if c < 0 {
+	// 		root.Children[R] = ltrim(root.Children[R], c)
+	// 		return root
+	// 	} else {
+	// 		return root
+	// 	}
+	// }
+
+	// ltrim(tree.getRoot(), 0)
+
+}
+
 func (tree *Tree) Clear() {
 	tree.root.Children[0] = nil
 }

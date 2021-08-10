@@ -507,3 +507,30 @@ func TestSimpleForce(t *testing.T) {
 
 	}
 }
+
+func TestSimple(t *testing.T) {
+	for n := 0; n < 1000; n++ {
+
+	}
+	tree1 := New(compare.Int)
+	for i := 0; i < 40; i++ {
+		v := rand.Intn(100)
+		tree1.Put(v, v)
+		tree2 := tree1.SplitContain(rand.Intn(100))
+		tree1.check()
+		if tree2 != nil {
+			tree2.check()
+		}
+		// log.Println(tree1.debugString(true))
+		// log.Println(tree2.debugString(true))
+		// log.Println()
+	}
+
+	// tree2 := tree1.SplitContain(47)
+	// tree1.check()
+	// tree2.check()
+	// log.Println(tree1.debugString(true))
+	// log.Println(tree2.debugString(true))
+	// log.Println()
+
+}

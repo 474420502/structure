@@ -127,6 +127,15 @@ func (tree *Tree) debugString(isSuffix bool) string {
 	return str
 }
 
+func lookTree(root *Node) string {
+	str := "\n"
+	if root == nil {
+		return str + "nil"
+	}
+	outputfordebug(root, "", true, &str)
+	return str
+}
+
 // func (tree *IndexTree) debugLookNode(cur *Node) {
 // 	var temp interface{} = cur.Key
 // 	cur.Key = []byte(fmt.Sprintf("\033[32m%s\033[0m", cur.Key))
