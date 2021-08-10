@@ -240,7 +240,7 @@ func (tree *Tree) Remove(key interface{}) interface{} {
 	return nil
 }
 
-// RemoveRange 删除区间.  TODO: 影响
+// RemoveRange 删除区间.
 func (tree *Tree) RemoveRange(low, hight interface{}) {
 
 	const L = 0
@@ -274,11 +274,13 @@ func (tree *Tree) RemoveRange(low, hight interface{}) {
 			root.Size = getChildrenSumSize(root) + 1
 			return root
 		} else if c < 0 {
-
 			return ltrim(root.Children[L])
 		} else {
-
-			return root.Children[L]
+			same := root.Children[L]
+			for same != nil && tree.compare(low, same.Key) == 0 {
+				same = same.Children[L]
+			}
+			return same
 		}
 	}
 
@@ -301,11 +303,13 @@ func (tree *Tree) RemoveRange(low, hight interface{}) {
 			root.Size = getChildrenSumSize(root) + 1
 			return root
 		} else if c > 0 {
-
 			return rtrim(root.Children[R])
 		} else {
-
-			return root.Children[R]
+			same := root.Children[R]
+			for same != nil && tree.compare(hight, same.Key) == 0 {
+				same = same.Children[R]
+			}
+			return same
 		}
 	}
 

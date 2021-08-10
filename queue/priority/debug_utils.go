@@ -53,7 +53,13 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	}
 
 	suffix := "("
-	suffix += fmt.Sprintf("%v", node.Value) + ")"
+	parentv := ""
+	if node.Parent == nil {
+		parentv = "nil"
+	} else {
+		parentv = fmt.Sprintf("%v", node.Parent.Key)
+	}
+	suffix += parentv + "|" + fmt.Sprintf("%v", node.Size) + ")"
 
 	k := node.Key
 
@@ -115,6 +121,18 @@ func (tree *Tree) debugString(isSuffix bool) string {
 	} else {
 		outputfordebugNoSuffix(root, "", true, &str)
 	}
+
+	return str
+}
+
+func (tree *Tree) debugStringWithValue() string {
+	str := "BinarayList\n"
+	root := tree.getRoot()
+	if root == nil {
+		return str + "nil"
+	}
+
+	outputfordebug(root, "", true, &str)
 
 	return str
 }
