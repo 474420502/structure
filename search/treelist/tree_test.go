@@ -173,6 +173,67 @@ func TestRemoveNode(t *testing.T) {
 	}
 }
 
+func TestRemoveForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(t.Name(), seed)
+	rand.Seed(seed)
+	for n := 0; n < 1000; n++ {
+
+		tree := New()
+		tree.compare = compare.BytesLen
+
+		var priority [][]byte
+
+		for i := 0; i < 500; i += rand.Intn(8) + 1 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+			priority = append(priority, v)
+		}
+
+		sort.Slice(priority, func(i, j int) bool {
+			return tree.compare(priority[i], priority[j]) < 0
+		})
+
+		for tree.Size() != 0 {
+
+			i := rand.Intn(int(tree.Size()))
+			tree.RemoveIndex(int64(i))
+			priority = append(priority[0:i], priority[i+1:]...)
+
+			if tree.Size() != 0 && rand.Intn(2) == 0 {
+				s := rand.Int63n(tree.Size())
+				e := rand.Int63n(tree.Size())
+				if s > e {
+					s, e = e, s
+				}
+				tree.RemoveRangeByIndex(s, e)
+				priority = append(priority[0:s], priority[e+1:]...)
+			}
+
+			var idx = 0
+			tree.Traverse(func(s *Slice) bool {
+				if tree.compare(s.Key, priority[idx]) != 0 {
+					panic("")
+				}
+				idx++
+				return true
+			})
+
+			if rand.Intn(2) == 0 {
+				v := []byte(strconv.Itoa(rand.Intn(100)))
+				if tree.Put(v, v) {
+					priority = append(priority, v)
+				}
+				sort.Slice(priority, func(i, j int) bool {
+					return tree.compare(priority[i], priority[j]) < 0
+				})
+			}
+
+			tree.check()
+		}
+	}
+}
+
 func TestRange(t *testing.T) {
 	// tree := New()
 	// tree.compare = compare.BytesLen

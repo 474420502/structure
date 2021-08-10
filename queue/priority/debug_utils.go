@@ -2,7 +2,7 @@ package treequeue
 
 import "fmt"
 
-func output(node *Node, prefix string, isTail bool, str *string) {
+func output(node *qNode, prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -34,7 +34,7 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 
 }
 
-func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
+func outputfordebug(node *qNode, prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -76,7 +76,7 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	}
 }
 
-func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string) {
+func outputfordebugNoSuffix(node *qNode, prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -109,7 +109,43 @@ func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string)
 	}
 }
 
-func (tree *Tree) debugString(isSuffix bool) string {
+func outputfordebugValue(node *qNode, prefix string, isTail bool, str *string) {
+
+	if node.Children[1] != nil {
+		newPrefix := prefix
+		if isTail {
+			newPrefix += "\033[34m│   \033[0m"
+		} else {
+			newPrefix += "    "
+		}
+		outputfordebugValue(node.Children[1], newPrefix, false, str)
+	}
+	*str += prefix
+	if isTail {
+		*str += "\033[34m└── \033[0m"
+	} else {
+		*str += "\033[31m┌── \033[0m"
+	}
+
+	suffix := "("
+
+	suffix += fmt.Sprintf("%v", node.Value) + ")"
+
+	k := node.Key
+	*str += fmt.Sprintf("%v", k) + suffix + "\n"
+
+	if node.Children[0] != nil {
+		newPrefix := prefix
+		if isTail {
+			newPrefix += "    "
+		} else {
+			newPrefix += "\033[31m│   \033[0m"
+		}
+		outputfordebugValue(node.Children[0], newPrefix, true, str)
+	}
+}
+
+func (tree *Queue) debugString(isSuffix bool) string {
 	str := "BinarayList\n"
 	root := tree.getRoot()
 	if root == nil {
@@ -125,14 +161,14 @@ func (tree *Tree) debugString(isSuffix bool) string {
 	return str
 }
 
-func (tree *Tree) debugStringWithValue() string {
+func (tree *Queue) debugStringWithValue() string {
 	str := "BinarayList\n"
 	root := tree.getRoot()
 	if root == nil {
 		return str + "nil"
 	}
 
-	outputfordebug(root, "", true, &str)
+	outputfordebugValue(root, "", true, &str)
 
 	return str
 }

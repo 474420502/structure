@@ -460,7 +460,7 @@ func TestSimpleForce(t *testing.T) {
 		tree1 := New(compare.Int)
 		tree2 := make(map[int]int)
 
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 40; i++ {
 			v := rand.Intn(100)
 			tree1.Put(v, v)
 			tree2[v] = v
@@ -484,8 +484,13 @@ func TestSimpleForce(t *testing.T) {
 				panic("")
 			}
 
-			tree1.Remove(k)
-			delete(tree2, k.(int))
+			if rand.Intn(2) == 0 {
+				tree1.Remove(k)
+				delete(tree2, k.(int))
+			} else {
+				tree1.RemoveIndex(int64(i))
+				delete(tree2, k.(int))
+			}
 
 			if rand.Intn(2) == 0 {
 				v := rand.Intn(100)

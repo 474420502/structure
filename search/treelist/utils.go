@@ -611,3 +611,40 @@ func (tree *Tree) intersectionSlice(other *Tree) (result []*Slice) {
 	// log.Println("count:", count, tree.Size(), other.Size())
 	return
 }
+
+func (tree *Tree) check() {
+	const L = 0
+	const R = 1
+
+	root := tree.getRoot()
+
+	var tcheck func(root *Node)
+	tcheck = func(root *Node) {
+
+		if root == nil {
+			return
+		}
+
+		size := root.Size
+		if size != getSize(root.Children[L])+getSize(root.Children[R])+1 {
+			log.Panic("size error")
+		}
+
+		if root.Children[L] != nil {
+			if root.Children[L].Parent != root {
+				log.Panic("parent error")
+			}
+		}
+
+		if root.Children[R] != nil {
+			if root.Children[R].Parent != root {
+				log.Panic("parent error")
+			}
+		}
+
+		tcheck(root.Children[L])
+		tcheck(root.Children[R])
+	}
+	tcheck(root)
+
+}

@@ -284,6 +284,80 @@ func (tree *Tree) Remove(key interface{}) interface{} {
 	return nil
 }
 
+func (tree *Tree) RemoveIndex(index int64) interface{} {
+	const L = 0
+	const R = 1
+
+	if cur := tree.index(index); cur != nil {
+
+		if cur.Size == 1 {
+			parent := cur.Parent
+			parent.Children[getRelationship(cur)] = nil
+			tree.fixRemoveSize(parent)
+			return cur.Value
+		}
+
+		lsize, rsize := getChildrenSize(cur)
+		if lsize > rsize {
+			prev := cur.Children[L]
+			for prev.Children[R] != nil {
+				prev = prev.Children[R]
+			}
+
+			value := cur.Value
+			cur.Key = prev.Key
+			cur.Value = prev.Value
+
+			prevParent := prev.Parent
+			if prevParent == cur {
+				cur.Children[L] = prev.Children[L]
+				if cur.Children[L] != nil {
+					cur.Children[L].Parent = cur
+				}
+				tree.fixRemoveSize(cur)
+			} else {
+				prevParent.Children[R] = prev.Children[L]
+				if prevParent.Children[R] != nil {
+					prevParent.Children[R].Parent = prevParent
+				}
+				tree.fixRemoveSize(prevParent)
+			}
+
+			return value
+		} else {
+
+			next := cur.Children[R]
+			for next.Children[L] != nil {
+				next = next.Children[L]
+			}
+
+			value := cur.Value
+			cur.Key = next.Key
+			cur.Value = next.Value
+
+			nextParent := next.Parent
+			if nextParent == cur {
+				cur.Children[R] = next.Children[R]
+				if cur.Children[R] != nil {
+					cur.Children[R].Parent = cur
+				}
+				tree.fixRemoveSize(cur)
+			} else {
+				nextParent.Children[L] = next.Children[R]
+				if nextParent.Children[L] != nil {
+					nextParent.Children[L].Parent = nextParent
+				}
+				tree.fixRemoveSize(nextParent)
+			}
+
+			return value
+
+		}
+	}
+
+	return nil
+}
+
 func (tree *Tree) RemoveRange(low, hight interface{}) {
 
 	const L = 0

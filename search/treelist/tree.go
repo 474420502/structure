@@ -314,6 +314,13 @@ func (tree *Tree) Remove(key []byte) *Slice {
 	return nil
 }
 
+func (tree *Tree) RemoveIndex(index int64) *Slice {
+	if cur := tree.index(index); cur != nil {
+		return tree.removeNode(cur)
+	}
+	return nil
+}
+
 func (tree *Tree) Head() *Slice {
 	h := tree.root.Direct[0]
 	if h != nil {
