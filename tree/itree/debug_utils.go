@@ -112,7 +112,7 @@ func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string)
 }
 
 func (tree *Tree) debugString(isSuffix bool) string {
-	str := "BinarayList\n"
+	str := "IndexTree\n"
 	root := tree.getRoot()
 	if root == nil {
 		return str + "nil"

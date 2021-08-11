@@ -306,6 +306,9 @@ func (tree *Tree) check() {
 	const R = 1
 
 	root := tree.getRoot()
+	if root != nil && root.Parent != tree.root {
+		panic("")
+	}
 
 	var tcheck func(root *Node)
 	tcheck = func(root *Node) {
@@ -316,18 +319,21 @@ func (tree *Tree) check() {
 
 		size := root.Size
 		if size != getSize(root.Children[L])+getSize(root.Children[R])+1 {
+			log.Println(tree.debugString(true))
 			log.Panic("size error")
 		}
 
 		if root.Children[L] != nil {
 			if root.Children[L].Parent != root {
-				log.Panic("parent error")
+				log.Println(tree.debugString(true))
+				log.Panicln("parent error", root.Children[L].Key, root.Key)
 			}
 		}
 
 		if root.Children[R] != nil {
 			if root.Children[R].Parent != root {
-				log.Panic("parent error")
+				log.Println(tree.debugString(true))
+				log.Panicln("parent error", root.Children[R].Key, root.Key)
 			}
 		}
 

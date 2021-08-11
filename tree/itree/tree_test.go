@@ -12,6 +12,10 @@ import (
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
+func init() {
+	log.SetFlags(log.Llongfile)
+}
+
 func TestGet(t *testing.T) {
 	tree := New(compare.Int)
 	for i := 0; i < 100; i++ {
@@ -508,29 +512,130 @@ func TestSimpleForce(t *testing.T) {
 	}
 }
 
-func TestSimple(t *testing.T) {
-	for n := 0; n < 1000; n++ {
+func TestSplitContain(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(t.Name(), seed)
+	rand.Seed(seed)
 
-	}
-	tree1 := New(compare.Int)
-	for i := 0; i < 40; i++ {
-		v := rand.Intn(100)
-		tree1.Put(v, v)
-		tree2 := tree1.SplitContain(rand.Intn(100))
-		tree1.check()
-		if tree2 != nil {
-			tree2.check()
+	var showlist []interface{} = make([]interface{}, 2)
+	defer func() {
+		if err := recover(); err != nil {
+			log.Panicln(showlist...)
+		}
+	}()
+
+	for n := 0; n < 1000000; n++ {
+
+		tree1 := New(compare.Int)
+		var priority []int
+		for i := 0; i < 80; i++ {
+			v := rand.Intn(200)
+			if tree1.Put(v, v) {
+				priority = append(priority, v)
+			}
+
+			// log.Println()
+		}
+
+		sort.Ints(priority)
+
+		skey := rand.Intn(220)
+		// log.Println("current n:", n)
+		// if n == 5 {
+		// 	log.Println()
+		// }
+		// showlist[0] = tree1.debugString(true)
+		// showlist[1] = skey
+		var idx = -1
+		for i, v := range priority {
+			if skey < v {
+				break
+			}
+			idx = i
 		}
 		// log.Println(tree1.debugString(true))
-		// log.Println(tree2.debugString(true))
-		// log.Println()
+
+		tree2 := tree1.SplitContain(skey)
+		tree1.check()
+		tree2.check()
+
+		// log.Println(priority, skey, "idx:", idx)
+		// log.Println(tree1.Values(), tree2.Values())
+		// log.Println(tree1.debugString(true), tree2.debugString(true))
+
+		idx = idx + 1
+		for i, v := range priority[0:idx] {
+			if v1, _ := tree1.Index(int64(i)); v1 != v {
+				log.Println(priority[0:idx], tree1.Values())
+				log.Panicln(v1, v)
+			}
+		}
+
+		for i, v := range priority[idx:] {
+			if v2, _ := tree2.Index(int64(i)); v2 != v {
+				log.Println(priority[idx:], tree2.Values())
+				log.Panicln(v2, v)
+			}
+		}
 	}
 
-	// tree2 := tree1.SplitContain(47)
-	// tree1.check()
-	// tree2.check()
-	// log.Println(tree1.debugString(true))
-	// log.Println(tree2.debugString(true))
-	// log.Println()
+}
+
+func TestSplit(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(t.Name(), seed)
+	rand.Seed(seed)
+
+	var showlist []interface{} = make([]interface{}, 2)
+	defer func() {
+		if err := recover(); err != nil {
+			log.Panicln(showlist...)
+		}
+	}()
+
+	for n := 0; n < 1000000; n++ {
+
+		tree1 := New(compare.Int)
+		var priority []int
+		for i := 0; i < 80; i++ {
+			v := rand.Intn(200)
+			if tree1.Put(v, v) {
+				priority = append(priority, v)
+			}
+
+		}
+
+		sort.Ints(priority)
+
+		skey := rand.Intn(220)
+
+		var idx = -1
+		for i, v := range priority {
+			if skey <= v {
+				break
+			}
+			idx = i
+		}
+
+		tree2 := tree1.Split(skey)
+		tree1.check()
+		tree2.check()
+
+		// log.Println(tree1.Values(), tree2.Values(), skey, idx)
+		idx = idx + 1
+		for i, v := range priority[0:idx] {
+			if v1, _ := tree1.Index(int64(i)); v1 != v {
+				log.Println(priority[0:idx], tree1.Values())
+				log.Panicln(v1, v)
+			}
+		}
+
+		for i, v := range priority[idx:] {
+			if v2, _ := tree2.Index(int64(i)); v2 != v {
+				log.Println(priority[idx:], tree2.Values())
+				log.Panicln(v2, v)
+			}
+		}
+	}
 
 }

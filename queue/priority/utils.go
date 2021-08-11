@@ -339,6 +339,9 @@ func (tree *Queue) check() {
 	const R = 1
 
 	root := tree.getRoot()
+	if root != nil && root.Parent != tree.root {
+		panic("")
+	}
 
 	var tcheck func(root *qNode)
 	tcheck = func(root *qNode) {

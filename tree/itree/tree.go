@@ -170,6 +170,38 @@ func (tree *Tree) IndexOf(key interface{}) int64 {
 
 }
 
+func (tree *Tree) RankOf(key interface{}) (idx int64, isExists bool) {
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	if cur == nil {
+		return 0, false
+	}
+
+	var offset int64 = getSize(cur.Children[L])
+	for {
+		c := tree.compare(key, cur.Key)
+		switch {
+		case c < 0:
+			cur = cur.Children[L]
+			if cur == nil {
+				return offset - 1, false
+			}
+			offset -= getSize(cur.Children[R]) + 1
+		case c > 0:
+			cur = cur.Children[R]
+			if cur == nil {
+				return offset + 1, false
+			}
+			offset += getSize(cur.Children[L]) + 1
+		default:
+			return offset, true
+		}
+	}
+
+}
+
 // Traverse 遍历的方法 默认是LDR 从小到大 Compare 为 l < r
 func (tree *Tree) Traverse(every func(k, v interface{}) bool) {
 	root := tree.getRoot()
@@ -728,15 +760,187 @@ func (tree *Tree) TrimByIndex(low, hight int64) {
 	}
 }
 
-// Trim 保留区间
-func (tree *Tree) SplitContain(key interface{}) *Tree {
-	// root := tree.getRoot()
+func (tree *Tree) SplitContain2(key interface{}) *Tree {
+	cur := tree.getRoot()
+	if cur == nil {
+		return nil
+	}
+
 	const L = 0
 	const R = 1
 
 	// 寻找左右根
+	// var lroot, rroot *Node
+	var split func(cur, lroot, rroot *Node) *Node
+	split = func(cur, lroot, rroot *Node) *Node {
+		if cur == nil {
+			return nil
+		}
+
+		c := tree.compare(cur.Key, key)
+		if c > 0 {
+
+			child := split(cur.Children[L], lroot, cur)
+			if lroot != nil {
+				rroot.Children[L] = child
+				if child != nil {
+					child.Parent = rroot
+				}
+			}
+
+			// cur = cur.Children[L]
+		} else {
+			child := split(cur.Children[R], cur, rroot)
+			if rroot != nil {
+				lroot.Children[R] = child
+				if child != nil {
+					child.Parent = lroot
+				}
+			}
+		}
+		return cur
+	}
+
+	return nil
+}
+
+// SplitContain Split 原树不包含Key. 拆分到返回的树
+func (tree *Tree) Split(key interface{}) *Tree {
+	root := tree.getRoot()
+	if root == nil {
+		return nil
+	}
+
+	const L = 0
+	const R = 1
+
+	cur := root
+	// 寻找左右根
 	var lroot, rroot *Node
-	cur := tree.getRoot()
+
+	for cur != nil {
+		c := tree.compare(cur.Key, key)
+		if c < 0 {
+			lroot = cur
+			cur = cur.Children[R]
+			if rroot != nil {
+				break
+			}
+
+		} else {
+			rroot = cur
+			cur = cur.Children[L]
+			if lroot != nil {
+				break
+			}
+		}
+	}
+
+	var traverse func(cur *Node, lroot, rroot *Node)
+	traverse = func(cur, lroot, rroot *Node) {
+		if cur == nil { // 就算是nil也要赋值拼接
+			lroot.Children[R] = nil
+			lroot.Size = getSize(lroot.Children[L]) + 1
+
+			rroot.Children[L] = nil
+			rroot.Size = getSize(rroot.Children[R]) + 1
+			return
+		}
+
+		c := tree.compare(cur.Key, key)
+		switch {
+		case c > 0:
+			rroot.Children[L] = cur
+			cur.Parent = rroot
+			traverse(cur.Children[L], lroot, cur)
+			rroot.Size = getChildrenSumSize(rroot) + 1
+		case c < 0:
+			lroot.Children[R] = cur
+			cur.Parent = lroot
+			traverse(cur.Children[R], cur, rroot)
+			lroot.Size = getChildrenSumSize(lroot) + 1
+		default:
+
+			// 拼接右则
+			rroot.Children[L] = cur
+			cur.Parent = rroot
+
+			left := cur.Children[L]
+			cur.Children[L] = nil
+			cur.Size = getSize(cur.Children[R]) + 1
+			rroot.Size = getChildrenSumSize(rroot) + 1
+
+			// 拼接左则
+			lroot.Children[R] = left
+			if left != nil {
+				left.Parent = lroot
+			}
+			lroot.Size = getChildrenSumSize(lroot) + 1
+		}
+
+	}
+
+	if lroot == nil {
+		tree.root.Children[0] = nil
+
+		rtree := New(tree.compare)
+		rtree.root.Children[0] = root
+		root.Parent = rtree.root
+		return rtree
+	}
+
+	if rroot == nil {
+		return New(tree.compare)
+	}
+
+	rtree := New(tree.compare)
+	if lroot.Parent != rroot {
+		rtree.root.Children[0] = rroot
+		rroot.Parent = rtree.root
+
+	} else {
+		rtree.root.Children[0] = root
+		root.Parent = rtree.root
+
+		tree.root.Children[0] = lroot
+		lroot.Parent = tree.root
+	}
+
+	// log.Println(lroot.Key, rroot.Key)
+
+	lroot.Children[R] = nil
+	rroot.Children[L] = nil
+	traverse(cur, lroot, rroot)
+
+	// 根链接错误
+
+	for lroot != tree.root {
+		lroot.Size = getChildrenSumSize(lroot) + 1
+		lroot = lroot.Parent
+	}
+
+	for rroot != rtree.root {
+		rroot.Size = getChildrenSumSize(rroot) + 1
+		rroot = rroot.Parent
+	}
+
+	return rtree
+}
+
+// SplitContain Split 原树包含Key
+func (tree *Tree) SplitContain(key interface{}) *Tree {
+	root := tree.getRoot()
+	if root == nil {
+		return nil
+	}
+
+	const L = 0
+	const R = 1
+
+	cur := root
+	// 寻找左右根
+	var lroot, rroot *Node
+
 	for cur != nil {
 		c := tree.compare(cur.Key, key)
 		if c > 0 {
@@ -751,84 +955,98 @@ func (tree *Tree) SplitContain(key interface{}) *Tree {
 			if rroot != nil {
 				break
 			}
-
 		}
 	}
 
 	var traverse func(cur *Node, lroot, rroot *Node)
 	traverse = func(cur, lroot, rroot *Node) {
-		if cur == nil {
+		if cur == nil { // 就算是nil也要赋值拼接
+			lroot.Children[R] = nil
+			lroot.Size = getSize(lroot.Children[L]) + 1
+
+			rroot.Children[L] = nil
+			rroot.Size = getSize(rroot.Children[R]) + 1
 			return
 		}
 
 		c := tree.compare(cur.Key, key)
-		if c > 0 {
+		switch {
+		case c > 0:
 			rroot.Children[L] = cur
+			cur.Parent = rroot
 			traverse(cur.Children[L], lroot, cur)
 			rroot.Size = getChildrenSumSize(rroot) + 1
-		} else {
+		case c < 0:
 			lroot.Children[R] = cur
+			cur.Parent = lroot
 			traverse(cur.Children[R], cur, rroot)
 			lroot.Size = getChildrenSumSize(lroot) + 1
+		default:
+
+			// 拼接左则
+			lroot.Children[R] = cur
+			cur.Parent = lroot
+
+			right := cur.Children[R]
+			cur.Children[R] = nil
+			cur.Size = getSize(cur.Children[L]) + 1
+			lroot.Size = getChildrenSumSize(lroot) + 1
+
+			// 拼接右则
+			rroot.Children[L] = right
+			if right != nil {
+				right.Parent = rroot
+			}
+			rroot.Size = getChildrenSumSize(rroot) + 1
 		}
 
 	}
 
 	if lroot == nil {
 		tree.root.Children[0] = nil
+
 		rtree := New(tree.compare)
-		rtree.root.Children[0] = rroot
+		rtree.root.Children[0] = root
+		root.Parent = rtree.root
 		return rtree
 	}
 
 	if rroot == nil {
-		tree.root.Children[0] = lroot
-		return nil
+		return New(tree.compare)
 	}
+
+	rtree := New(tree.compare)
+	if lroot.Parent != rroot {
+		rtree.root.Children[0] = rroot
+		rroot.Parent = rtree.root
+
+	} else {
+		rtree.root.Children[0] = root
+		root.Parent = rtree.root
+
+		tree.root.Children[0] = lroot
+		lroot.Parent = tree.root
+	}
+
+	// log.Println(lroot.Key, rroot.Key)
 
 	lroot.Children[R] = nil
 	rroot.Children[L] = nil
 	traverse(cur, lroot, rroot)
 
-	if lroot.Children[R] == nil {
+	// 根链接错误
+
+	for lroot != tree.root {
 		lroot.Size = getChildrenSumSize(lroot) + 1
+		lroot = lroot.Parent
 	}
 
-	if rroot.Children[L] == nil {
+	for rroot != rtree.root {
 		rroot.Size = getChildrenSumSize(rroot) + 1
+		rroot = rroot.Parent
 	}
-
-	// log.Println(lookTree(lroot))
-	// log.Println(lookTree(rroot))
-
-	tree.root.Children[0] = lroot
-	rtree := New(tree.compare)
-	rtree.root.Children[0] = rroot
 
 	return rtree
-
-	// log.Println(tree.debugString(true))
-	// log.Println(lroot.Key, rroot.Key)
-	// log.Println()
-	// var ltrim func(root *Node, lc int) *Node
-	// ltrim = func(root *Node, lc int) *Node {
-	// 	if root == nil {
-	// 		return nil
-	// 	}
-	// 	c := tree.compare(key, root.Key)
-	// 	if c > 0 {
-	// 		root.Children[L] = ltrim(root.Children[L], c)
-	// 		return root
-	// 	} else if c < 0 {
-	// 		root.Children[R] = ltrim(root.Children[R], c)
-	// 		return root
-	// 	} else {
-	// 		return root
-	// 	}
-	// }
-
-	// ltrim(tree.getRoot(), 0)
-
 }
 
 func (tree *Tree) Clear() {
