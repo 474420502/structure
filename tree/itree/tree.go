@@ -760,50 +760,6 @@ func (tree *Tree) TrimByIndex(low, hight int64) {
 	}
 }
 
-func (tree *Tree) SplitContain2(key interface{}) *Tree {
-	cur := tree.getRoot()
-	if cur == nil {
-		return nil
-	}
-
-	const L = 0
-	const R = 1
-
-	// 寻找左右根
-	// var lroot, rroot *Node
-	var split func(cur, lroot, rroot *Node) *Node
-	split = func(cur, lroot, rroot *Node) *Node {
-		if cur == nil {
-			return nil
-		}
-
-		c := tree.compare(cur.Key, key)
-		if c > 0 {
-
-			child := split(cur.Children[L], lroot, cur)
-			if lroot != nil {
-				rroot.Children[L] = child
-				if child != nil {
-					child.Parent = rroot
-				}
-			}
-
-			// cur = cur.Children[L]
-		} else {
-			child := split(cur.Children[R], cur, rroot)
-			if rroot != nil {
-				lroot.Children[R] = child
-				if child != nil {
-					child.Parent = lroot
-				}
-			}
-		}
-		return cur
-	}
-
-	return nil
-}
-
 // SplitContain Split 原树不包含Key. 拆分到返回的树
 func (tree *Tree) Split(key interface{}) *Tree {
 	root := tree.getRoot()

@@ -639,3 +639,13 @@ func TestSplit(t *testing.T) {
 	}
 
 }
+
+func TestCase(t *testing.T) {
+	tree1 := New(compare.Int)
+
+	for i := 0; i < 100; i++ {
+		v := rand.Intn(1000)
+		tree1.Put(v, v)
+	}
+	log.Println(tree1.debugString(false))
+}

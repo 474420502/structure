@@ -800,6 +800,7 @@ func (tree *Tree) TrimByIndex(low, hight int64) {
 	}
 }
 
+// Intersection 交集
 func (tree *Tree) Intersection(other *Tree) *Tree {
 
 	const L = 0
@@ -833,6 +834,7 @@ func (tree *Tree) Intersection(other *Tree) *Tree {
 	return result
 }
 
+// UnionSets 并集
 func (tree *Tree) UnionSets(other *Tree) *Tree {
 	const L = 0
 	const R = 1
@@ -877,7 +879,7 @@ func (tree *Tree) UnionSets(other *Tree) *Tree {
 	return result
 }
 
-// DifferenceSets
+// DifferenceSets 差集
 func (tree *Tree) DifferenceSets(other *Tree) *Tree {
 	const L = 0
 	const R = 1
