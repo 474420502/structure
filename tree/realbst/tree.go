@@ -143,9 +143,9 @@ func (tree *Tree) Put(key, value interface{}) bool {
 
 				offset := tree.HighSize - tree.LowSize
 				if abs(offset) > 1 {
-					log.Println(tree.debugString())
+					// log.Println(tree.debugString())
 					tree.pickCenter(offset)
-					log.Println(tree.debugString())
+					// log.Println(tree.debugString())
 				}
 
 				return true
@@ -169,10 +169,15 @@ func (tree *Tree) pickCenter(offset int64) {
 
 		tree.LowSize++
 		tree.HighSize--
+
+		// center.Children[R] = tree.Center
 	} else {
-		tree.Center = tree.pickLeft(tree.Center.Children[L], tree.Center)
+		center := tree.Center
+		tree.Center = tree.pickLeft(center.Children[L], center)
 		tree.LowSize--
 		tree.HighSize++
+
+		// center.Children[L] = tree.Center
 	}
 	log.Println(tree.Center, tree.Center.Children[L], tree.Center.Children[R])
 

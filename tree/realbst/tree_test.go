@@ -9,6 +9,10 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
+func init() {
+	log.SetFlags(log.Llongfile)
+}
+
 func TestCase1(t *testing.T) {
 	tree := New(compare.Int)
 	var priority []int
