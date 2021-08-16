@@ -609,6 +609,7 @@ func (tree *Tree) Trim(low, hight interface{}) {
 			return nil
 		}
 		c := tree.compare(low, root.Key)
+
 		if c > 0 {
 			return ltrim(root.Children[R])
 		} else if c < 0 {

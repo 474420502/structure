@@ -356,10 +356,11 @@ func (tree *Queue) RemoveRange(low, hight interface{}) {
 	c := tree.compare(low, hight)
 	if c > 0 {
 		panic("key2 must greater than key1 or equal to")
-	} else if c == 0 {
-		tree.Remove(low)
-		return
 	}
+	// else if c == 0 {
+	// 	tree.Remove(low)
+	// 	return
+	// }
 
 	root := tree.getRangeRoot(low, hight)
 	if root == nil {
@@ -380,15 +381,10 @@ func (tree *Queue) RemoveRange(low, hight interface{}) {
 			}
 			root.Size = getChildrenSumSize(root) + 1
 			return root
-		} else if c < 0 {
-			return ltrim(root.Children[L])
 		} else {
-			root = root.Children[L]
-			for root != nil && tree.compare(low, root.Key) == 0 {
-				root = root.Children[L]
-			}
-			return root
+			return ltrim(root.Children[L])
 		}
+
 	}
 
 	var lgroup *qNode
@@ -409,15 +405,10 @@ func (tree *Queue) RemoveRange(low, hight interface{}) {
 			}
 			root.Size = getChildrenSumSize(root) + 1
 			return root
-		} else if c > 0 {
-			return rtrim(root.Children[R])
 		} else {
-			root = root.Children[R]
-			for root != nil && tree.compare(hight, root.Key) == 0 {
-				root = root.Children[R]
-			}
-			return root
+			return rtrim(root.Children[R])
 		}
+
 	}
 
 	var rgroup *qNode

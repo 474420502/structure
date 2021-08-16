@@ -166,7 +166,7 @@ func TestRemoveForce(t *testing.T) {
 		queue := New(compare.Int)
 		var priority []*tKey
 		var offset = 0.00001
-		for i := 0; i < 20; i++ {
+		for i := 0; i < 40; i++ {
 			v := rand.Intn(100)
 			queue.Put(v, i)
 			priority = append(priority, &tKey{float64(v) + offset, i})
@@ -253,6 +253,86 @@ func TestRemoveForce(t *testing.T) {
 	}
 }
 
-func TestIndexOfForce(t *testing.T) {
+func TestRemoveRangeForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(t.Name(), seed)
+	rand.Seed(seed)
 
+	for n := 0; n < 2000000; n++ {
+		queue := New(compare.Int)
+		var priority []*tKey
+		var offset = 0.00001
+		for i := 0; i < 20; i++ {
+			v := rand.Intn(100)
+			queue.Put(v, i)
+			priority = append(priority, &tKey{float64(v) + offset, i})
+			offset += 0.00001
+		}
+
+		sort.Slice(priority, func(i, j int) bool {
+			return priority[i].Key < priority[j].Key
+		})
+
+		var sidx = rand.Intn(int(queue.Size()))
+		var eidx = rand.Intn(int(queue.Size()))
+		if sidx > eidx {
+			sidx, eidx = eidx, sidx
+		}
+
+		var start = priority[sidx]
+		var end = priority[eidx]
+
+		for sidx > 0 {
+
+			if int(priority[sidx-1].Key) == int(start.Key) {
+				sidx--
+				// start = priority[sidx]
+			} else {
+				break
+			}
+		}
+
+		for {
+			eidx++
+			if eidx == len(priority) {
+				break
+			}
+
+			if int(priority[eidx].Key) == int(end.Key) {
+				// end = priority[eidx]
+			} else {
+				break
+			}
+		}
+
+		src := queue.debugStringWithValue()
+		queue.RemoveRange(int(start.Key), int(end.Key))
+		if eidx < len(priority) {
+			priority = append(priority[0:sidx], priority[eidx:]...)
+		} else {
+			priority = priority[0:sidx]
+		}
+
+		var selectValues []int
+		var selectKeys []float64
+		for _, v := range priority {
+			selectValues = append(selectValues, v.Value)
+			selectKeys = append(selectKeys, v.Key)
+			// qk, qv := queue.Index(int64(i))
+			// if qv != v.Value || qk != int(v.Key) {
+			// 	panic("")
+			// }
+		}
+
+		r1 := fmt.Sprintf("%v", queue.Values())
+		r2 := fmt.Sprintf("%v", selectValues)
+		if r1 != r2 {
+			log.Println(src)
+			log.Println(queue.debugStringWithValue(), start.Key, end.Key, sidx, eidx)
+			log.Println(r1)
+			log.Println(r2)
+			log.Panicln()
+		}
+
+	}
 }
