@@ -131,7 +131,29 @@ func (tree *Queue) IndexOf(key interface{}) int64 {
 			}
 			offset += getSize(cur.Children[L]) + 1
 		default:
-			return offset
+			cur = cur.Children[L]
+			if cur == nil {
+				return offset
+			}
+			offset -= getSize(cur.Children[R]) + 1
+
+			for {
+				c = tree.compare(key, cur.Key)
+				if c == 0 {
+					if cur.Children[L] == nil {
+						return offset
+					}
+					cur = cur.Children[L]
+					offset -= getSize(cur.Children[R]) + 1
+				} else {
+					if cur.Children[R] == nil {
+						return offset + 1
+					}
+					cur = cur.Children[R]
+					offset += getSize(cur.Children[L]) + 1
+				}
+			}
+
 		}
 	}
 
@@ -551,7 +573,7 @@ func (tree *Queue) Extract(low, hight interface{}) {
 		c := tree.compare(low, root.Key)
 		if c > 0 {
 			return ltrim(root.Children[R])
-		} else if c < 0 {
+		} else { //
 			child := ltrim(root.Children[L])
 			root.Children[L] = child
 			if child != nil {
@@ -559,21 +581,7 @@ func (tree *Queue) Extract(low, hight interface{}) {
 			}
 			root.Size = getChildrenSumSize(root) + 1
 			return root
-		} else {
 
-			if root.Children[L] != nil && tree.compare(low, root.Children[L].Key) == 0 {
-				//  ltrim(root.Children[L])
-				child := ltrim(root.Children[L])
-				root.Children[L] = child
-				if child != nil {
-					child.Parent = root
-				}
-				root.Size = getChildrenSumSize(root) + 1
-				return root
-			}
-			root.Children[L] = nil
-			root.Size = getSize(root.Children[R]) + 1
-			return root
 		}
 	}
 
@@ -587,7 +595,7 @@ func (tree *Queue) Extract(low, hight interface{}) {
 		c := tree.compare(hight, root.Key)
 		if c < 0 {
 			return rtrim(root.Children[L])
-		} else if c > 0 {
+		} else { //  c >= 0
 			child := rtrim(root.Children[R])
 			root.Children[R] = child
 			if child != nil {
@@ -595,21 +603,7 @@ func (tree *Queue) Extract(low, hight interface{}) {
 			}
 			root.Size = getChildrenSumSize(root) + 1
 			return root
-		} else {
 
-			if root.Children[R] != nil && tree.compare(hight, root.Children[R].Key) == 0 {
-				child := rtrim(root.Children[R])
-				root.Children[R] = child
-				if child != nil {
-					child.Parent = root
-				}
-				root.Size = getChildrenSumSize(root) + 1
-				return root
-			}
-
-			root.Children[R] = nil
-			root.Size = getSize(root.Children[L]) + 1
-			return root
 		}
 	}
 

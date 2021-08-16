@@ -109,7 +109,7 @@ func outputfordebugNoSuffix(node *qNode, prefix string, isTail bool, str *string
 	}
 }
 
-func outputfordebugValue(node *qNode, prefix string, isTail bool, str *string) {
+func outputfordebugValue(node *qNode, prefix string, isTail bool, str *string, idx *int) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -118,7 +118,7 @@ func outputfordebugValue(node *qNode, prefix string, isTail bool, str *string) {
 		} else {
 			newPrefix += "    "
 		}
-		outputfordebugValue(node.Children[1], newPrefix, false, str)
+		outputfordebugValue(node.Children[1], newPrefix, false, str, idx)
 	}
 	*str += prefix
 	if isTail {
@@ -129,10 +129,10 @@ func outputfordebugValue(node *qNode, prefix string, isTail bool, str *string) {
 
 	suffix := "("
 
-	suffix += fmt.Sprintf("%v", node.Value) + ")"
-
+	suffix += fmt.Sprintf("%v[%d]", node.Value, *idx) + ")"
 	k := node.Key
 	*str += fmt.Sprintf("%v", k) + suffix + "\n"
+	*idx--
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -141,7 +141,7 @@ func outputfordebugValue(node *qNode, prefix string, isTail bool, str *string) {
 		} else {
 			newPrefix += "\033[31m│   \033[0m"
 		}
-		outputfordebugValue(node.Children[0], newPrefix, true, str)
+		outputfordebugValue(node.Children[0], newPrefix, true, str, idx)
 	}
 }
 
@@ -168,7 +168,8 @@ func (tree *Queue) debugStringWithValue() string {
 		return str + "nil"
 	}
 
-	outputfordebugValue(root, "", true, &str)
+	var idx = int(tree.Size()) - 1
+	outputfordebugValue(root, "", true, &str, &idx)
 
 	return str
 }
