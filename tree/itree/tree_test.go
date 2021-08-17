@@ -524,7 +524,7 @@ func TestSplitContain(t *testing.T) {
 		}
 	}()
 
-	for n := 0; n < 1000000; n++ {
+	for n := 0; n < 1000; n++ {
 
 		tree1 := New(compare.Int)
 		var priority []int
@@ -593,7 +593,7 @@ func TestSplit(t *testing.T) {
 		}
 	}()
 
-	for n := 0; n < 1000000; n++ {
+	for n := 0; n < 1000; n++ {
 
 		tree1 := New(compare.Int)
 		var priority []int

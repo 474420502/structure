@@ -422,12 +422,8 @@ func (tree *Tree) RemoveRange(low, hight interface{}) {
 			}
 			root.Size = getChildrenSumSize(root) + 1
 			return root
-		} else if c < 0 {
-
-			return ltrim(root.Children[L])
 		} else {
-
-			return root.Children[L]
+			return ltrim(root.Children[L])
 		}
 	}
 
@@ -449,12 +445,8 @@ func (tree *Tree) RemoveRange(low, hight interface{}) {
 			}
 			root.Size = getChildrenSumSize(root) + 1
 			return root
-		} else if c > 0 {
-
-			return rtrim(root.Children[R])
 		} else {
-
-			return root.Children[R]
+			return rtrim(root.Children[R])
 		}
 	}
 
@@ -609,7 +601,6 @@ func (tree *Tree) Trim(low, hight interface{}) {
 			return nil
 		}
 		c := tree.compare(low, root.Key)
-
 		if c > 0 {
 			return ltrim(root.Children[R])
 		} else if c < 0 {
