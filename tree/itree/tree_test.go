@@ -197,7 +197,7 @@ func TestRemoveRange(t *testing.T) {
 			tree.RemoveRange(s, e)
 			r1 := sort.Search(len(sarr), func(i int) bool { return sarr[i] >= s })
 			r2 := sort.Search(len(sarr), func(i int) bool { return sarr[i] > e })
-			sarr = append(sarr[0:r1], sarr[r2:len(sarr)]...)
+			sarr = append(sarr[0:r1], sarr[r2:]...)
 
 			result1 := fmt.Sprintf("%v", sarr)
 			result2 := fmt.Sprintf("%v", tree.Values())
@@ -205,6 +205,8 @@ func TestRemoveRange(t *testing.T) {
 				t.Error(result1)
 				t.Error(result2)
 			}
+
+			tree.check()
 		}
 	}
 }

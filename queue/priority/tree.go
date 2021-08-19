@@ -22,6 +22,9 @@ type qNode struct {
 type Queue struct {
 	root    *qNode
 	compare compare.Compare
+
+	head *qNode
+	tail *qNode
 }
 
 func New(comp compare.Compare) *Queue {
@@ -62,7 +65,10 @@ func (tree *Queue) Put(key, value interface{}) {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		tree.root.Children[0] = &qNode{Key: key, Value: value, Size: 1, Parent: tree.root}
+		node := &qNode{Key: key, Value: value, Size: 1, Parent: tree.root}
+		tree.root.Children[0] = node
+		tree.head = node
+		tree.tail = node
 		return
 	}
 
@@ -80,6 +86,12 @@ func (tree *Queue) Put(key, value interface{}) {
 				node := &qNode{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[L] = node
 				tree.fixPut(cur)
+				if tree.head.Children[L] == node {
+					tree.head = node
+				} else if tree.tail.Children[R] == node {
+					tree.tail = node
+				}
+
 				return
 			}
 
@@ -91,6 +103,12 @@ func (tree *Queue) Put(key, value interface{}) {
 				node := &qNode{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[R] = node
 				tree.fixPut(cur)
+
+				if tree.head.Children[L] == node {
+					tree.head = node
+				} else if tree.tail.Children[R] == node {
+					tree.tail = node
+				}
 				return
 			}
 
@@ -206,6 +224,37 @@ func (tree *Queue) Remove(key interface{}) interface{} {
 
 	if cur := tree.getNode(key); cur != nil {
 
+		// 设置头尾
+		if cur == tree.head {
+			nParent := cur.Parent
+			defer func() {
+				if nParent == tree.root {
+					if tree.root.Children[L] != nil {
+						tree.head = tree.root.Children[L]
+					} else {
+						tree.head = nil
+						tree.tail = nil
+					}
+				} else {
+					tree.head = nParent.Children[L]
+				}
+			}()
+		} else if cur == tree.tail {
+			nParent := cur.Parent
+			defer func() {
+				if nParent == tree.root {
+					if tree.root.Children[L] != nil {
+						tree.tail = tree.root.Children[L]
+					} else {
+						tree.head = nil
+						tree.tail = nil
+					}
+				} else {
+					tree.tail = nParent.Children[R]
+				}
+			}()
+		}
+
 		if cur.Size == 1 {
 			parent := cur.Parent
 			parent.Children[getRelationship(cur)] = nil
@@ -279,6 +328,37 @@ func (tree *Queue) RemoveIndex(index int64) interface{} {
 	const R = 1
 
 	if cur := tree.index(index); cur != nil {
+
+		// 设置头尾
+		if cur == tree.head {
+			nParent := cur.Parent
+			defer func() {
+				if nParent == tree.root {
+					if tree.root.Children[L] != nil {
+						tree.head = tree.root.Children[L]
+					} else {
+						tree.head = nil
+						tree.tail = nil
+					}
+				} else {
+					tree.head = nParent.Children[L]
+				}
+			}()
+		} else if cur == tree.tail {
+			nParent := cur.Parent
+			defer func() {
+				if nParent == tree.root {
+					if tree.root.Children[L] != nil {
+						tree.tail = tree.root.Children[L]
+					} else {
+						tree.head = nil
+						tree.tail = nil
+					}
+				} else {
+					tree.tail = nParent.Children[R]
+				}
+			}()
+		}
 
 		if cur.Size == 1 {
 			parent := cur.Parent
@@ -384,7 +464,6 @@ func (tree *Queue) RemoveRange(low, hight interface{}) {
 		} else {
 			return ltrim(root.Children[L])
 		}
-
 	}
 
 	var lgroup *qNode
@@ -408,13 +487,34 @@ func (tree *Queue) RemoveRange(low, hight interface{}) {
 		} else {
 			return rtrim(root.Children[R])
 		}
-
 	}
 
 	var rgroup *qNode
 	if root.Children[R] != nil {
 		rgroup = rtrim(root.Children[R])
 	}
+
+	defer func() {
+		root = tree.getRoot()
+		if root == nil {
+			tree.head = nil
+			tree.tail = nil
+			return
+		}
+
+		var cur *qNode
+		cur = root
+		for cur.Children[L] != nil {
+			cur = cur.Children[L]
+		}
+		tree.head = cur
+
+		cur = root
+		for cur.Children[R] != nil {
+			cur = cur.Children[R]
+		}
+		tree.tail = cur
+	}()
 
 	if lgroup == nil && rgroup == nil {
 		rparent := root.Parent
@@ -526,6 +626,28 @@ func (tree *Queue) RemoveRangeByIndex(low, hight int64) {
 	if root.Children[R] != nil {
 		rgroup = rtrim(idx, R, root.Children[R])
 	}
+
+	defer func() {
+		root = tree.getRoot()
+		if root == nil {
+			tree.head = nil
+			tree.tail = nil
+			return
+		}
+
+		var cur *qNode
+		cur = root
+		for cur.Children[L] != nil {
+			cur = cur.Children[L]
+		}
+		tree.head = cur
+
+		cur = root
+		for cur.Children[R] != nil {
+			cur = cur.Children[R]
+		}
+		tree.tail = cur
+	}()
 
 	if lgroup == nil && rgroup == nil {
 		rparent := root.Parent

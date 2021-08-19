@@ -463,6 +463,7 @@ func (tree *Tree) RemoveRange(low, hight interface{}) {
 			rparent.Size -= size
 			rparent = rparent.Parent
 		}
+
 		return
 	}
 

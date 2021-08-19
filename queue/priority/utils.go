@@ -334,6 +334,17 @@ func (tree *Queue) getRoot() *qNode {
 	return tree.root.Children[0]
 }
 
+// func (tree *Queue) removeBottom(n *qNode) {
+// 	nParent := n.Parent
+// 	if nParent.Children[0] == n {
+// 		nParent.Children[0] = nil
+// 	} else {
+// 		nParent.Children[1] = nil
+// 	}
+
+// 	tree.fixRemoveSize(nParent)
+// }
+
 func (tree *Queue) check() {
 	const L = 0
 	const R = 1
