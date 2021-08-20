@@ -20,7 +20,7 @@ func output(node *qNode, prefix string, isTail bool, str *string) {
 		*str += "\033[31;40m┌── \033[0m"
 	}
 
-	*str += "(" + fmt.Sprintf("%v", node.Key) + "->" + fmt.Sprintf("%v", node.Value) + ")" + "\n"
+	*str += "(" + fmt.Sprintf("%v", node.Key()) + "->" + fmt.Sprintf("%v", node.Value()) + ")" + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -57,11 +57,11 @@ func outputfordebug(node *qNode, prefix string, isTail bool, str *string) {
 	if node.Parent == nil {
 		parentv = "nil"
 	} else {
-		parentv = fmt.Sprintf("%v", node.Parent.Key)
+		parentv = fmt.Sprintf("%v", node.Parent.Key())
 	}
 	suffix += parentv + "|" + fmt.Sprintf("%v", node.Size) + ")"
 
-	k := node.Key
+	k := node.Key()
 
 	*str += fmt.Sprintf("%v", k) + suffix + "\n"
 
@@ -94,7 +94,7 @@ func outputfordebugNoSuffix(node *qNode, prefix string, isTail bool, str *string
 		*str += "\033[31m┌── \033[0m"
 	}
 
-	k := node.Key
+	k := node.Key()
 
 	*str += fmt.Sprintf("%v", k) + "\n"
 
@@ -129,8 +129,8 @@ func outputfordebugValue(node *qNode, prefix string, isTail bool, str *string, i
 
 	suffix := "("
 
-	suffix += fmt.Sprintf("%v[%d]", node.Value, *idx) + ")"
-	k := node.Key
+	suffix += fmt.Sprintf("%v[%d]", node.Value(), *idx) + ")"
+	k := node.Key()
 	*str += fmt.Sprintf("%v", k) + suffix + "\n"
 	*idx--
 

@@ -180,8 +180,8 @@ func (tree *Queue) getRangeRoot(low, hight interface{}) (root *qNode) {
 
 	cur := tree.getRoot()
 	for cur != nil {
-		c1 := tree.compare(low, cur.Key)
-		c2 := tree.compare(hight, cur.Key)
+		c1 := tree.compare(low, cur.Key())
+		c2 := tree.compare(hight, cur.Key())
 		if c1 != c2 {
 			return cur
 		}
@@ -286,7 +286,7 @@ func (tree *Queue) getNode(key interface{}) (result *qNode) {
 
 	cur := tree.getRoot()
 	for cur != nil {
-		c := tree.compare(key, cur.Key)
+		c := tree.compare(key, cur.Key())
 		switch {
 		case c < 0:
 			cur = cur.Children[L]
@@ -312,7 +312,7 @@ func (tree *Queue) getNodes(key interface{}) (result []*qNode) {
 		if cur == nil {
 			return
 		}
-		c := tree.compare(key, cur.Key)
+		c := tree.compare(key, cur.Key())
 		switch {
 		case c < 0:
 			traverse(cur.Children[L])
@@ -334,16 +334,73 @@ func (tree *Queue) getRoot() *qNode {
 	return tree.root.Children[0]
 }
 
-// func (tree *Queue) removeBottom(n *qNode) {
-// 	nParent := n.Parent
-// 	if nParent.Children[0] == n {
-// 		nParent.Children[0] = nil
-// 	} else {
-// 		nParent.Children[1] = nil
-// 	}
+func (tree *Queue) remove(cur *qNode) *Slice {
 
-// 	tree.fixRemoveSize(nParent)
-// }
+	const L = 0
+	const R = 1
+
+	if cur.Size == 1 {
+		parent := cur.Parent
+		parent.Children[getRelationship(cur)] = nil
+		tree.fixRemoveSize(parent)
+		return &cur.Slice
+	}
+
+	lsize, rsize := getChildrenSize(cur)
+	if lsize > rsize {
+		prev := cur.Children[L]
+		for prev.Children[R] != nil {
+			prev = prev.Children[R]
+		}
+
+		s := cur.Slice
+		cur.Slice = prev.Slice
+
+		prevParent := prev.Parent
+		if prevParent == cur {
+			cur.Children[L] = prev.Children[L]
+			if cur.Children[L] != nil {
+				cur.Children[L].Parent = cur
+			}
+			tree.fixRemoveSize(cur)
+		} else {
+			prevParent.Children[R] = prev.Children[L]
+			if prevParent.Children[R] != nil {
+				prevParent.Children[R].Parent = prevParent
+			}
+			tree.fixRemoveSize(prevParent)
+		}
+
+		return &s
+	} else {
+
+		next := cur.Children[R]
+		for next.Children[L] != nil {
+			next = next.Children[L]
+		}
+
+		s := cur.Slice
+		cur.Slice = next.Slice
+
+		nextParent := next.Parent
+		if nextParent == cur {
+			cur.Children[R] = next.Children[R]
+			if cur.Children[R] != nil {
+				cur.Children[R].Parent = cur
+			}
+			tree.fixRemoveSize(cur)
+		} else {
+			nextParent.Children[L] = next.Children[R]
+			if nextParent.Children[L] != nil {
+				nextParent.Children[L].Parent = nextParent
+			}
+			tree.fixRemoveSize(nextParent)
+		}
+
+		return &s
+
+	}
+}
 
 func (tree *Queue) check() {
 	const L = 0
@@ -382,5 +439,27 @@ func (tree *Queue) check() {
 		tcheck(root.Children[R])
 	}
 	tcheck(root)
+
+	// cur := tree.getRoot()
+	// if cur != nil {
+	// 	for cur.Children[L] != nil {
+	// 		cur = cur.Children[L]
+	// 	}
+
+	// 	if cur != tree.head {
+	// 		log.Println(tree.debugStringWithValue())
+	// 		log.Panic("head error", tree.head, cur)
+	// 	}
+
+	// 	cur = tree.getRoot()
+	// 	for cur.Children[R] != nil {
+	// 		cur = cur.Children[R]
+	// 	}
+
+	// 	if cur != tree.tail {
+	// 		log.Println(tree.debugStringWithValue())
+	// 		log.Panic("tail error", tree.tail, cur)
+	// 	}
+	// }
 
 }

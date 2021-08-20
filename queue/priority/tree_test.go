@@ -11,6 +11,27 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
+type dSlice struct {
+	key   interface{}
+	value interface{}
+}
+
+func (s *dSlice) String() string {
+	return fmt.Sprintf("(%v,%v)", int(s.key.(float64)), s.value)
+}
+
+func (s *dSlice) Key() interface{} {
+	return s.key
+}
+
+func (s *dSlice) Value() interface{} {
+	return s.value
+}
+
+func (s *dSlice) SetValue(v interface{}) {
+	s.value = v
+}
+
 func TestCase1(t *testing.T) {
 	seed := time.Now().UnixNano()
 	log.Println(t.Name(), seed)
@@ -29,15 +50,6 @@ func TestCase1(t *testing.T) {
 
 }
 
-type tKey struct {
-	Key   float64
-	Value int
-}
-
-func (k *tKey) String() string {
-	return fmt.Sprintf("(%v,%v)", int(k.Key), k.Value)
-}
-
 func TestExtractForce(t *testing.T) {
 	seed := time.Now().UnixNano()
 	log.Println(t.Name(), seed)
@@ -45,17 +57,17 @@ func TestExtractForce(t *testing.T) {
 
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
-		var priority []*tKey
+		var priority []*dSlice
 		var offset = 0.00001
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(1000)
 			queue.Put(v, i)
-			priority = append(priority, &tKey{float64(v) + offset, i})
+			priority = append(priority, &dSlice{float64(v) + offset, i})
 			offset += 0.00001
 		}
 
 		sort.Slice(priority, func(i, j int) bool {
-			return priority[i].Key < priority[j].Key
+			return priority[i].Key().(float64) < priority[j].Key().(float64)
 		})
 
 		var start = rand.Intn(100)
@@ -68,7 +80,7 @@ func TestExtractForce(t *testing.T) {
 
 		var s int = -1
 		for i, v := range priority {
-			if int(v.Key) >= start {
+			if int(v.Key().(float64)) >= start {
 				s = i
 				break
 			}
@@ -76,10 +88,10 @@ func TestExtractForce(t *testing.T) {
 
 		if s >= 0 {
 			for _, v := range priority[s:] {
-				if int(v.Key) > end {
+				if int(v.Key().(float64)) > end {
 					break
 				}
-				selects = append(selects, v.Value)
+				selects = append(selects, v.Value().(int))
 			}
 		}
 
@@ -110,17 +122,17 @@ func TestExtractIndexForce(t *testing.T) {
 
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
-		var priority []*tKey
+		var priority []*dSlice
 		var offset = 0.00001
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(1000)
 			queue.Put(v, i)
-			priority = append(priority, &tKey{float64(v) + offset, i})
+			priority = append(priority, &dSlice{float64(v) + offset, i})
 			offset += 0.00001
 		}
 
 		sort.Slice(priority, func(i, j int) bool {
-			return priority[i].Key < priority[j].Key
+			return priority[i].Key().(float64) < priority[j].Key().(float64)
 		})
 
 		var start = rand.Intn(int(queue.Size()))
@@ -131,7 +143,7 @@ func TestExtractIndexForce(t *testing.T) {
 
 		var selects []int
 		for _, v := range priority[start : end+1] {
-			selects = append(selects, v.Value)
+			selects = append(selects, v.Value().(int))
 		}
 
 		queue.ExtractByIndex(int64(start), int64(end))
@@ -161,27 +173,27 @@ func TestRemoveForce(t *testing.T) {
 
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
-		var priority []*tKey
+		var priority []*dSlice
 		var offset = 0.00001
 		for i := 0; i < 40; i++ {
 			v := rand.Intn(100)
 			queue.Put(v, i)
-			priority = append(priority, &tKey{float64(v) + offset, i})
+			priority = append(priority, &dSlice{float64(v) + offset, i})
 			offset += 0.00001
 		}
 
 		sort.Slice(priority, func(i, j int) bool {
-			return priority[i].Key < priority[j].Key
+			return priority[i].Key().(float64) < priority[j].Key().(float64)
 		})
 
 		for queue.Size() > 15 {
 
 			ridx := rand.Intn(len(priority))
-			k := priority[ridx].Key //TODO: 必须选择第一个.
-			// log.Println(priority)
+			k := priority[ridx].Key().(float64) //TODO: 必须选择第一个.
+
 			for ridx > 0 {
 				ridx--
-				if float64(int(k)) != float64(int(priority[ridx].Key)) {
+				if float64(int(k)) != float64(int(priority[ridx].Key().(float64))) {
 					ridx++
 					break
 				}
@@ -195,10 +207,10 @@ func TestRemoveForce(t *testing.T) {
 			var selectValues []int
 			var selectKeys []float64
 			for i, v := range priority {
-				selectValues = append(selectValues, v.Value)
-				selectKeys = append(selectKeys, v.Key)
-				qk, qv := queue.Index(int64(i))
-				if qv != v.Value || qk != int(v.Key) {
+				selectValues = append(selectValues, v.Value().(int))
+				selectKeys = append(selectKeys, v.Key().(float64))
+				s := queue.Index(int64(i))
+				if s.Value() != v.Value() || s.Key() != int(v.Key().(float64)) {
 					panic("")
 				}
 			}
@@ -251,17 +263,17 @@ func TestRemoveRangeForce(t *testing.T) {
 
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
-		var priority []*tKey
+		var priority []*dSlice
 		var offset = 0.00001
 		for i := 0; i < 20; i++ {
 			v := rand.Intn(100)
 			queue.Put(v, i)
-			priority = append(priority, &tKey{float64(v) + offset, i})
+			priority = append(priority, &dSlice{float64(v) + offset, i})
 			offset += 0.00001
 		}
 
 		sort.Slice(priority, func(i, j int) bool {
-			return priority[i].Key < priority[j].Key
+			return priority[i].Key().(float64) < priority[j].Key().(float64)
 		})
 
 		var sidx = rand.Intn(int(queue.Size()))
@@ -272,15 +284,15 @@ func TestRemoveRangeForce(t *testing.T) {
 
 		var start = priority[sidx]
 		var end = priority[eidx]
-		for sidx > 0 && int(priority[sidx-1].Key) == int(start.Key) {
+		for sidx > 0 && int(priority[sidx-1].Key().(float64)) == int(start.Key().(float64)) {
 			sidx--
 		}
-		for eidx != len(priority) && int(priority[eidx].Key) == int(end.Key) {
+		for eidx != len(priority) && int(priority[eidx].Key().(float64)) == int(end.Key().(float64)) {
 			eidx++
 		}
 
 		src := queue.debugStringWithValue()
-		queue.RemoveRange(int(start.Key), int(end.Key))
+		queue.RemoveRange(int(start.Key().(float64)), int(end.Key().(float64)))
 		if eidx < len(priority) {
 			priority = append(priority[0:sidx], priority[eidx:]...)
 		} else {
@@ -290,8 +302,8 @@ func TestRemoveRangeForce(t *testing.T) {
 		var selectValues []int
 		var selectKeys []float64
 		for _, v := range priority {
-			selectValues = append(selectValues, v.Value)
-			selectKeys = append(selectKeys, v.Key)
+			selectValues = append(selectValues, v.Value().(int))
+			selectKeys = append(selectKeys, v.Key().(float64))
 		}
 
 		queue.check()
@@ -300,7 +312,7 @@ func TestRemoveRangeForce(t *testing.T) {
 		r2 := fmt.Sprintf("%v", selectValues)
 		if r1 != r2 {
 			log.Println(src)
-			log.Println(queue.debugStringWithValue(), start.Key, end.Key, sidx, eidx)
+			log.Println(queue.debugStringWithValue(), start.Key(), end.Key(), sidx, eidx)
 			log.Println(r1)
 			log.Println(r2)
 			log.Panicln()
@@ -316,17 +328,17 @@ func TestRemoveRangeByIndexForce(t *testing.T) {
 
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
-		var priority []*tKey
+		var priority []*dSlice
 		var offset = 0.00001
 		for i := 0; i < 20; i++ {
 			v := rand.Intn(100)
 			queue.Put(v, i)
-			priority = append(priority, &tKey{float64(v) + offset, i})
+			priority = append(priority, &dSlice{float64(v) + offset, i})
 			offset += 0.00001
 		}
 
 		sort.Slice(priority, func(i, j int) bool {
-			return priority[i].Key < priority[j].Key
+			return priority[i].Key().(float64) < priority[j].Key().(float64)
 		})
 
 		var sidx = rand.Intn(int(queue.Size()))
@@ -347,8 +359,8 @@ func TestRemoveRangeByIndexForce(t *testing.T) {
 		var selectValues []int
 		var selectKeys []float64
 		for _, v := range priority {
-			selectValues = append(selectValues, v.Value)
-			selectKeys = append(selectKeys, v.Key)
+			selectValues = append(selectValues, v.Value().(int))
+			selectKeys = append(selectKeys, v.Key().(float64))
 		}
 
 		queue.check()
@@ -373,24 +385,24 @@ func TestPutGetsRemoveIndexForce(t *testing.T) {
 
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
-		var priority []*tKey
+		var priority []*dSlice
 		var offset = 0.00001
 		for i := 0; i < 40; i++ {
 			v := rand.Intn(100)
 			queue.Put(v, v)
-			priority = append(priority, &tKey{float64(v) + offset, i})
+			priority = append(priority, &dSlice{float64(v) + offset, i})
 			offset += 0.00001
 		}
 
 		sort.Slice(priority, func(i, j int) bool {
-			return priority[i].Key < priority[j].Key
+			return priority[i].Key().(float64) < priority[j].Key().(float64)
 		})
 
 		for i := 0; i < 5; i++ {
 			idx := rand.Intn(len(priority))
 			v := queue.RemoveIndex(int64(idx))
-			if int(priority[idx].Key) != v {
-				panic("")
+			if int(priority[idx].Key().(float64)) != v.Key().(int) {
+				log.Panicln(int(priority[idx].Key().(float64)), v.Key())
 			}
 
 			if idx == len(priority)-1 {
@@ -405,8 +417,8 @@ func TestPutGetsRemoveIndexForce(t *testing.T) {
 			v1 := priority[i]
 			v2 := priority[i+1]
 
-			key1 := int(v1.Key)
-			key2 := int(v2.Key)
+			key1 := int(v1.Key().(float64))
+			key2 := int(v2.Key().(float64))
 
 			if key1 == key2 {
 				if _, ok := same[key1]; !ok {
@@ -423,11 +435,61 @@ func TestPutGetsRemoveIndexForce(t *testing.T) {
 			}
 
 			for _, v := range r {
-				if k != v {
+				if k != v.Key().(int) {
 					panic("")
 				}
 			}
 		}
+	}
+
+}
+
+func TestHeadTailForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(t.Name(), seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		queue := New(compare.Int)
+		var priority []*dSlice
+		var offset = 0.00001
+		for i := 0; i < 40; i++ {
+			v := rand.Intn(100)
+			queue.Put(v, v)
+			priority = append(priority, &dSlice{float64(v) + offset, i})
+			offset += 0.00001
+		}
+
+		sort.Slice(priority, func(i, j int) bool {
+			return priority[i].Key().(float64) < priority[j].Key().(float64)
+		})
+
+		for {
+
+			if rand.Intn(2) == 0 {
+				hslice := queue.Head()
+				if hslice == nil {
+					break
+				}
+				if queue.Index(0) != hslice {
+					panic("")
+				}
+
+				if queue.RemoveHead().Value() != hslice.Value() {
+
+				}
+
+			} else {
+				tslice := queue.Tail()
+				if tslice == nil {
+					break
+				}
+				if queue.Index(queue.Size()-1) != tslice {
+					panic("")
+				}
+			}
+		}
+
 	}
 
 }
@@ -439,24 +501,24 @@ func TestForce(t *testing.T) {
 
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
-		var priority []*tKey
+		var priority []*dSlice
 		var offset = 0.00001
 
 		for i := 0; i < 40; i++ {
 			v := rand.Intn(100)
 			queue.Put(v, v)
-			priority = append(priority, &tKey{float64(v) + offset, i})
+			priority = append(priority, &dSlice{float64(v) + offset, i})
 			offset += 0.00001
 		}
 
 		sort.Slice(priority, func(i, j int) bool {
-			return priority[i].Key < priority[j].Key
+			return priority[i].Key().(float64) < priority[j].Key().(float64)
 		})
 
 		for i := 0; i < 5; i++ {
 			idx := rand.Intn(len(priority))
 			v := queue.RemoveIndex(int64(idx))
-			if int(priority[idx].Key) != v {
+			if int(priority[idx].Key().(float64)) != v.Key().(int) {
 				panic("")
 			}
 
@@ -472,8 +534,8 @@ func TestForce(t *testing.T) {
 			v1 := priority[i]
 			v2 := priority[i+1]
 
-			key1 := int(v1.Key)
-			key2 := int(v2.Key)
+			key1 := int(v1.Key().(float64))
+			key2 := int(v2.Key().(float64))
 
 			if key1 == key2 {
 				if _, ok := same[key1]; !ok {
@@ -490,7 +552,7 @@ func TestForce(t *testing.T) {
 			}
 
 			for _, v := range r {
-				if k != v {
+				if k != v.Key().(int) {
 					panic("")
 				}
 			}
@@ -514,8 +576,8 @@ func TestForce(t *testing.T) {
 		// var selectValues []int
 		var selectKeys []int
 		for _, v := range priority {
-			// selectValues = append(selectValues, v.Value)
-			selectKeys = append(selectKeys, int(v.Key))
+			// selectValues = append(selectValues, v.Value().(int))
+			selectKeys = append(selectKeys, int(v.Key().(float64)))
 		}
 
 		r1 := fmt.Sprintf("%v", queue.Values())
@@ -531,12 +593,12 @@ func TestForce(t *testing.T) {
 		for i := 0; i < 40; i++ {
 			v := rand.Intn(200)
 			queue.Put(v, v)
-			priority = append(priority, &tKey{float64(v) + offset, i})
+			priority = append(priority, &dSlice{float64(v) + offset, i})
 			offset += 0.00001
 		}
 
 		sort.Slice(priority, func(i, j int) bool {
-			return priority[i].Key < priority[j].Key
+			return priority[i].Key().(float64) < priority[j].Key().(float64)
 		})
 
 		sidx = rand.Intn(int(queue.Size()))
@@ -547,15 +609,15 @@ func TestForce(t *testing.T) {
 
 		var start = priority[sidx]
 		var end = priority[eidx]
-		for sidx > 0 && int(priority[sidx-1].Key) == int(start.Key) {
+		for sidx > 0 && int(priority[sidx-1].Key().(float64)) == int(start.Key().(float64)) {
 			sidx--
 		}
-		for eidx != len(priority) && int(priority[eidx].Key) == int(end.Key) {
+		for eidx != len(priority) && int(priority[eidx].Key().(float64)) == int(end.Key().(float64)) {
 			eidx++
 		}
 
 		src = queue.debugStringWithValue()
-		queue.RemoveRange(int(start.Key), int(end.Key))
+		queue.RemoveRange(int(start.Key().(float64)), int(end.Key().(float64)))
 		if eidx < len(priority) {
 			priority = append(priority[0:sidx], priority[eidx:]...)
 		} else {
@@ -565,15 +627,15 @@ func TestForce(t *testing.T) {
 		// var selectValues []int
 		selectKeys = []int{}
 		for _, v := range priority {
-			// selectValues = append(selectValues, v.Value)
-			selectKeys = append(selectKeys, int(v.Key))
+			// selectValues = append(selectValues, v.Value().(int))
+			selectKeys = append(selectKeys, int(v.Key().(float64)))
 		}
 
 		r1 = fmt.Sprintf("%v", queue.Values())
 		r2 = fmt.Sprintf("%v", selectKeys)
 		if r1 != r2 {
 			log.Println(src)
-			log.Println(queue.debugStringWithValue(), start.Key, end.Key, sidx, eidx)
+			log.Println(queue.debugStringWithValue(), start.Key(), end.Key(), sidx, eidx)
 			log.Println(r1)
 			log.Println(r2)
 			log.Panicln()
@@ -584,12 +646,12 @@ func TestForce(t *testing.T) {
 		if queue.Size() != 0 && len(priority) != 0 {
 			sidx = rand.Intn(int(queue.Size()))
 			v2 := priority[sidx]
-			_, v3 := queue.Index(int64(sidx))
+			v3 := queue.Index(int64(sidx))
 
-			if int(v2.Key) != v3 {
+			if int(v2.Key().(float64)) != v3.Key().(int) {
 				log.Println(queue.Values())
 				log.Println(priority)
-				log.Panicln(v3, v2.Value)
+				log.Panicln(v3.Value(), v2.Value())
 			}
 		}
 
