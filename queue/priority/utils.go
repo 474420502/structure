@@ -22,8 +22,9 @@ func (tree *Queue) fixRemoveSize(cur *qNode) {
 
 func (tree *Queue) fixPut(cur *qNode) {
 
-	tree.fixPutSize(cur)
+	cur.Size++
 	if cur.Size == 3 {
+		tree.fixPutSize(cur.Parent)
 		return
 	}
 
@@ -31,22 +32,25 @@ func (tree *Queue) fixPut(cur *qNode) {
 	const R = 1
 
 	var height int64 = 2
-
+	var root2nsize, child2nsize, bottomsize, lsize, rsize int64
 	var relations int = L
+	var parent *qNode
+
 	if cur.Parent.Children[R] == cur {
 		relations = R
 	}
 	cur = cur.Parent
 
 	for cur != tree.root {
-
-		root2nsize := (int64(1) << height)
+		cur.Size++
+		parent = cur.Parent
+		root2nsize = (int64(1) << height)
 		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
 		if cur.Size < root2nsize {
 
-			child2nsize := root2nsize >> 2
-			bottomsize := child2nsize + child2nsize>>(height>>1)
-			lsize, rsize := getChildrenSize(cur)
+			child2nsize = root2nsize >> 2
+			bottomsize = child2nsize + child2nsize>>(height>>1)
+			lsize, rsize = getChildrenSize(cur)
 			// 右就检测左边
 			if relations == R {
 				if rsize-lsize >= bottomsize {
@@ -62,30 +66,30 @@ func (tree *Queue) fixPut(cur *qNode) {
 		}
 
 		height++
-		if cur.Parent.Children[R] == cur {
+		if parent.Children[R] == cur {
 			relations = R
 		} else {
 			relations = L
 		}
 
-		cur = cur.Parent
+		cur = parent
 	}
 }
 
 func (tree *Queue) sizeRrotate(cur *qNode) *qNode {
-	const R = 1
-	llsize, lrsize := getChildrenSize(cur.Children[R])
+
+	llsize, lrsize := getChildrenSize(cur.Children[1])
 	if llsize > lrsize {
-		tree.rrotate(cur.Children[R])
+		tree.rrotate(cur.Children[1])
 	}
 	return tree.lrotate(cur)
 }
 
 func (tree *Queue) sizeLrotate(cur *qNode) *qNode {
-	const L = 0
-	llsize, lrsize := getChildrenSize(cur.Children[L])
+
+	llsize, lrsize := getChildrenSize(cur.Children[0])
 	if llsize < lrsize {
-		tree.lrotate(cur.Children[L])
+		tree.lrotate(cur.Children[0])
 	}
 	return tree.rrotate(cur)
 }
@@ -343,7 +347,7 @@ func (tree *Queue) remove(cur *qNode) *Slice {
 		parent := cur.Parent
 		parent.Children[getRelationship(cur)] = nil
 		tree.fixRemoveSize(parent)
-		return cur.Slice
+		return &cur.Slice
 	}
 
 	lsize, rsize := getChildrenSize(cur)
@@ -353,7 +357,7 @@ func (tree *Queue) remove(cur *qNode) *Slice {
 			prev = prev.Children[R]
 		}
 
-		s := cur.Slice
+		var s = cur.Slice
 		cur.Slice = prev.Slice
 
 		prevParent := prev.Parent
@@ -371,7 +375,7 @@ func (tree *Queue) remove(cur *qNode) *Slice {
 			tree.fixRemoveSize(prevParent)
 		}
 
-		return s
+		return &s
 	} else {
 
 		next := cur.Children[R]
@@ -379,7 +383,7 @@ func (tree *Queue) remove(cur *qNode) *Slice {
 			next = next.Children[L]
 		}
 
-		s := cur.Slice
+		var s = cur.Slice
 		cur.Slice = next.Slice
 
 		nextParent := next.Parent
@@ -397,7 +401,7 @@ func (tree *Queue) remove(cur *qNode) *Slice {
 			tree.fixRemoveSize(nextParent)
 		}
 
-		return s
+		return &s
 
 	}
 }

@@ -17,7 +17,7 @@ func init() {
 	// debug.SetGCPercent(800)
 }
 
-func BenchmarkPut(b *testing.B) {
+func BenchmarkPutEx(b *testing.B) {
 	b.StopTimer()
 	tree := New(compare.Int)
 	b.ResetTimer()

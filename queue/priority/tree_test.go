@@ -447,7 +447,7 @@ func TestPutGetsRemoveIndexForce(t *testing.T) {
 func TestHeadTailForce(t *testing.T) {
 	seed := time.Now().UnixNano()
 	log.Println(t.Name(), seed)
-	rand.Seed(1629684529844067687)
+	rand.Seed(seed)
 
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
@@ -473,12 +473,12 @@ func TestHeadTailForce(t *testing.T) {
 				}
 
 				h1 := queue.Index(0)
-				if h1.Key() != hslice.Key() || h1.Value() != hslice.Value() || h1 != hslice {
+				if h1.Key() != hslice.Key() || h1.Value() != hslice.Value() {
 					panic("")
 				}
 
 				rslice := queue.RemoveHead()
-				if rslice.Value() != hslice.Value() || rslice != hslice {
+				if rslice.Value() != hslice.Value() {
 					panic("")
 				}
 
@@ -496,7 +496,7 @@ func TestHeadTailForce(t *testing.T) {
 				src := queue.Values()
 
 				rslice := queue.RemoveTail()
-				if rslice.Value() != tslice.Value() || rslice != tslice {
+				if rslice.Value() != tslice.Value() {
 					log.Panicln(src, rslice.Value(), tslice.Value())
 				}
 			}

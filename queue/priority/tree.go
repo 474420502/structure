@@ -18,7 +18,7 @@ type qNode struct {
 
 	// Key   interface{}
 	// Value interface{}
-	*Slice
+	Slice
 }
 
 type Queue struct {
@@ -51,8 +51,8 @@ func (tree *Queue) Head() *Slice {
 	for root.Children[L] != nil {
 		root = root.Children[L]
 	}
-
-	return root.Slice
+	var s Slice = root.Slice
+	return &s
 }
 
 func (tree *Queue) RemoveHead() *Slice {
@@ -80,8 +80,8 @@ func (tree *Queue) Tail() *Slice {
 	for root.Children[R] != nil {
 		root = root.Children[R]
 	}
-
-	return root.Slice
+	var s Slice = root.Slice
+	return &s
 }
 
 func (tree *Queue) RemoveTail() *Slice {
@@ -101,7 +101,7 @@ func (tree *Queue) RemoveTail() *Slice {
 // Get 按Key获取Value, 如果Key值相等, 返回最先入队的值
 func (tree *Queue) Get(key interface{}) *Slice {
 	if cur := tree.getNode(key); cur != nil {
-		return cur.Slice
+		return &cur.Slice
 	}
 	return nil
 }
@@ -110,7 +110,7 @@ func (tree *Queue) Get(key interface{}) *Slice {
 func (tree *Queue) Gets(key interface{}) (result []*Slice) {
 
 	for _, node := range tree.getNodes(key) {
-		result = append(result, node.Slice)
+		result = append(result, &node.Slice)
 	}
 
 	return
@@ -121,7 +121,9 @@ func (tree *Queue) Put(key, value interface{}) {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		node := &qNode{Size: 1, Parent: tree.root, Slice: &Slice{key: key, value: value}}
+		node := &qNode{Size: 1, Parent: tree.root}
+		node.key = key
+		node.value = value
 		tree.root.Children[0] = node
 		return
 	}
@@ -137,8 +139,9 @@ func (tree *Queue) Put(key, value interface{}) {
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
-				node := &qNode{Parent: cur, Size: 1, Slice: &Slice{key: key, value: value}}
-
+				node := &qNode{Parent: cur, Size: 1}
+				node.key = key
+				node.value = value
 				cur.Children[L] = node
 				tree.fixPut(cur)
 				return
@@ -149,8 +152,9 @@ func (tree *Queue) Put(key, value interface{}) {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &qNode{Parent: cur, Size: 1, Slice: &Slice{key: key, value: value}}
-
+				node := &qNode{Parent: cur, Size: 1}
+				node.key = key
+				node.value = value
 				cur.Children[R] = node
 				tree.fixPut(cur)
 				return
@@ -164,7 +168,7 @@ func (tree *Queue) Put(key, value interface{}) {
 
 func (tree *Queue) Index(i int64) *Slice {
 	node := tree.index(i)
-	return node.Slice
+	return &node.Slice
 }
 
 func (tree *Queue) IndexOf(key interface{}) int64 {
@@ -236,7 +240,7 @@ func (tree *Queue) Traverse(every func(s *Slice) bool) {
 		if !traverasl(cur.Children[0]) {
 			return false
 		}
-		if !every(cur.Slice) {
+		if !every(&cur.Slice) {
 			return false
 		}
 		if !traverasl(cur.Children[1]) {
@@ -293,7 +297,7 @@ func (tree *Queue) RemoveIndex(index int64) *Slice {
 			parent := cur.Parent
 			parent.Children[getRelationship(cur)] = nil
 			tree.fixRemoveSize(parent)
-			return cur.Slice
+			return &cur.Slice
 		}
 
 		lsize, rsize := getChildrenSize(cur)
@@ -321,7 +325,7 @@ func (tree *Queue) RemoveIndex(index int64) *Slice {
 				tree.fixRemoveSize(prevParent)
 			}
 
-			return s
+			return &s
 
 		} else {
 
@@ -347,7 +351,7 @@ func (tree *Queue) RemoveIndex(index int64) *Slice {
 				}
 				tree.fixRemoveSize(nextParent)
 			}
-			return s
+			return &s
 		}
 	}
 
@@ -612,7 +616,6 @@ func (tree *Queue) Extract(low, hight interface{}) {
 	if root != nil {
 		root.Parent = tree.root
 	}
-
 }
 
 // ExtractByIndex 保留区间(Extract类似, 范围用顺序索引) range [low:hight]

@@ -67,8 +67,9 @@ func (tree *Tree) fixRemoveSize(cur *Node) {
 }
 
 func (tree *Tree) fixPut(cur *Node) {
-	tree.fixPutSize(cur)
+	cur.Size++
 	if cur.Size == 3 {
+		tree.fixPutSize(cur.Parent)
 		return
 	}
 
@@ -76,22 +77,26 @@ func (tree *Tree) fixPut(cur *Node) {
 	const R = 1
 
 	var height int64 = 2
-
+	var root2nsize, child2nsize, bottomsize, lsize, rsize int64
 	var relations int = L
+	var parent *Node
+
 	if cur.Parent.Children[R] == cur {
 		relations = R
 	}
 	cur = cur.Parent
 
 	for cur != tree.root {
+		cur.Size++
+		parent = cur.Parent
 
-		root2nsize := (int64(1) << height)
+		root2nsize = (int64(1) << height)
 		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
 		if cur.Size < root2nsize {
 
-			child2nsize := root2nsize >> 2
-			bottomsize := child2nsize + child2nsize>>(height>>1)
-			lsize, rsize := getChildrenSize(cur)
+			child2nsize = root2nsize >> 2
+			bottomsize = child2nsize + child2nsize>>(height>>1)
+			lsize, rsize = getChildrenSize(cur)
 			// 右就检测左边
 			if relations == R {
 				if rsize-lsize >= bottomsize {
@@ -107,13 +112,13 @@ func (tree *Tree) fixPut(cur *Node) {
 		}
 
 		height++
-		if cur.Parent.Children[R] == cur {
+		if parent.Children[R] == cur {
 			relations = R
 		} else {
 			relations = L
 		}
 
-		cur = cur.Parent
+		cur = parent
 	}
 }
 
