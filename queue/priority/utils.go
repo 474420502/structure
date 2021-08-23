@@ -343,7 +343,7 @@ func (tree *Queue) remove(cur *qNode) *Slice {
 		parent := cur.Parent
 		parent.Children[getRelationship(cur)] = nil
 		tree.fixRemoveSize(parent)
-		return &cur.Slice
+		return cur.Slice
 	}
 
 	lsize, rsize := getChildrenSize(cur)
@@ -371,7 +371,7 @@ func (tree *Queue) remove(cur *qNode) *Slice {
 			tree.fixRemoveSize(prevParent)
 		}
 
-		return &s
+		return s
 	} else {
 
 		next := cur.Children[R]
@@ -397,7 +397,7 @@ func (tree *Queue) remove(cur *qNode) *Slice {
 			tree.fixRemoveSize(nextParent)
 		}
 
-		return &s
+		return s
 
 	}
 }

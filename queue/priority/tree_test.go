@@ -447,7 +447,7 @@ func TestPutGetsRemoveIndexForce(t *testing.T) {
 func TestHeadTailForce(t *testing.T) {
 	seed := time.Now().UnixNano()
 	log.Println(t.Name(), seed)
-	rand.Seed(seed)
+	rand.Seed(1629684529844067687)
 
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
@@ -471,12 +471,15 @@ func TestHeadTailForce(t *testing.T) {
 				if hslice == nil {
 					break
 				}
-				if queue.Index(0) != hslice {
+
+				h1 := queue.Index(0)
+				if h1.Key() != hslice.Key() || h1.Value() != hslice.Value() || h1 != hslice {
 					panic("")
 				}
 
-				if queue.RemoveHead().Value() != hslice.Value() {
-
+				rslice := queue.RemoveHead()
+				if rslice.Value() != hslice.Value() || rslice != hslice {
+					panic("")
 				}
 
 			} else {
@@ -484,8 +487,17 @@ func TestHeadTailForce(t *testing.T) {
 				if tslice == nil {
 					break
 				}
-				if queue.Index(queue.Size()-1) != tslice {
+
+				t1 := queue.Index(queue.Size() - 1)
+				if t1.Key() != tslice.Key() || t1.Value() != tslice.Value() {
 					panic("")
+				}
+
+				src := queue.Values()
+
+				rslice := queue.RemoveTail()
+				if rslice.Value() != tslice.Value() || rslice != tslice {
+					log.Panicln(src, rslice.Value(), tslice.Value())
 				}
 			}
 		}

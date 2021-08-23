@@ -1,3 +1,5 @@
+//go:build !cover
+
 package treequeue
 
 import "fmt"
