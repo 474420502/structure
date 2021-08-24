@@ -14,6 +14,8 @@ func TestPutGet(t *testing.T) {
 		tree.Put(i, i)
 	}
 
+	log.Println(tree.String())
+
 	for i := 0; i < tree.Size(); i++ {
 		if v, b := tree.Get(i); !b || v != i {
 			t.Error("error", b, v)
