@@ -1,0 +1,105 @@
+package treeset
+
+import (
+	"log"
+	"math/rand"
+	"sort"
+	"testing"
+	"time"
+
+	"github.com/474420502/structure/compare"
+)
+
+func TestIteratorForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(t.Name(), seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		tree := New(compare.Int)
+		var priority []int
+		for i := 0; i < 100; i++ {
+			v := rand.Intn(100)
+			if tree.Add(v) {
+				priority = append(priority, v)
+			}
+
+		}
+		sort.Slice(priority, func(i, j int) bool {
+			return priority[i] < priority[j]
+		})
+
+		s := rand.Intn(100)
+
+		// log.Println(priority, idx, len(priority))
+
+		iter := tree.Iterator()
+		iter.SeekForNext(s)
+
+		idx := sort.Search(len(priority), func(i int) bool {
+			return priority[i] >= s
+		})
+
+		if idx == len(priority) {
+			if iter.Vaild() {
+				log.Panicln(iter.Value(), priority)
+			}
+		} else {
+			for i := idx; i < tree.Size(); i++ {
+				if priority[i] != iter.Value() {
+					panic("")
+				}
+				iter.Next()
+			}
+			iter.SeekForNext(s)
+			for i := idx; i >= 0; i-- {
+				if priority[i] != iter.Value() {
+					panic("")
+				}
+				iter.Prev()
+			}
+		}
+
+		iter.SeekForPrev(s)
+		idx = sort.Search(len(priority), func(i int) bool {
+			return priority[i] > s
+		})
+
+		if idx-1 < 0 {
+			if iter.Vaild() {
+				log.Panicln(iter.Value(), priority, idx-1, s)
+			}
+		} else {
+			for i := idx - 1; i < tree.Size(); i++ {
+				if priority[i] != iter.Value() {
+					panic("")
+				}
+				iter.Next()
+			}
+			iter.SeekForPrev(s)
+			for i := idx - 1; i >= 0; i-- {
+				if priority[i] != iter.Value() {
+					panic("")
+				}
+				iter.Prev()
+			}
+		}
+
+		iter.SeekToFirst()
+		for i := 0; i < len(priority); i++ {
+			if iter.Value() != priority[i] {
+				log.Panic("")
+			}
+			iter.Next()
+		}
+
+		iter.SeekToLast()
+		for i := len(priority) - 1; i >= 0; i-- {
+			if iter.Value() != priority[i] {
+				log.Panic("")
+			}
+			iter.Prev()
+		}
+
+	}
+}

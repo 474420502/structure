@@ -2,8 +2,11 @@ package treeset
 
 import (
 	"fmt"
+	"log"
+	"math/rand"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/474420502/structure/compare"
 )
@@ -27,7 +30,7 @@ func TestTreeSet_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			set := New(compare.Int)
-			set.Add(tt.args.items...)
+			set.Adds(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
 			}
@@ -48,7 +51,7 @@ func TestTreeSet_Add(t *testing.T) {
 	for _, tt := range tests2 {
 		t.Run(tt.name, func(t *testing.T) {
 			set := New(compare.String)
-			set.Add(tt.args.items...)
+			set.Adds(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
 			}
@@ -91,7 +94,7 @@ func TestTreeSet_Remove(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			set := New(compare.Int)
-			set.Add(tt.args.addItems...)
+			set.Adds(tt.args.addItems...)
 			set.Remove(tt.args.removeItems...)
 
 			if set.String() != tt.result {
@@ -103,18 +106,20 @@ func TestTreeSet_Remove(t *testing.T) {
 
 func TestTreeSet_Iterator(t *testing.T) {
 	set := New(compare.Int)
-	set.Add(5, 4, 3, 5)
+	set.Adds(5, 4, 3, 5)
 
 	iter := set.Iterator()
-	iter.ToHead()
+	iter.SeekToFirst()
 
 	// if not call Next Prev will error
 	// 5 4 3
 	// if iter.Value() != nil {
 	// 	t.Error(iter.Value())
 	// }
+	if !iter.Vaild() {
+		panic("") // 5
+	}
 
-	iter.Next()
 	if iter.Value() != 3 {
 		t.Error(iter.Value())
 	}
@@ -124,8 +129,16 @@ func TestTreeSet_Iterator(t *testing.T) {
 		t.Error(iter.Value())
 	}
 
-	iter.ToTail()
-	iter.Prev()
+	iter.Next()
+	if iter.Value() != 5 {
+		t.Error(iter.Value())
+	}
+
+	iter.SeekToLast()
+	if !iter.Vaild() {
+		panic("")
+	}
+
 	if iter.Value() != 5 {
 		t.Error(iter.Value())
 	}
@@ -135,15 +148,50 @@ func TestTreeSet_Iterator(t *testing.T) {
 		t.Error(iter.Value())
 	}
 
-	iter.ToHead()
+	iter.SeekToFirst()
 	iter.Prev()
-	if iter.Value() != 3 {
-		t.Error(iter.Value())
+
+	if iter.Vaild() {
+		panic("")
 	}
 
-	iter.ToTail()
+	iter.SeekToLast()
 	iter.Next()
-	if iter.Value() != 5 {
-		t.Error(iter.Value())
+	if iter.Vaild() {
+		panic("")
+	}
+
+}
+
+func TestForce(t *testing.T) {
+	seed := time.Now().UnixNano()
+	log.Println(t.Name(), seed)
+	rand.Seed(seed)
+
+	for n := 0; n < 2000; n++ {
+		set := New(compare.Int)
+		var hashset map[int]bool = make(map[int]bool)
+		for i := 0; i < 200; i++ {
+			v := rand.Intn(100)
+			set.Add(v)
+			hashset[v] = true
+		}
+
+		for k := range hashset {
+			if !set.Contains(k) {
+				panic("")
+			}
+		}
+
+		for _, v := range set.Values() {
+			if ok := hashset[v.(int)]; !ok {
+				panic("")
+			}
+		}
+
+		set.Clear()
+		if !set.Empty() {
+			panic("")
+		}
 	}
 }

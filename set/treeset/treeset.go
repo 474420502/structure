@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/474420502/structure/compare"
-	"github.com/474420502/structure/tree/avl"
 )
 
 // TreeSet
@@ -19,7 +18,13 @@ func New(Compare compare.Compare) *TreeSet {
 }
 
 // Add
-func (set *TreeSet) Add(items ...interface{}) {
+func (set *TreeSet) Add(item interface{}) bool {
+	return set.tree.Put(item)
+
+}
+
+// Adds
+func (set *TreeSet) Adds(items ...interface{}) {
 	for _, item := range items {
 		set.tree.Put(item)
 	}
@@ -61,8 +66,8 @@ func (set *TreeSet) Size() int {
 }
 
 // Iterator avl Iterator
-func (set *TreeSet) Iterator() *avl.Iterator {
-	return set.tree.Iterator()
+func (set *TreeSet) Iterator() *Iterator {
+	return newIterator(set.tree)
 }
 
 // String

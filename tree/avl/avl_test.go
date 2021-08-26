@@ -14,7 +14,7 @@ func TestPutGet(t *testing.T) {
 		tree.Put(i, i)
 	}
 
-	log.Println(tree.String())
+	// log.Println(tree.String())
 
 	for i := 0; i < tree.Size(); i++ {
 		if v, b := tree.Get(i); !b || v != i {
@@ -70,7 +70,7 @@ func TestRemove1(t *testing.T) {
 		t.Error(tree.Size(), tree.Values())
 	}
 
-	log.Println(tree.debugString())
+	// log.Println(tree.debugString())
 	for _, v := range tree.Values() {
 		tree.Remove(v)
 

@@ -8,14 +8,14 @@ import (
 
 const HeightDiff = 1
 
-type Node struct {
-	Children [2]*Node
-	Parent   *Node
+type aNode struct {
+	Children [2]*aNode
+	Parent   *aNode
 	height   int
 	Key      interface{}
 }
 
-func (n *Node) String() string {
+func (n *aNode) String() string {
 	if n == nil {
 		return "nil"
 	}
@@ -28,7 +28,7 @@ func (n *Node) String() string {
 }
 
 type Tree struct {
-	Root    *Node
+	Root    *aNode
 	size    int
 	Compare compare.Compare
 }
@@ -75,7 +75,7 @@ func (tree *Tree) Remove(key interface{}) (interface{}, bool) {
 			return n.Key, true
 		}
 
-		var cur *Node
+		var cur *aNode
 		if left > right {
 			cur = n.Children[0]
 			for cur.Children[1] != nil {
@@ -147,7 +147,7 @@ func (tree *Tree) Get(key interface{}) (interface{}, bool) {
 	return n, false
 }
 
-func (tree *Tree) getNode(key interface{}) (*Node, bool) {
+func (tree *Tree) getNode(key interface{}) (*aNode, bool) {
 
 	for n := tree.Root; n != nil; {
 		switch c := tree.Compare(key, n.Key); c {
@@ -168,7 +168,7 @@ func (tree *Tree) Put(key interface{}) bool {
 
 	if tree.size == 0 {
 		tree.size++
-		tree.Root = &Node{Key: key}
+		tree.Root = &aNode{Key: key}
 		return true
 	}
 
@@ -177,7 +177,7 @@ func (tree *Tree) Put(key interface{}) bool {
 		if c == -1 {
 			if cur.Children[0] == nil {
 				tree.size++
-				cur.Children[0] = &Node{Key: key}
+				cur.Children[0] = &aNode{Key: key}
 				cur.Children[0].Parent = cur
 				if cur.height == 0 {
 					tree.fixPutHeight(cur)
@@ -188,7 +188,7 @@ func (tree *Tree) Put(key interface{}) bool {
 		} else if c == 1 {
 			if cur.Children[1] == nil {
 				tree.size++
-				cur.Children[1] = &Node{Key: key}
+				cur.Children[1] = &aNode{Key: key}
 				cur.Children[1].Parent = cur
 				if cur.height == 0 {
 					tree.fixPutHeight(cur)
@@ -228,8 +228,8 @@ func (tree *Tree) Traverse(every func(v interface{}) bool) {
 		return
 	}
 
-	var traverasl func(cur *Node) bool
-	traverasl = func(cur *Node) bool {
+	var traverasl func(cur *aNode) bool
+	traverasl = func(cur *aNode) bool {
 		if cur == nil {
 			return true
 		}
@@ -247,7 +247,7 @@ func (tree *Tree) Traverse(every func(v interface{}) bool) {
 	traverasl(tree.Root)
 }
 
-func (tree *Tree) lrrotate(cur *Node) {
+func (tree *Tree) lrrotate(cur *aNode) {
 
 	const l = 1
 	const r = 0
@@ -288,7 +288,7 @@ func (tree *Tree) lrrotate(cur *Node) {
 	cur.height = getMaxChildrenHeight(cur) + 1
 }
 
-func (tree *Tree) rlrotate(cur *Node) {
+func (tree *Tree) rlrotate(cur *aNode) {
 
 	const l = 0
 	const r = 1
@@ -327,7 +327,7 @@ func (tree *Tree) rlrotate(cur *Node) {
 	cur.height = getMaxChildrenHeight(cur) + 1
 }
 
-func (tree *Tree) rrotate(cur *Node) {
+func (tree *Tree) rrotate(cur *aNode) {
 
 	const l = 0
 	const r = 1
@@ -362,7 +362,7 @@ func (tree *Tree) rrotate(cur *Node) {
 	cur.height = getMaxChildrenHeight(cur) + 1
 }
 
-func (tree *Tree) lrotate(cur *Node) {
+func (tree *Tree) lrotate(cur *aNode) {
 
 	const l = 1
 	const r = 0
@@ -395,7 +395,7 @@ func (tree *Tree) lrotate(cur *Node) {
 	cur.height = getMaxChildrenHeight(cur) + 1
 }
 
-func getMaxAndChildrenHeight(cur *Node) (h1, h2, maxh int) {
+func getMaxAndChildrenHeight(cur *aNode) (h1, h2, maxh int) {
 	h1 = getHeight(cur.Children[0])
 	h2 = getHeight(cur.Children[1])
 	if h1 > h2 {
@@ -407,7 +407,7 @@ func getMaxAndChildrenHeight(cur *Node) (h1, h2, maxh int) {
 	return
 }
 
-func getMaxChildrenHeight(cur *Node) int {
+func getMaxChildrenHeight(cur *aNode) int {
 	h1 := getHeight(cur.Children[0])
 	h2 := getHeight(cur.Children[1])
 	if h1 > h2 {
@@ -416,14 +416,14 @@ func getMaxChildrenHeight(cur *Node) int {
 	return h2
 }
 
-func getHeight(cur *Node) int {
+func getHeight(cur *aNode) int {
 	if cur == nil {
 		return -1
 	}
 	return cur.height
 }
 
-func (tree *Tree) fixRemoveHeight(cur *Node) {
+func (tree *Tree) fixRemoveHeight(cur *aNode) {
 	for {
 
 		lefth, rigthh, lrmax := getMaxAndChildrenHeight(cur)
@@ -463,7 +463,7 @@ func (tree *Tree) fixRemoveHeight(cur *Node) {
 
 }
 
-func (tree *Tree) fixPutHeight(cur *Node) {
+func (tree *Tree) fixPutHeight(cur *aNode) {
 
 	for {
 
@@ -503,7 +503,7 @@ func (tree *Tree) fixPutHeight(cur *Node) {
 	}
 }
 
-func output(node *Node, prefix string, isTail bool, str *string) {
+func output(node *aNode, prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -540,7 +540,7 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 
 }
 
-func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
+func outputfordebug(node *aNode, prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -588,7 +588,7 @@ func (tree *Tree) debugString() string {
 	return str
 }
 
-func getRelationship(cur *Node) int {
+func getRelationship(cur *aNode) int {
 	if cur.Parent.Children[1] == cur {
 		return 1
 	}
