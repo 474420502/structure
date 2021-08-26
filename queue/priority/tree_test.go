@@ -77,7 +77,6 @@ func TestExtractForce(t *testing.T) {
 		}
 
 		var selects []int
-
 		var s int = -1
 		for i, v := range priority {
 			if int(v.Key().(float64)) >= start {

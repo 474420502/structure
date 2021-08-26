@@ -32,6 +32,7 @@ func (iter *Iterator) Value() interface{} {
 
 func (iter *Iterator) SeekToFirst() {
 	iter.cur = iter.tree.Root
+	iter.idx = -1
 	if iter.cur != nil {
 		for iter.cur.Children[l] != nil {
 			iter.push()
@@ -42,6 +43,8 @@ func (iter *Iterator) SeekToFirst() {
 
 func (iter *Iterator) SeekToLast() {
 	iter.cur = iter.tree.Root
+	iter.idx = -1
+
 	if iter.cur != nil {
 		for iter.cur.Children[r] != nil {
 			iter.push()
@@ -62,7 +65,10 @@ func (iter *Iterator) SeekForPrev(key interface{}) {
 		switch c := iter.tree.Compare(key, iter.cur.Key); c {
 		case -1:
 			if iter.cur.Children[l] == nil {
-				iter.lpop()
+				if !iter.lpop() {
+					iter.push()
+					iter.cur = nil
+				}
 				return
 			}
 
@@ -96,7 +102,10 @@ func (iter *Iterator) SeekForNext(key interface{}) {
 			iter.cur = iter.cur.Children[l]
 		case 1:
 			if iter.cur.Children[r] == nil {
-				iter.rpop()
+				if !iter.rpop() {
+					iter.push()
+					iter.cur = nil
+				}
 				return
 			}
 			iter.push()
