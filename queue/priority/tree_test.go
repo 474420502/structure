@@ -3,12 +3,11 @@ package treequeue
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"sort"
 	"testing"
-	"time"
 
 	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/random"
 )
 
 type dSlice struct {
@@ -33,10 +32,7 @@ func (s *dSlice) SetValue(v interface{}) {
 }
 
 func TestCase1(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	q := New(compare.Int)
 
 	for i := 0; i < 20; i++ {
@@ -51,10 +47,7 @@ func TestCase1(t *testing.T) {
 }
 
 func TestExtractForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
 		var priority []*dSlice
@@ -115,10 +108,7 @@ func TestExtractForce(t *testing.T) {
 }
 
 func TestExtractIndexForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
 		var priority []*dSlice
@@ -166,10 +156,7 @@ func TestExtractIndexForce(t *testing.T) {
 }
 
 func TestRemoveForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
 		var priority []*dSlice
@@ -256,10 +243,7 @@ func TestRemoveForce(t *testing.T) {
 }
 
 func TestRemoveRangeForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
 		var priority []*dSlice
@@ -321,10 +305,7 @@ func TestRemoveRangeForce(t *testing.T) {
 }
 
 func TestRemoveRangeByIndexForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
 		var priority []*dSlice
@@ -378,10 +359,7 @@ func TestRemoveRangeByIndexForce(t *testing.T) {
 }
 
 func TestPutGetsRemoveIndexForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
 		var priority []*dSlice
@@ -444,10 +422,7 @@ func TestPutGetsRemoveIndexForce(t *testing.T) {
 }
 
 func TestHeadTailForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
 		var priority []*dSlice
@@ -506,10 +481,7 @@ func TestHeadTailForce(t *testing.T) {
 }
 
 func TestForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		queue := New(compare.Int)
 		var priority []*dSlice

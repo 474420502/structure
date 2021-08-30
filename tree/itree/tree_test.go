@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"sort"
 	"testing"
-	"time"
 
 	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/random"
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
@@ -27,10 +27,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestIndexForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		tree := New(compare.Int)
 
@@ -71,10 +68,7 @@ func TestIndex(t *testing.T) {
 }
 
 func TestRankForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		tree := New(compare.Int)
 		var arr []int = make([]int, 0, 50)
@@ -176,10 +170,7 @@ func TestRemove3(t *testing.T) {
 }
 
 func TestRemoveRange(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	tree := New(compare.Int)
 	for n := 0; n < 2000; n++ {
 		tree.Clear()
@@ -212,10 +203,7 @@ func TestRemoveRange(t *testing.T) {
 }
 
 func TestTrim(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	tree := New(compare.Int)
 	for n := 0; n < 2000; n++ {
 		tree.Clear()
@@ -290,10 +278,7 @@ func TestRemoveRangeIndex(t *testing.T) {
 
 func TestRemoveRangeIndexForce(t *testing.T) {
 
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
 		var priority []int
@@ -342,10 +327,7 @@ func TestRemoveRangeIndexForce(t *testing.T) {
 
 func TestTrimIndexForce(t *testing.T) {
 
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
 		tree1 := New(compare.Int)
@@ -429,10 +411,7 @@ func TestTrimIndex(t *testing.T) {
 
 func TestAllForce(t *testing.T) {
 
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
 		tree1 := New(compare.Int)
@@ -458,10 +437,7 @@ func TestAllForce(t *testing.T) {
 }
 
 func TestSimpleForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		tree1 := New(compare.Int)
 		tree2 := make(map[int]int)
@@ -515,10 +491,7 @@ func TestSimpleForce(t *testing.T) {
 }
 
 func TestSplitContain(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	var showlist []interface{} = make([]interface{}, 2)
 	defer func() {
 		if err := recover(); err != nil {
@@ -584,10 +557,7 @@ func TestSplitContain(t *testing.T) {
 }
 
 func TestSplit(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	var showlist []interface{} = make([]interface{}, 2)
 	defer func() {
 		if err := recover(); err != nil {

@@ -2,13 +2,11 @@ package treeset
 
 import (
 	"fmt"
-	"log"
-	"math/rand"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/random"
 )
 
 func TestTreeSet_Add(t *testing.T) {
@@ -164,9 +162,7 @@ func TestTreeSet_Iterator(t *testing.T) {
 }
 
 func TestForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
 		set := New(compare.Int)
@@ -188,6 +184,13 @@ func TestForce(t *testing.T) {
 				panic("")
 			}
 		}
+
+		set.Traverse(func(v interface{}) bool {
+			if ok := hashset[v.(int)]; !ok {
+				panic("")
+			}
+			return true
+		})
 
 		set.Clear()
 		if !set.Empty() {

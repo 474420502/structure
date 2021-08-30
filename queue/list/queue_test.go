@@ -3,17 +3,13 @@ package listqueue
 import (
 	"container/list"
 	"fmt"
-	"log"
-	"math/rand"
 	"testing"
-	"time"
+
+	"github.com/474420502/structure/random"
 )
 
 func TestForcePush(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
 		queue1 := New()

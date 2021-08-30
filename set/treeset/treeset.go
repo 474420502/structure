@@ -70,6 +70,11 @@ func (set *TreeSet) Iterator() *Iterator {
 	return newIterator(set.tree)
 }
 
+// Traverse 从左到右遍历. left -> right
+func (set *TreeSet) Traverse(tr func(v interface{}) bool) {
+	set.tree.Traverse(tr)
+}
+
 // String
 func (set *TreeSet) String() string {
 	// content := "HashSet\n"

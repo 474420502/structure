@@ -3,17 +3,14 @@ package lastack
 import (
 	"container/list"
 	"log"
-	"math/rand"
 	"testing"
-	"time"
+
+	"github.com/474420502/structure/random"
 )
 
 func TestForce(t *testing.T) {
 
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	s1 := New()
 	s2 := list.New()
 
@@ -77,9 +74,7 @@ func TestForce(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 	s1 := New()
 
 	for i := 0; i < 10; i++ {

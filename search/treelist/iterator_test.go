@@ -3,21 +3,18 @@ package treelist
 import (
 	"bytes"
 	"log"
-	"math/rand"
 	"sort"
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/random"
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
 func TestIteratorIndexForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		tree := New()
 		tree.compare = compare.BytesLen
@@ -63,9 +60,7 @@ func TestIteratorIndexForce(t *testing.T) {
 
 func TestSeekRand(t *testing.T) {
 
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
 		tree := New()
@@ -129,9 +124,7 @@ func TestSeekRand(t *testing.T) {
 }
 
 func TestSeekByIndexForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
 		tree := New()

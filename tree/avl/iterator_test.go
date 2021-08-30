@@ -2,12 +2,11 @@ package avl
 
 import (
 	"log"
-	"math/rand"
 	"sort"
 	"testing"
-	"time"
 
 	"github.com/474420502/structure/compare"
+	random "github.com/474420502/structure/random"
 )
 
 func TestNextPrev(t *testing.T) {
@@ -106,11 +105,8 @@ func TestSeekFor(t *testing.T) {
 	}
 }
 
-func TestForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+func TestIteratorForce(t *testing.T) {
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		tree := New(compare.Int)
 		var priority []int

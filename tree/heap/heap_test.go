@@ -6,19 +6,16 @@ import (
 	"encoding/gob"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"sort"
 	"testing"
-	"time"
 
 	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/random"
 )
 
 func TestHeapGrowSlimming(t *testing.T) {
 
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 
 	for ii := 0; ii < 2000; ii++ {
 
@@ -119,9 +116,7 @@ func TestHeapPushTopPop(t *testing.T) {
 }
 
 func TestCase(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 
 	var buf = bytes.NewBuffer(nil)
 	err := binary.Write(buf, binary.BigEndian, []byte("12313"))

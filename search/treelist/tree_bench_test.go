@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/random"
 )
 
 const Level0 = 100000
@@ -124,9 +125,7 @@ func TestRemoveRange(t *testing.T) {
 // }
 
 func TestTrimBench(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 	// rand.Seed(time.Now().UnixNano())
 	var TreeListCountTime time.Duration = 0
 	level := Level0 / 100
@@ -175,9 +174,7 @@ func TestTrimBench(t *testing.T) {
 
 // 优化交集测试
 func estIntersectionP(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 
 	var cost1 time.Duration
 	var cost2 time.Duration

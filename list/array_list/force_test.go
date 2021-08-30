@@ -4,15 +4,13 @@ import (
 	"container/list"
 	"fmt"
 	"log"
-	"math/rand"
 	"testing"
-	"time"
+
+	"github.com/474420502/structure/random"
 )
 
 func TestCasePushRemove(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
 		l := New()
@@ -53,9 +51,7 @@ func TestCasePushRemove(t *testing.T) {
 }
 
 func TestCasePushPop(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
 		l := New()
@@ -112,9 +108,7 @@ func TestCasePushPop(t *testing.T) {
 }
 
 func TestCaseContains(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
 		l := New()
@@ -138,9 +132,7 @@ func TestCaseContains(t *testing.T) {
 }
 
 func TestCaseCircularIterator(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(seed)
-	rand.Seed(seed)
+	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
 		l := New()

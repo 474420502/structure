@@ -2,9 +2,11 @@ package avl
 
 import (
 	"log"
+	"sort"
 	"testing"
 
 	"github.com/474420502/structure/compare"
+	random "github.com/474420502/structure/random"
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
@@ -73,11 +75,72 @@ func TestRemove1(t *testing.T) {
 	// log.Println(tree.debugString())
 	for _, v := range tree.Values() {
 		tree.Remove(v)
-
 		log.Println(tree.debugString())
 	}
 
 	if tree.Size() != 0 {
 		t.Error(tree.Values())
+	}
+}
+
+func TestForce(t *testing.T) {
+	rand := random.New(t.Name())
+
+	tree := New(compare.Int)
+	for n := 0; n < 2000; n++ {
+
+		var priority []int
+		for i := 0; i < 100; i++ {
+			v := rand.Intn(100)
+			if tree.Put(v, v) {
+				priority = append(priority, v)
+			}
+		}
+
+		if tree.Size() != len(priority) {
+			panic("")
+		}
+
+		sort.Slice(priority, func(i, j int) bool {
+			return priority[i] < priority[j]
+		})
+
+		for i, v := range tree.Values() {
+			if priority[i] != v {
+				panic("")
+			}
+		}
+
+		for i := 0; i < 40; i++ {
+
+			v := rand.Intn(100)
+
+			if _, ok := tree.Get(v); ok {
+
+				rv, ok := tree.Remove(v)
+				if !ok || rv != v {
+					panic("")
+				}
+
+				if idx := sort.SearchInts(priority, v); idx == len(priority) {
+					panic("")
+				} else {
+					priority = append(priority[:idx], priority[idx+1:]...)
+				}
+
+			}
+		}
+
+		var i = 0
+		tree.Traverse(func(k, v interface{}) bool {
+			if priority[i] != v {
+				panic("")
+			}
+			i++
+			return true
+		})
+
+		tree.Clear()
+
 	}
 }

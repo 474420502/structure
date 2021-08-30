@@ -3,12 +3,10 @@ package arrayqueue
 import (
 	"container/list"
 	"fmt"
-	"log"
-	"math/rand"
 	"testing"
-	"time"
 
 	testutils "github.com/474420502/structure"
+	"github.com/474420502/structure/random"
 )
 
 func TestCasePut(t *testing.T) {
@@ -122,10 +120,7 @@ func TestCasePop(t *testing.T) {
 }
 
 func TestForce(t *testing.T) {
-	seed := time.Now().UnixNano()
-	log.Println(t.Name(), seed)
-	rand.Seed(seed)
-
+	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
 		queue1 := New()
