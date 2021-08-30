@@ -6,7 +6,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/474420502/structure/random"
+	"github.com/474420502/random"
 )
 
 func TestCasePushRemove(t *testing.T) {

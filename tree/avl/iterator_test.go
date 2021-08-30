@@ -5,8 +5,8 @@ import (
 	"sort"
 	"testing"
 
+	random "github.com/474420502/random"
 	"github.com/474420502/structure/compare"
-	random "github.com/474420502/structure/random"
 )
 
 func TestNextPrev(t *testing.T) {

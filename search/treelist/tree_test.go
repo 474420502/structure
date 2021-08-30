@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/474420502/random"
 	"github.com/474420502/structure/compare"
-	"github.com/474420502/structure/random"
 	avl "github.com/474420502/structure/tree/avl"
 	testutils "github.com/474420502/structure/tree/test_utils"
 )

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/474420502/random"
 	"github.com/474420502/structure/compare"
-	"github.com/474420502/structure/random"
 )
 
 const Level0 = 100000

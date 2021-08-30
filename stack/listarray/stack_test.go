@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/474420502/structure/random"
+	"github.com/474420502/random"
 )
 
 func TestForce(t *testing.T) {

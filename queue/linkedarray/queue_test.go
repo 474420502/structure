@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/474420502/random"
 	testutils "github.com/474420502/structure"
-	"github.com/474420502/structure/random"
 )
 
 func TestCasePut(t *testing.T) {

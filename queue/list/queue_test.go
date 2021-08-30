@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/474420502/structure/random"
+	"github.com/474420502/random"
 )
 
 func TestForcePush(t *testing.T) {
