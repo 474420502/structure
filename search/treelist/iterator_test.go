@@ -3,6 +3,7 @@ package treelist
 import (
 	"bytes"
 	"log"
+	"math/rand"
 	"sort"
 	"strconv"
 	"strings"
@@ -218,6 +219,24 @@ func TestSeek(t *testing.T) {
 		}
 		iter.Next()
 	}
+
+	iter.SeekForPrev([]byte("0"))
+	if iter.Valid() {
+		panic("0 not has prev")
+	}
+
+	iter.SeekForNext([]byte("12"))
+	if iter.Valid() {
+		if string(iter.Key()) != "14" {
+			panic("SeekForNext error")
+		}
+	}
+
+	iter.SeekForNext([]byte("999"))
+	if iter.Valid() {
+		panic("999 not has next")
+	}
+
 	for i, v := range correctResult {
 		if result[i] != v {
 			t.Error("seek error")
@@ -243,5 +262,49 @@ func TestFirstLast(t *testing.T) {
 	for iter.Valid() {
 		iter.Value()
 		iter.Next()
+	}
+}
+
+func TestIteratorSeekForForce(t *testing.T) {
+	r := random.New()
+
+	for n := 0; n < 2000; n++ {
+		tree := New()
+		var plist [][]byte
+		for i := 0; i < 200; i++ {
+			v := []byte(strconv.Itoa(r.Intn(200)))
+			if tree.Put(v, v) {
+				plist = append(plist, v)
+			}
+		}
+
+		sort.Slice(plist, func(i, j int) bool {
+			return tree.compare(plist[i], plist[j]) < 0
+		})
+
+		for i := 0; i < 5; i++ {
+			idx := rand.Intn(len(plist)-2) + 1
+
+			skey := plist[idx]
+
+			nkey := plist[idx+1]
+			pkey := plist[idx-1]
+
+			tree.Remove(skey)
+
+			iter := tree.Iterator()
+			iter.SeekForPrev(skey)
+			if string(iter.Key()) != string(pkey) {
+				panic("")
+			}
+
+			iter.SeekForNext(skey)
+			if string(iter.Key()) != string(nkey) {
+				panic("")
+			}
+
+			tree.Put(skey, skey)
+		}
+
 	}
 }

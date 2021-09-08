@@ -34,6 +34,17 @@ func (iter *Iterator) SeekForPrev(key []byte) {
 	iter.cur = cur
 }
 
+func (iter *Iterator) SeekForNext(key []byte) {
+	const R = 1
+	cur, idx, dir := iter.tree.seekNodeWithIndex(key)
+	iter.idx = idx
+	if dir > 0 {
+		cur = cur.Direct[R]
+		iter.idx++
+	}
+	iter.cur = cur
+}
+
 func (iter *Iterator) SeekToFirst() {
 	const L = 0
 	// root := iter.tree.getRoot()
