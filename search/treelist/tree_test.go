@@ -320,6 +320,49 @@ func TestRange(t *testing.T) {
 	}
 }
 
+func TestRangeReturn(t *testing.T) {
+
+	rand := random.New(t.Name())
+	for n := 0; n < 1000000; n++ {
+
+		startkey := rand.Intn(300)
+		endkey := rand.Intn(300)
+		if startkey > endkey {
+			temp := startkey
+			startkey = endkey
+			endkey = temp
+		}
+
+		tree := New()
+		tree.compare = compare.BytesLen
+		avltree := avl.New(compare.Int)
+
+		for i := 100; i < 200; i += rand.Intn(8) + 2 {
+			v := []byte(strconv.Itoa(i))
+			tree.Put(v, v)
+			avltree.Put(i, i)
+		}
+		// tree.rcount = 0
+		start := []byte(strconv.Itoa(startkey))
+		end := []byte(strconv.Itoa(endkey))
+
+		size1 := int64(avltree.Size())
+		size2 := tree.Size()
+
+		result := tree.RemoveRange(start, end)
+		for i := startkey; i <= endkey; i++ {
+			avltree.Remove(i)
+		}
+
+		if !result {
+			// log.Println(tree.debugString(true))
+			if !(size1 == size2 && tree.Size() == size2 && int64(avltree.Size()) == size1) {
+				t.Error("RemoveRange return error")
+			}
+		}
+	}
+}
+
 func TestHeadTail(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 1000; n++ {

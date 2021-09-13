@@ -352,7 +352,7 @@ func (tree *Tree) RemoveTail() *Slice {
 }
 
 // RemoveRange
-func (tree *Tree) RemoveRange(low, hight []byte) {
+func (tree *Tree) RemoveRange(low, hight []byte) bool {
 
 	const L = 0
 	const R = 1
@@ -361,13 +361,12 @@ func (tree *Tree) RemoveRange(low, hight []byte) {
 	if c > 0 {
 		panic("key2 must greater than key1 or equal to")
 	} else if c == 0 {
-		tree.Remove(low)
-		return
+		return tree.Remove(low) != nil
 	}
 
 	root := tree.getRangeRoot(low, hight)
 	if root == nil {
-		return
+		return false
 	}
 
 	var ltrim, rtrim func(*Node) *Node
@@ -459,7 +458,7 @@ func (tree *Tree) RemoveRange(low, hight []byte) {
 			rparent.Size -= size
 			rparent = rparent.Parent
 		}
-		return
+		return true
 	}
 
 	// 左右树　拼接
@@ -470,6 +469,8 @@ func (tree *Tree) RemoveRange(low, hight []byte) {
 	} else {
 		tree.mergeGroups(root, rgroup, lgroup, lsize, L)
 	}
+
+	return true
 }
 
 // RemoveRangeByIndex 1.range [low:hight] 2.low hight 必须包含存在的值.[low: hight+1] [low-1: hight].  [low-1: hight+1]. error: [low-1:low-2] or [hight+1:hight+2]
