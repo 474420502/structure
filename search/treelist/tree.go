@@ -150,6 +150,88 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 
 }
 
+func (tree *Tree) Cover(key []byte, value interface{}) bool {
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	if cur == nil {
+		node := &Node{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
+		tree.root.Children[0] = node
+		tree.root.Direct[L] = node
+		tree.root.Direct[R] = node
+		return false
+	}
+
+	var left *Node = nil
+	var right *Node = nil
+
+	for {
+		c := tree.compare(key, cur.Key)
+		switch {
+		case c < 0:
+
+			right = cur
+			if cur.Children[L] != nil {
+				cur = cur.Children[L]
+			} else {
+
+				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				cur.Children[L] = node
+
+				if left != nil {
+					left.Direct[R] = node
+				} else {
+					tree.root.Direct[L] = node
+				}
+
+				if right != nil {
+					right.Direct[L] = node
+				} else {
+					tree.root.Direct[R] = node
+				}
+
+				node.Direct[L] = left
+				node.Direct[R] = right
+
+				tree.fixPut(cur)
+				return false
+			}
+
+		case c > 0:
+
+			left = cur
+			if cur.Children[R] != nil {
+				cur = cur.Children[R]
+			} else {
+				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				cur.Children[R] = node
+
+				if left != nil {
+					left.Direct[R] = node
+				} else {
+					tree.root.Direct[L] = node
+				}
+				if right != nil {
+					right.Direct[L] = node
+				} else {
+					tree.root.Direct[R] = node
+				}
+
+				node.Direct[L] = left
+				node.Direct[R] = right
+
+				tree.fixPut(cur)
+				return false
+			}
+		default:
+			cur.Slice.Value = value
+			return true
+		}
+	}
+
+}
+
 func (tree *Tree) Put(key []byte, value interface{}) bool {
 	const L = 0
 	const R = 1

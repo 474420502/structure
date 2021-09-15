@@ -242,15 +242,16 @@ func TestForce2(t *testing.T) {
 		})
 
 		var ss []interface{}
-		for i := 0; i < 20; i++ {
+		for i := 0; i < 200; i++ {
 			k := rand.Intn(100)
-			v := rand.Intn(100)
+
 			ss = append(ss, &specialItem{
 				Key:   k,
-				Value: v,
+				Value: i,
 			})
-			hashset[k] = v
+			hashset[k] = i
 		}
+
 		set.Adds(ss...)
 
 		var is bool = true

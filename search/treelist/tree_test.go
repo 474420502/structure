@@ -319,7 +319,7 @@ func TestRange(t *testing.T) {
 func TestRangeReturn(t *testing.T) {
 
 	rand := random.New(t.Name())
-	for n := 0; n < 1000000; n++ {
+	for n := 0; n < 2000; n++ {
 
 		startkey := rand.Intn(300)
 		endkey := rand.Intn(300)
@@ -874,5 +874,69 @@ func TestDifferenceSets(t *testing.T) {
 		if fmt.Sprintf("%v", result1) != fmt.Sprintf("%v", result2) {
 			log.Panic(result1, result2)
 		}
+	}
+}
+
+func TestCover(t *testing.T) {
+	rand := random.New(t.Name())
+	for n := 0; n < 2000; n++ {
+
+		tree1 := New()
+		tree1.compare = compare.BytesLen
+		var dict map[int]int = make(map[int]int)
+		for i := 0; i < 20; i++ {
+
+			dict[i] = i
+			tree1.Put([]byte(strconv.Itoa(i)), i)
+		}
+
+		for i := 0; i < 40; i++ {
+			tree1.Put([]byte(strconv.Itoa(i)), rand.Intn(100)+20)
+		}
+
+		for k, i1 := range dict {
+			if i2, ok := tree1.Get([]byte(strconv.Itoa(k))); !ok {
+				panic("")
+			} else if i2 != i1 {
+				panic("")
+			}
+		}
+
+		dict = make(map[int]int)
+		tree1.Clear()
+
+		for i := 0; i < 200; i++ {
+			v := rand.Intn(100)
+			dict[v] = i
+			tree1.Cover([]byte(strconv.Itoa(v)), i)
+		}
+
+		for k, i1 := range dict {
+			if i2, ok := tree1.Get([]byte(strconv.Itoa(k))); !ok {
+				panic("")
+			} else if i2 != i1 {
+				panic("")
+			}
+		}
+
+		dict = make(map[int]int)
+		tree1.Clear()
+
+		for i := 0; i < 200; i++ {
+			v := rand.Intn(100)
+			dict[v] = i
+			tree1.PutDuplicate([]byte(strconv.Itoa(v)), i, func(exists *Slice) {
+				exists.Value = i
+			})
+		}
+
+		for k, i1 := range dict {
+			if i2, ok := tree1.Get([]byte(strconv.Itoa(k))); !ok {
+				panic("")
+			} else if i2 != i1 {
+				panic("")
+			}
+		}
+
 	}
 }
