@@ -184,7 +184,7 @@ func TestForce(t *testing.T) {
 		cur := l.Front()
 		for _, v := range hm.Values() {
 			if cur.Value != v {
-				log.Println(cur.Value, v)
+				log.Panicln(cur.Value, v)
 			}
 			cur = cur.Next()
 		}
@@ -240,5 +240,147 @@ func TestForce(t *testing.T) {
 		hm.Clear()
 		set.Clear()
 		l = l.Init()
+	}
+}
+
+func TestForceCover(t *testing.T) {
+	log.SetFlags(log.Llongfile)
+	rand := random.New()
+
+	type KeyValue struct {
+		Key   int
+		Value int
+		Elem  *list.Element
+	}
+
+	for n := 0; n < 2000; n++ {
+		hm := New()
+		l := list.New()
+		var m map[int]*KeyValue = make(map[int]*KeyValue)
+
+		if !hm.Empty() {
+			panic("")
+		}
+
+		for i := 0; i < 20; i++ {
+			v := rand.Intn(20)
+			if rand.Bool() {
+				if !hm.Cover(v, v) {
+					kv := &KeyValue{Key: v, Value: v}
+					kv.Elem = l.PushBack(kv)
+					m[v] = kv
+				} else {
+					kv := m[v]
+					kv.Value = v
+					l.Remove(kv.Elem)
+					kv.Elem = l.PushBack(kv)
+				}
+			} else {
+				if !hm.CoverFront(v, v) {
+					kv := &KeyValue{Key: v, Value: v}
+					kv.Elem = l.PushFront(kv)
+					m[v] = kv
+				} else {
+					kv := m[v]
+					kv.Value = v
+					l.Remove(kv.Elem)
+					kv.Elem = l.PushFront(kv)
+				}
+			}
+
+		}
+
+		cur := l.Front()
+		// log.Println(hm.Values())
+		for _, v := range hm.Values() {
+			if cur.Value.(*KeyValue).Value != v {
+				log.Panicln(cur.Value, v)
+			}
+			cur = cur.Next()
+		}
+
+		if cur != nil {
+			panic("")
+		}
+
+		for i := 0; hm.Size() != 0 && i < 120; i++ {
+
+			if rand.OneOf64n(2) {
+				k := rand.Intn(100)
+				if kv, ok := m[k]; ok {
+					v, ok := hm.Remove(k)
+					if !ok {
+						panic("error")
+					}
+					l.Remove(kv.Elem)
+					if kv.Value != v {
+						log.Panicln("value should equal ", kv.Value, v)
+					}
+
+					delete(m, k)
+				}
+			}
+
+			if rand.OneOf64n(4) {
+				v := rand.Intn(100)
+				if rand.Bool() {
+
+					if !hm.Cover(v, v) {
+						kv := &KeyValue{Key: v, Value: v}
+						kv.Elem = l.PushBack(kv)
+						m[v] = kv
+					} else {
+						kv := m[v]
+						kv.Value = v
+						l.Remove(kv.Elem)
+						kv.Elem = l.PushBack(kv)
+					}
+				} else {
+					if !hm.CoverFront(v, v) {
+						kv := &KeyValue{Key: v, Value: v}
+						kv.Elem = l.PushFront(kv)
+						m[v] = kv
+					} else {
+						kv := m[v]
+						kv.Value = v
+						l.Remove(kv.Elem)
+						kv.Elem = l.PushFront(kv)
+					}
+				}
+			}
+
+			cur = l.Front()
+			for _, v := range hm.Values() {
+				if cur.Value.(*KeyValue).Value != v {
+					log.Panicln(cur.Value, v)
+				}
+				cur = cur.Next()
+			}
+
+			if rand.OneOf64n(2) {
+				v := rand.Intn(100)
+				if kv, ok := m[v]; ok {
+					kv.Value = v + 1
+					ok = hm.Set(v, v+1)
+					if !ok {
+						panic("hash set is error")
+					}
+
+					cur = l.Front()
+					for _, v := range hm.Values() {
+						if cur.Value.(*KeyValue).Value != v {
+							log.Panicln(cur.Value, v)
+						}
+						cur = cur.Next()
+					}
+				} else {
+					if hm.Set(v, v+1) == true {
+						panic("")
+					}
+				}
+			}
+
+		}
+
 	}
 }

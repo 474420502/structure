@@ -90,7 +90,7 @@ func (tree *Tree) Put(key, value interface{}) bool {
 }
 
 // Put 插入成功,返回false. 存在覆盖 返回true
-func (tree *Tree) PutCover(key, value interface{}) bool {
+func (tree *Tree) Cover(key, value interface{}) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {

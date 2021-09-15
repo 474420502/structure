@@ -116,7 +116,7 @@ func (tree *Queue) Gets(key interface{}) (result []*Slice) {
 	return
 }
 
-// Put 插入成功,返回true. 存在不插入 返回false
+// Put 插入成功. 队列无去重
 func (tree *Queue) Put(key, value interface{}) {
 
 	cur := tree.getRoot()

@@ -164,6 +164,45 @@ func (tree *Tree) getNode(key interface{}) (*aNode, bool) {
 	return nil, false
 }
 
+func (tree *Tree) Cover(key interface{}) bool {
+
+	if tree.size == 0 {
+		tree.size++
+		tree.Root = &aNode{Key: key}
+		return false
+	}
+
+	for cur, c := tree.Root, 0; ; {
+		c = tree.Compare(key, cur.Key)
+		if c == -1 {
+			if cur.Children[0] == nil {
+				tree.size++
+				cur.Children[0] = &aNode{Key: key}
+				cur.Children[0].Parent = cur
+				if cur.height == 0 {
+					tree.fixPutHeight(cur)
+				}
+				return false
+			}
+			cur = cur.Children[0]
+		} else if c == 1 {
+			if cur.Children[1] == nil {
+				tree.size++
+				cur.Children[1] = &aNode{Key: key}
+				cur.Children[1].Parent = cur
+				if cur.height == 0 {
+					tree.fixPutHeight(cur)
+				}
+				return false
+			}
+			cur = cur.Children[1]
+		} else {
+			cur.Key = key
+			return true
+		}
+	}
+}
+
 func (tree *Tree) Put(key interface{}) bool {
 
 	if tree.size == 0 {
@@ -197,7 +236,6 @@ func (tree *Tree) Put(key interface{}) bool {
 			}
 			cur = cur.Children[1]
 		} else {
-			cur.Key = key
 			return false
 		}
 	}

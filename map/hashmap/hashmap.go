@@ -2,6 +2,10 @@ package hashmap
 
 import "fmt"
 
+type Slice struct {
+	Key, Value interface{}
+}
+
 type HashMap struct {
 	hm map[interface{}]interface{}
 }
@@ -16,8 +20,17 @@ func NewWithCap(cap int) *HashMap {
 	return &HashMap{hm: make(map[interface{}]interface{}, cap)}
 }
 
-// Put inserts element into the map.
-func (hm *HashMap) Put(key interface{}, value interface{}) {
+// Put inserts element into the map With Not Cover. if key exists return false. else return true
+func (hm *HashMap) Put(key interface{}, value interface{}) bool {
+	if _, ok := hm.hm[key]; !ok {
+		hm.hm[key] = value
+		return true
+	}
+	return false
+}
+
+// Cover inserts element into the map With Cover.
+func (hm *HashMap) Cover(key interface{}, value interface{}) {
 	hm.hm[key] = value
 }
 
@@ -56,6 +69,18 @@ func (hm *HashMap) Values() []interface{} {
 		count++
 	}
 	return values
+}
+
+func (hm *HashMap) Slices() []Slice {
+	var slices []Slice = make([]Slice, len(hm.hm))
+
+	var i = 0
+	for key, value := range hm.hm {
+		s := slices[i]
+		s.Key = key
+		s.Value = value
+	}
+	return slices
 }
 
 func (hm *HashMap) Clear() {

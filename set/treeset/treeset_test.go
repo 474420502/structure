@@ -28,7 +28,7 @@ func TestTreeSet_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			set := New(compare.Int)
-			set.Adds(tt.args.items...)
+			set.Covers(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
 			}
@@ -49,7 +49,7 @@ func TestTreeSet_Add(t *testing.T) {
 	for _, tt := range tests2 {
 		t.Run(tt.name, func(t *testing.T) {
 			set := New(compare.String)
-			set.Adds(tt.args.items...)
+			set.Covers(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
 			}
@@ -92,7 +92,7 @@ func TestTreeSet_Remove(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			set := New(compare.Int)
-			set.Adds(tt.args.addItems...)
+			set.Covers(tt.args.addItems...)
 			set.Remove(tt.args.removeItems...)
 
 			if set.String() != tt.result {
@@ -104,7 +104,7 @@ func TestTreeSet_Remove(t *testing.T) {
 
 func TestTreeSet_Iterator(t *testing.T) {
 	set := New(compare.Int)
-	set.Adds(5, 4, 3, 5)
+	set.Covers(5, 4, 3, 5)
 
 	iter := set.Iterator()
 	iter.SeekToFirst()
@@ -169,7 +169,7 @@ func TestForce(t *testing.T) {
 		var hashset map[int]bool = make(map[int]bool)
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)
-			set.Add(v)
+			set.Cover(v)
 			hashset[v] = true
 		}
 
@@ -196,5 +196,93 @@ func TestForce(t *testing.T) {
 		if !set.Empty() {
 			panic("")
 		}
+	}
+}
+
+type specialItem struct {
+	Key   int
+	Value int
+}
+
+var specialCompare = func(a1, a2 interface{}) int {
+	key1 := a1.(*specialItem).Key
+	key2 := a2.(*specialItem).Key
+	if key1 > key2 {
+		return -1
+	} else if key1 < key2 {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+func TestForce2(t *testing.T) {
+	rand := random.New(t.Name())
+
+	for n := 0; n < 2000; n++ {
+		set := New(specialCompare)
+		var hashset map[int]int = make(map[int]int)
+		for i := 0; i < 200; i++ {
+			k := rand.Intn(100)
+			v := rand.Intn(100)
+			if set.Add(&specialItem{
+				Key:   k,
+				Value: v,
+			}) {
+				hashset[k] = v
+			}
+		}
+
+		set.Traverse(func(v interface{}) bool {
+			s := v.(*specialItem)
+			if hashset[s.Key] != s.Value {
+				panic("")
+			}
+			return true
+		})
+
+		var ss []interface{}
+		for i := 0; i < 20; i++ {
+			k := rand.Intn(100)
+			v := rand.Intn(100)
+			ss = append(ss, &specialItem{
+				Key:   k,
+				Value: v,
+			})
+			hashset[k] = v
+		}
+		set.Adds(ss...)
+
+		var is bool = true
+		set.Traverse(func(v interface{}) bool {
+			s := v.(*specialItem)
+			if hashset[s.Key] != s.Value {
+				is = false
+				return false
+			}
+			return true
+		})
+
+		if is {
+			panic("")
+		}
+
+		iter := set.Iterator()
+		iter2 := set.Iterator()
+		iter.SeekForNext(&specialItem{
+			Key: 50,
+		})
+		for iter.Vaild() {
+			s := iter.Value().(*specialItem)
+			if s.Key > 50 {
+				panic("")
+			}
+			iter2.Seek(s)
+			if !iter2.Vaild() {
+				panic("")
+			}
+			iter.Next()
+		}
+
 	}
 }

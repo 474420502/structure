@@ -25,7 +25,7 @@ func TestBloom(t *testing.T) {
 			chars = append(chars, basechars[s])
 		}
 		collect = append(collect, chars)
-		if bloom.PutBytes(chars) {
+		if bloom.AddBytes(chars) {
 			truecount++
 		}
 	}
@@ -63,7 +63,7 @@ func TestBloomPut(t *testing.T) {
 
 		var v = r.Uint64()
 		collect = append(collect, v)
-		if bloom.Put(v) {
+		if bloom.Add(v) {
 			truecount++
 		}
 	}
@@ -107,7 +107,7 @@ func TestBloomPutForce(t *testing.T) {
 
 			var v = r.Uint64()
 			collect = append(collect, v)
-			if bloom.Put(v) {
+			if bloom.Add(v) {
 				truecount++
 			}
 		}
@@ -136,6 +136,6 @@ func BenchmarkPut(b *testing.B) {
 	bloom := New(10000000)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		bloom.Put(r.Uint64())
+		bloom.Add(r.Uint64())
 	}
 }

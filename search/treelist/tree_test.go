@@ -74,10 +74,7 @@ func TestRank(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
-		// log.Println(tree.debugString(true))
 	}
-
-	// log.Println(tree.debugString(true))
 
 	for i := 0; i < 100; i++ {
 		k := []byte(strconv.Itoa(i))
@@ -163,7 +160,6 @@ func TestRemoveNode(t *testing.T) {
 				}
 			}
 		}
-
 	}
 }
 
@@ -250,7 +246,7 @@ func TestRange(t *testing.T) {
 		for i := 0; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
-			avltree.Put(i, i)
+			avltree.Cover(i, i)
 		}
 		// tree.rcount = 0
 		start := []byte(strconv.Itoa(startkey))
@@ -340,7 +336,7 @@ func TestRangeReturn(t *testing.T) {
 		for i := 100; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
-			avltree.Put(i, i)
+			avltree.Cover(i, i)
 		}
 		// tree.rcount = 0
 		start := []byte(strconv.Itoa(startkey))

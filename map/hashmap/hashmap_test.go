@@ -27,7 +27,7 @@ func TestForce(t *testing.T) {
 
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)
-			hm.Put(v, v)
+			hm.Cover(v, v)
 			set.Add(v)
 		}
 
@@ -57,7 +57,7 @@ func TestForce(t *testing.T) {
 			}
 
 			if rand.OneOf64n(3) {
-				hm.Put(k, k)
+				hm.Cover(k, k)
 				set.Add(k)
 			}
 		}
@@ -78,5 +78,26 @@ func TestForce(t *testing.T) {
 		set.Clear()
 	}
 
-	// t.Error(hm.Get(4))
+}
+
+func TestCoverPut(t *testing.T) {
+
+	rand := random.New()
+	hm := New()
+
+	for n := 0; n < 2000; n++ {
+
+		for i := 0; i < 100; i++ {
+			v := rand.Intn(200)
+			hm.Put(v, v) // 不覆盖 所以kv永远相等
+		}
+
+		for _, s := range hm.Slices() {
+			if s.Key != s.Value {
+				panic("")
+			}
+		}
+
+	}
+
 }

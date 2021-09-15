@@ -35,16 +35,16 @@ func New(bitsCap uint64) *Bloom {
 	}
 }
 
-func (bl *Bloom) Put(key interface{}) (isExists bool) {
+func (bl *Bloom) Add(key interface{}) (isExists bool) {
 	var keybuf bytes.Buffer
 	err := binary.Write(&keybuf, binary.BigEndian, key)
 	if err != nil {
 		panic(err)
 	}
-	return bl.PutBytes(keybuf.Bytes())
+	return bl.AddBytes(keybuf.Bytes())
 }
 
-func (bl *Bloom) PutBytes(key []byte) (isExists bool) {
+func (bl *Bloom) AddBytes(key []byte) (isExists bool) {
 	defer bl.hashFunc.Reset()
 	_, err := bl.hashFunc.Write(key)
 	if err != nil {

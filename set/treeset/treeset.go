@@ -17,10 +17,22 @@ func New(Compare compare.Compare) *TreeSet {
 	return &TreeSet{tree: newAVL(Compare)}
 }
 
-// Add
+// Add Not Cover the key of node
 func (set *TreeSet) Add(item interface{}) bool {
 	return set.tree.Put(item)
 
+}
+
+// Cover   Cover the key of node
+func (set *TreeSet) Cover(item interface{}) bool {
+	return set.tree.Cover(item)
+}
+
+// Cover   Cover the key of node
+func (set *TreeSet) Covers(items ...interface{}) {
+	for _, item := range items {
+		set.tree.Cover(item)
+	}
 }
 
 // Adds

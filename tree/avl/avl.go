@@ -168,6 +168,48 @@ func (tree *Tree) getNode(key interface{}) (*Node, bool) {
 	return nil, false
 }
 
+// Cover Put And value Cover Node.Value
+func (tree *Tree) Cover(key, value interface{}) bool {
+
+	if tree.size == 0 {
+		tree.size++
+		tree.Root = &Node{Key: key, Value: value}
+		return false
+	}
+
+	for cur, c := tree.Root, 0; ; {
+		c = tree.Compare(key, cur.Key)
+		if c == -1 {
+			if cur.Children[0] == nil {
+				tree.size++
+				cur.Children[0] = &Node{Key: key, Value: value}
+				cur.Children[0].Parent = cur
+				if cur.height == 0 {
+					tree.fixPutHeight(cur)
+				}
+				return false
+			}
+			cur = cur.Children[0]
+		} else if c == 1 {
+			if cur.Children[1] == nil {
+				tree.size++
+				cur.Children[1] = &Node{Key: key, Value: value}
+				cur.Children[1].Parent = cur
+				if cur.height == 0 {
+					tree.fixPutHeight(cur)
+				}
+				return false
+			}
+			cur = cur.Children[1]
+		} else {
+			cur.Key = key
+			cur.Value = value
+			return true
+		}
+	}
+}
+
+// Put Put into Tree . if key exists, not cover. and return false. else return true
 func (tree *Tree) Put(key, value interface{}) bool {
 
 	if tree.size == 0 {
@@ -201,8 +243,6 @@ func (tree *Tree) Put(key, value interface{}) bool {
 			}
 			cur = cur.Children[1]
 		} else {
-			cur.Key = key
-			cur.Value = value
 			return false
 		}
 	}

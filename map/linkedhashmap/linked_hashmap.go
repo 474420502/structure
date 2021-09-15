@@ -25,12 +25,99 @@ func New() *LinkedHashmap {
 	return lhmap
 }
 
+// CoverBack equal to CoverBack, f key exists, if key exists, cover and move node to back, return true. else insert new node to back, return false
+func (lhmap *LinkedHashmap) Cover(key interface{}, value interface{}) bool {
+	return lhmap.CoverBack(key, value)
+}
+
+// CoverBack equal to Cover, if key exists, cover and move node to back, return true. else insert new node to back, return false
+func (lhmap *LinkedHashmap) CoverBack(key interface{}, value interface{}) bool {
+
+	var ok bool
+	var node *Node
+
+	if node, ok = lhmap.hmap[key]; ok {
+		node.value = value
+		if node == lhmap.tail.prev {
+			return ok
+		}
+
+		// 删除node的节点
+		prev := node.prev
+		next := node.next
+		prev.next = next
+		next.prev = prev
+
+		tprev := lhmap.tail.prev
+		// 连接尾部
+		tprev.next = node
+		node.prev = tprev
+		node.next = lhmap.tail
+		lhmap.tail.prev = node
+
+	} else {
+		node = &Node{}
+		// 直接在尾部赋值
+		lhmap.tail.key = key
+		lhmap.tail.value = value
+		lhmap.hmap[key] = lhmap.tail
+
+		node.prev = lhmap.tail
+		lhmap.tail.next = node
+
+		lhmap.tail = node // 重新定位尾部节点, 该节点是判断是否为尾部的关键
+	}
+
+	return ok
+
+}
+
+// CoverFront if key exists, cover and move node to front, return true. else insert new node to front. return false
+func (lhmap *LinkedHashmap) CoverFront(key interface{}, value interface{}) bool {
+	var ok bool
+	var node *Node
+
+	if node, ok = lhmap.hmap[key]; ok {
+		node.value = value
+		if node == lhmap.head.next {
+			return ok
+		}
+
+		// 删除node的节点
+		prev := node.prev
+		next := node.next
+		prev.next = next
+		next.prev = prev
+
+		hnext := lhmap.head.next
+		// 连接头部
+		hnext.prev = node
+		node.next = hnext
+		node.prev = lhmap.head
+		lhmap.head.next = node
+
+	} else {
+		node = &Node{} // 创建空节点. 新的头部节点
+
+		// 直接在尾部赋值
+		lhmap.head.key = key
+		lhmap.head.value = value
+		lhmap.hmap[key] = lhmap.head
+
+		node.next = lhmap.head
+		lhmap.head.prev = node
+		lhmap.head = node // 重新定位头部节点, 该节点是判断是否为头部的关键
+	}
+
+	return ok
+}
+
 // Put equal to PushBack
 func (lhmap *LinkedHashmap) Put(key interface{}, value interface{}) bool {
 	return lhmap.PushBack(key, value)
 }
 
-// PushBack equal to Put, if key exists, push value replace the value is exists. size is unchanging
+// PushBack equal to Put, if key exists, skip value and return false. size is unchanging
 func (lhmap *LinkedHashmap) PushBack(key interface{}, value interface{}) bool {
 	if _, ok := lhmap.hmap[key]; !ok {
 
@@ -53,7 +140,7 @@ func (lhmap *LinkedHashmap) PushBack(key interface{}, value interface{}) bool {
 
 }
 
-// PushFront if key exists, push value replace the value is exists. size is unchanging
+// PushFront if key exists, skip value and return false. size is unchanging
 func (lhmap *LinkedHashmap) PushFront(key interface{}, value interface{}) bool {
 	if _, ok := lhmap.hmap[key]; !ok {
 
@@ -76,10 +163,19 @@ func (lhmap *LinkedHashmap) PushFront(key interface{}, value interface{}) bool {
 	return false
 }
 
-// Get
+// Get get the value
 func (lhmap *LinkedHashmap) Get(key interface{}) (interface{}, bool) {
 	node, ok := lhmap.hmap[key]
 	return node.value, ok
+}
+
+// Set if key exists set value and return true. else return false
+func (lhmap *LinkedHashmap) Set(key, value interface{}) bool {
+	if node, ok := lhmap.hmap[key]; ok {
+		node.value = value
+		return true
+	}
+	return false
 }
 
 // Clear

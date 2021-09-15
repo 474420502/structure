@@ -13,7 +13,7 @@ import (
 func TestPutGet(t *testing.T) {
 	tree := New(compare.Int)
 	for i := 0; i < 100; i++ {
-		tree.Put(i, i)
+		tree.Cover(i, i)
 	}
 
 	// log.Println(tree.String())
@@ -26,7 +26,7 @@ func TestPutGet(t *testing.T) {
 
 	tree.Clear()
 	for _, i := range testutils.TestedArray {
-		tree.Put(i, i)
+		tree.Cover(i, i)
 	}
 
 	if tree.Size() != len(testutils.TestedArray) {
@@ -42,7 +42,7 @@ func TestPutGet(t *testing.T) {
 func TestRemove2(t *testing.T) {
 	tree := New(compare.Int)
 	for _, i := range testutils.TestedBigArray {
-		if !tree.Put(i, i) {
+		if !tree.Cover(i, i) {
 			log.Println("equal key", i)
 		}
 	}
@@ -63,7 +63,7 @@ func TestRemove2(t *testing.T) {
 func TestRemove1(t *testing.T) {
 	tree := New(compare.Int)
 	for _, i := range testutils.TestedArray {
-		if !tree.Put(i, i) {
+		if !tree.Cover(i, i) {
 			log.Println("equal key", i)
 		}
 	}
