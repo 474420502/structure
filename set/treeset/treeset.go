@@ -28,7 +28,7 @@ func (set *TreeSet) Cover(item interface{}) bool {
 	return set.tree.Cover(item)
 }
 
-// Cover   Cover the key of node
+// Covers   Cover the key of nodes
 func (set *TreeSet) Covers(items ...interface{}) {
 	for _, item := range items {
 		set.tree.Cover(item)

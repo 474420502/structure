@@ -32,6 +32,7 @@ func TestIndexForce(t *testing.T) {
 				arr = append(arr, r)
 			}
 		}
+
 		sort.Ints(arr)
 		for i, v := range arr {
 			vv := []byte(strconv.Itoa(v))

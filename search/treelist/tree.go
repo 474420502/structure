@@ -15,6 +15,12 @@ type Slice struct {
 	Value interface{}
 }
 
+func copybytes(key []byte) []byte {
+	var buf []byte = make([]byte, len(key))
+	copy(buf, key)
+	return buf
+}
+
 func (s *Slice) String() string {
 	return string(s.Key)
 }
@@ -74,7 +80,7 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 
 	cur := tree.getRoot()
 	if cur == nil {
-		node := &Node{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
+		node := &Node{Slice: Slice{Key: copybytes(key), Value: value}, Size: 1, Parent: tree.root}
 		tree.root.Children[0] = node
 		tree.root.Direct[L] = node
 		tree.root.Direct[R] = node
@@ -94,7 +100,7 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 				cur = cur.Children[L]
 			} else {
 
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &Node{Parent: cur, Slice: Slice{Key: copybytes(key), Value: value}, Size: 1}
 				cur.Children[L] = node
 
 				if left != nil {
@@ -122,7 +128,7 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &Node{Parent: cur, Slice: Slice{Key: copybytes(key), Value: value}, Size: 1}
 				cur.Children[R] = node
 
 				if left != nil {
@@ -156,7 +162,8 @@ func (tree *Tree) Cover(key []byte, value interface{}) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		node := &Node{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
+
+		node := &Node{Slice: Slice{Key: copybytes(key), Value: value}, Size: 1, Parent: tree.root}
 		tree.root.Children[0] = node
 		tree.root.Direct[L] = node
 		tree.root.Direct[R] = node
@@ -176,7 +183,7 @@ func (tree *Tree) Cover(key []byte, value interface{}) bool {
 				cur = cur.Children[L]
 			} else {
 
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &Node{Parent: cur, Slice: Slice{Key: copybytes(key), Value: value}, Size: 1}
 				cur.Children[L] = node
 
 				if left != nil {
@@ -204,7 +211,7 @@ func (tree *Tree) Cover(key []byte, value interface{}) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &Node{Parent: cur, Slice: Slice{Key: copybytes(key), Value: value}, Size: 1}
 				cur.Children[R] = node
 
 				if left != nil {
@@ -238,7 +245,7 @@ func (tree *Tree) Put(key []byte, value interface{}) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		node := &Node{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
+		node := &Node{Slice: Slice{Key: copybytes(key), Value: value}, Size: 1, Parent: tree.root}
 		tree.root.Children[0] = node
 		tree.root.Direct[L] = node
 		tree.root.Direct[R] = node
@@ -258,7 +265,7 @@ func (tree *Tree) Put(key []byte, value interface{}) bool {
 				cur = cur.Children[L]
 			} else {
 
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &Node{Parent: cur, Slice: Slice{Key: copybytes(key), Value: value}, Size: 1}
 				cur.Children[L] = node
 
 				if left != nil {
@@ -286,7 +293,7 @@ func (tree *Tree) Put(key []byte, value interface{}) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &Node{Parent: cur, Slice: Slice{Key: copybytes(key), Value: value}, Size: 1}
 				cur.Children[R] = node
 
 				if left != nil {
