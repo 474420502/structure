@@ -164,7 +164,7 @@ func (tree *Tree) getNode(key interface{}) (*aNode, bool) {
 	return nil, false
 }
 
-func (tree *Tree) Cover(key interface{}) bool {
+func (tree *Tree) Set(key interface{}) bool {
 
 	if tree.size == 0 {
 		tree.size++

@@ -29,8 +29,8 @@ func (hm *HashMap) Put(key interface{}, value interface{}) bool {
 	return false
 }
 
-// Cover inserts element into the map With Cover.
-func (hm *HashMap) Cover(key interface{}, value interface{}) {
+// Set inserts element into the map With Set.
+func (hm *HashMap) Set(key interface{}, value interface{}) {
 	hm.hm[key] = value
 }
 

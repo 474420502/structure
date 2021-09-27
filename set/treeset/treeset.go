@@ -23,15 +23,15 @@ func (set *TreeSet) Add(item interface{}) bool {
 
 }
 
-// Cover   Cover the key of node
-func (set *TreeSet) Cover(item interface{}) bool {
-	return set.tree.Cover(item)
+// Set   Set the key of node
+func (set *TreeSet) Set(item interface{}) bool {
+	return set.tree.Set(item)
 }
 
 // Covers   Cover the key of nodes
 func (set *TreeSet) Covers(items ...interface{}) {
 	for _, item := range items {
-		set.tree.Cover(item)
+		set.tree.Set(item)
 	}
 }
 

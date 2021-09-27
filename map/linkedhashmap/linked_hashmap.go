@@ -25,13 +25,8 @@ func New() *LinkedHashmap {
 	return lhmap
 }
 
-// CoverBack equal to CoverBack, f key exists, if key exists, cover and move node to back, return true. else insert new node to back, return false
-func (lhmap *LinkedHashmap) Cover(key interface{}, value interface{}) bool {
-	return lhmap.CoverBack(key, value)
-}
-
-// CoverBack equal to Cover, if key exists, cover and move node to back, return true. else insert new node to back, return false
-func (lhmap *LinkedHashmap) CoverBack(key interface{}, value interface{}) bool {
+// SetBack equal to Cover, if key exists, cover and move node to back, return true. else insert new node to back, return false
+func (lhmap *LinkedHashmap) SetBack(key interface{}, value interface{}) bool {
 
 	var ok bool
 	var node *Node
@@ -72,8 +67,8 @@ func (lhmap *LinkedHashmap) CoverBack(key interface{}, value interface{}) bool {
 
 }
 
-// CoverFront if key exists, cover and move node to front, return true. else insert new node to front. return false
-func (lhmap *LinkedHashmap) CoverFront(key interface{}, value interface{}) bool {
+// SetFront if key exists, cover and move node to front, return true. else insert new node to front. return false
+func (lhmap *LinkedHashmap) SetFront(key interface{}, value interface{}) bool {
 	var ok bool
 	var node *Node
 
@@ -169,7 +164,7 @@ func (lhmap *LinkedHashmap) Get(key interface{}) (interface{}, bool) {
 	return node.value, ok
 }
 
-// Set if key exists set value and return true. else return false
+// Set if key exists set value and return true. else return false.
 func (lhmap *LinkedHashmap) Set(key, value interface{}) bool {
 	if node, ok := lhmap.hmap[key]; ok {
 		node.value = value

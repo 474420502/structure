@@ -420,7 +420,7 @@ func TestAllForce(t *testing.T) {
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
 			dict[v] = i
-			tree1.Cover(v, i)
+			tree1.Set(v, i)
 
 		}
 
@@ -479,7 +479,7 @@ func TestSimpleForce(t *testing.T) {
 				if rand.Intn(2) == 0 {
 					tree1.Put(v, v)
 				} else {
-					tree1.Cover(v, v)
+					tree1.Set(v, v)
 				}
 				tree2[v] = v
 			}

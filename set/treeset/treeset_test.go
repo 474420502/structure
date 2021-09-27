@@ -169,7 +169,7 @@ func TestForce(t *testing.T) {
 		var hashset map[int]bool = make(map[int]bool)
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)
-			set.Cover(v)
+			set.Set(v)
 			hashset[v] = true
 		}
 

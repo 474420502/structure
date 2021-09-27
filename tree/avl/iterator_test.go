@@ -12,7 +12,7 @@ import (
 func TestNextPrev(t *testing.T) {
 	tree := New(compare.Int)
 	for i := 0; i < 10; i++ {
-		tree.Cover(i, i)
+		tree.Set(i, i)
 	}
 
 	// log.Println(tree.String())
@@ -66,7 +66,7 @@ func TestNextPrev(t *testing.T) {
 func TestSeekFor(t *testing.T) {
 	tree := New(compare.Int)
 	for i := 0; i < 20; i += 2 {
-		tree.Cover(i, i)
+		tree.Set(i, i)
 	}
 
 	// log.Println(tree.String())

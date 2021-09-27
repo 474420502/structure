@@ -27,7 +27,7 @@ func TestForce(t *testing.T) {
 
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)
-			hm.Cover(v, v)
+			hm.Set(v, v)
 			set.Add(v)
 		}
 
@@ -57,7 +57,7 @@ func TestForce(t *testing.T) {
 			}
 
 			if rand.OneOf64n(3) {
-				hm.Cover(k, k)
+				hm.Set(k, k)
 				set.Add(k)
 			}
 		}

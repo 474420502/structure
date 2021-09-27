@@ -168,8 +168,8 @@ func (tree *Tree) getNode(key interface{}) (*Node, bool) {
 	return nil, false
 }
 
-// Cover Put And value Cover Node.Value
-func (tree *Tree) Cover(key, value interface{}) bool {
+// Set Put And value Set Node.Value
+func (tree *Tree) Set(key, value interface{}) bool {
 
 	if tree.size == 0 {
 		tree.size++

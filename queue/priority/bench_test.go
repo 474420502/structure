@@ -20,6 +20,6 @@ func BenchmarkAvlPut(b *testing.B) {
 	tree := avl.New(compare.Int64)
 	for i := 0; i < b.N; i++ {
 		v := rand.Int63()
-		tree.Cover(v, v)
+		tree.Set(v, v)
 	}
 }

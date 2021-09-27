@@ -247,7 +247,7 @@ func TestRange(t *testing.T) {
 		for i := 0; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
-			avltree.Cover(i, i)
+			avltree.Set(i, i)
 		}
 		// tree.rcount = 0
 		start := []byte(strconv.Itoa(startkey))
@@ -337,7 +337,7 @@ func TestRangeReturn(t *testing.T) {
 		for i := 100; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
-			avltree.Cover(i, i)
+			avltree.Set(i, i)
 		}
 		// tree.rcount = 0
 		start := []byte(strconv.Itoa(startkey))
@@ -878,7 +878,7 @@ func TestDifferenceSets(t *testing.T) {
 	}
 }
 
-func TestCover(t *testing.T) {
+func TestSet(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
@@ -909,7 +909,7 @@ func TestCover(t *testing.T) {
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)
 			dict[v] = i
-			tree1.Cover([]byte(strconv.Itoa(v)), i)
+			tree1.Set([]byte(strconv.Itoa(v)), i)
 		}
 
 		for k, i1 := range dict {

@@ -265,7 +265,7 @@ func TestForceCover(t *testing.T) {
 		for i := 0; i < 20; i++ {
 			v := rand.Intn(20)
 			if rand.Bool() {
-				if !hm.Cover(v, v) {
+				if !hm.SetBack(v, v) {
 					kv := &KeyValue{Key: v, Value: v}
 					kv.Elem = l.PushBack(kv)
 					m[v] = kv
@@ -276,7 +276,7 @@ func TestForceCover(t *testing.T) {
 					kv.Elem = l.PushBack(kv)
 				}
 			} else {
-				if !hm.CoverFront(v, v) {
+				if !hm.SetFront(v, v) {
 					kv := &KeyValue{Key: v, Value: v}
 					kv.Elem = l.PushFront(kv)
 					m[v] = kv
@@ -325,7 +325,7 @@ func TestForceCover(t *testing.T) {
 				v := rand.Intn(100)
 				if rand.Bool() {
 
-					if !hm.Cover(v, v) {
+					if !hm.SetBack(v, v) {
 						kv := &KeyValue{Key: v, Value: v}
 						kv.Elem = l.PushBack(kv)
 						m[v] = kv
@@ -336,7 +336,7 @@ func TestForceCover(t *testing.T) {
 						kv.Elem = l.PushBack(kv)
 					}
 				} else {
-					if !hm.CoverFront(v, v) {
+					if !hm.SetFront(v, v) {
 						kv := &KeyValue{Key: v, Value: v}
 						kv.Elem = l.PushFront(kv)
 						m[v] = kv
