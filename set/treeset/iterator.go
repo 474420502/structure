@@ -49,15 +49,11 @@ func (iter *Iterator) SeekToLast() {
 	}
 }
 
-func (iter *Iterator) SeekForPrev(key interface{}) {
+func (iter *Iterator) SeekLE(key interface{}) bool {
 
 	iter.idx = -1
-	iter.cur = iter.tree.Root
-	if iter.cur == nil {
-		return
-	}
 
-	for {
+	for iter.cur = iter.tree.Root; iter.cur != nil; {
 		switch c := iter.tree.Compare(key, iter.cur.Key); c {
 		case -1:
 			if iter.cur.Children[l] == nil {
@@ -65,34 +61,35 @@ func (iter *Iterator) SeekForPrev(key interface{}) {
 					iter.push()
 					iter.cur = nil
 				}
-				return
+				return false
 			}
 
 			iter.push()
 			iter.cur = iter.cur.Children[l]
 		case 1:
 			if iter.cur.Children[r] == nil {
-				return
+				return false
 			}
 			iter.push()
 			iter.cur = iter.cur.Children[r]
 		case 0:
-			return
+			return true
 		default:
 			panic("Get Compare only is allowed in -1, 0, 1")
 		}
 	}
 
+	return false
 }
 
-func (iter *Iterator) SeekForNext(key interface{}) {
+func (iter *Iterator) SeekGE(key interface{}) bool {
 	iter.idx = -1
 
 	for iter.cur = iter.tree.Root; iter.cur != nil; {
 		switch c := iter.tree.Compare(key, iter.cur.Key); c {
 		case -1:
 			if iter.cur.Children[l] == nil {
-				return
+				return false
 			}
 			iter.push()
 			iter.cur = iter.cur.Children[l]
@@ -102,38 +99,18 @@ func (iter *Iterator) SeekForNext(key interface{}) {
 					iter.push()
 					iter.cur = nil
 				}
-				return
+				return false
 			}
 			iter.push()
 			iter.cur = iter.cur.Children[r]
 		case 0:
-			return
+			return true
 		default:
 			panic("Get Compare only is allowed in -1, 0, 1")
 		}
 	}
 
-}
-
-func (iter *Iterator) Seek(key interface{}) {
-	iter.idx = -1
-
-	for iter.cur = iter.tree.Root; iter.cur != nil; {
-		switch c := iter.tree.Compare(key, iter.cur.Key); c {
-		case -1:
-			iter.push()
-			iter.cur = iter.cur.Children[l]
-		case 1:
-			iter.push()
-			iter.cur = iter.cur.Children[r]
-		case 0:
-			return
-		default:
-			panic("Get Compare only is allowed in -1, 0, 1")
-		}
-	}
-
-	iter.idx = -1
+	return false
 }
 
 func (iter *Iterator) Vaild() bool {

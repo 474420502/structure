@@ -270,7 +270,7 @@ func TestForce2(t *testing.T) {
 
 		iter := set.Iterator()
 		iter2 := set.Iterator()
-		iter.SeekForNext(&specialItem{
+		iter.SeekGE(&specialItem{
 			Key: 50,
 		})
 		for iter.Vaild() {
@@ -278,7 +278,7 @@ func TestForce2(t *testing.T) {
 			if s.Key > 50 {
 				panic("")
 			}
-			iter2.Seek(s)
+			iter2.SeekGE(s)
 			if !iter2.Vaild() {
 				panic("")
 			}

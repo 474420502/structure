@@ -1,12 +1,14 @@
 package avl
 
 import (
+	"bytes"
 	"log"
 	"sort"
 	"testing"
 
 	random "github.com/474420502/random"
 	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/search/treelist"
 )
 
 func TestNextPrev(t *testing.T) {
@@ -46,7 +48,7 @@ func TestNextPrev(t *testing.T) {
 		iter.Prev()
 	}
 
-	iter.Seek(5)
+	iter.SeekGE(5)
 	for i := 5; i >= 0; i-- {
 		if iter.Value() != i {
 			panic("")
@@ -54,7 +56,7 @@ func TestNextPrev(t *testing.T) {
 		iter.Prev()
 	}
 
-	iter.Seek(5)
+	iter.SeekGE(5)
 	for i := 5; i < 10; i++ {
 		if iter.Value() != i {
 			panic("")
@@ -72,7 +74,9 @@ func TestSeekFor(t *testing.T) {
 	// log.Println(tree.String())
 
 	iter := tree.Iterator()
-	iter.SeekForPrev(7) // Key == 6
+	if iter.SeekLE(7) { // Key == 6
+		t.Error("SeekLE return is error")
+	}
 	for i := 6; i >= 0; i -= 2 {
 		if iter.Value() != i {
 			panic("")
@@ -80,7 +84,9 @@ func TestSeekFor(t *testing.T) {
 		iter.Prev()
 	}
 
-	iter.SeekForPrev(7)
+	if iter.SeekLE(7) {
+		t.Error("SeekLE return is error")
+	}
 	for i := 6; i < 20; i += 2 {
 		if iter.Value() != i {
 			panic("")
@@ -88,7 +94,9 @@ func TestSeekFor(t *testing.T) {
 		iter.Next()
 	}
 
-	iter.SeekForPrev(6)
+	if !iter.SeekLE(6) { // key == 6
+		t.Error("SeekLE return is error")
+	}
 	for i := 6; i < 20; i += 2 {
 		if iter.Value() != i {
 			panic("")
@@ -96,7 +104,19 @@ func TestSeekFor(t *testing.T) {
 		iter.Next()
 	}
 
-	iter.SeekForNext(7)
+	if iter.SeekGE(7) { // Key == 8
+		t.Error("SeekGE return is error")
+	}
+	for i := 8; i < 20; i += 2 {
+		if iter.Value() != i {
+			panic("")
+		}
+		iter.Next()
+	}
+
+	if !iter.SeekGE(8) { // Key == 8
+		t.Error("SeekGE return is error")
+	}
 	for i := 8; i < 20; i += 2 {
 		if iter.Value() != i {
 			panic("")
@@ -126,7 +146,7 @@ func TestIteratorForce(t *testing.T) {
 		// log.Println(priority, idx, len(priority))
 
 		iter := tree.Iterator()
-		iter.SeekForNext(s)
+		iter.SeekGE(s)
 
 		idx := sort.Search(len(priority), func(i int) bool {
 			return priority[i] >= s
@@ -143,7 +163,7 @@ func TestIteratorForce(t *testing.T) {
 				}
 				iter.Next()
 			}
-			iter.SeekForNext(s)
+			iter.SeekGE(s)
 			for i := idx; i >= 0; i-- {
 				if priority[i] != iter.Value() {
 					panic("")
@@ -152,7 +172,7 @@ func TestIteratorForce(t *testing.T) {
 			}
 		}
 
-		iter.SeekForPrev(s)
+		iter.SeekLE(s)
 		idx = sort.Search(len(priority), func(i int) bool {
 			return priority[i] > s
 		})
@@ -168,7 +188,7 @@ func TestIteratorForce(t *testing.T) {
 				}
 				iter.Next()
 			}
-			iter.SeekForPrev(s)
+			iter.SeekLE(s)
 			for i := idx - 1; i >= 0; i-- {
 				if priority[i] != iter.Value() {
 					panic("")
@@ -191,6 +211,90 @@ func TestIteratorForce(t *testing.T) {
 				log.Panic("")
 			}
 			iter.Prev()
+		}
+
+	}
+}
+
+func TestCompareSimilarForce(t *testing.T) {
+	tree1 := treelist.New()
+	tree2 := New(compare.Bytes)
+
+	rand := random.New()
+
+	for i := 0; i < 1000; i++ {
+
+		var buf []byte
+		for n := 1; n < 64; n++ {
+			buf = append(buf, byte(rand.Intn(256)))
+		}
+		is := tree1.Set(buf, buf)
+		if tree2.Set(buf, buf) != is {
+			t.Error("tree1 Set is not equal to tree2")
+			panic(nil)
+		}
+
+		iter1 := tree1.Iterator()
+		iter2 := tree2.Iterator()
+
+		for n := 1; n < 10; n++ {
+			buf = append(buf, byte(rand.Intn(256)))
+		}
+
+		if iter1.SeekGE(buf) != iter2.SeekGE(buf) {
+			t.Error("SeekGE")
+			panic(nil)
+		}
+
+		for iter1.Valid() && iter2.Vaild() {
+			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+				t.Error("SeekGE")
+				panic(nil)
+			}
+			iter1.Next()
+			iter2.Next()
+		}
+
+		if iter1.SeekGE(buf) != iter2.SeekGE(buf) {
+			t.Error("SeekGE")
+			panic(nil)
+		}
+
+		for iter1.Valid() && iter2.Vaild() {
+			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+				t.Error("SeekGE")
+				panic(nil)
+			}
+			iter1.Prev()
+			iter2.Prev()
+		}
+
+		if iter1.SeekLE(buf) != iter2.SeekLE(buf) {
+			t.Error("SeekLE")
+			panic(nil)
+		}
+
+		for iter1.Valid() && iter2.Vaild() {
+			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+				t.Error("SeekLE")
+				panic(nil)
+			}
+			iter1.Next()
+			iter2.Next()
+		}
+
+		if iter1.SeekLE(buf) != iter2.SeekLE(buf) {
+			t.Error("SeekLE")
+			panic(nil)
+		}
+
+		for iter1.Valid() && iter2.Vaild() {
+			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+				t.Error("SeekLE")
+				panic(nil)
+			}
+			iter1.Prev()
+			iter2.Prev()
 		}
 
 	}

@@ -17,3 +17,4 @@ var TestedBytes = func() [][]byte {
 }()
 
 var TestedBytesWords = [][]byte{[]byte("world"), []byte("word"), []byte("hello")}
+var TestedBytesSimlpe = [][]byte{[]byte("c1"), []byte("c4"), []byte("c6"), []byte("a1"), []byte("a3"), []byte("a5")}

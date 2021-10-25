@@ -125,7 +125,7 @@ func debugNode(root *Node) string {
 }
 
 func (tree *Tree) debugString(isSuffix bool) string {
-	str := "BinarayList\n"
+	str := "TreeList\n"
 	root := tree.getRoot()
 	if root == nil {
 		return str + "nil"

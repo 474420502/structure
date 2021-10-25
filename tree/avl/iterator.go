@@ -53,12 +53,12 @@ func (iter *Iterator) SeekToLast() {
 	}
 }
 
-func (iter *Iterator) SeekForPrev(key interface{}) {
+func (iter *Iterator) SeekLE(key interface{}) bool {
 
 	iter.idx = -1
 	iter.cur = iter.tree.Root
 	if iter.cur == nil {
-		return
+		return false
 	}
 
 	for {
@@ -69,19 +69,19 @@ func (iter *Iterator) SeekForPrev(key interface{}) {
 					iter.push()
 					iter.cur = nil
 				}
-				return
+				return false
 			}
 
 			iter.push()
 			iter.cur = iter.cur.Children[l]
 		case 1:
 			if iter.cur.Children[r] == nil {
-				return
+				return false
 			}
 			iter.push()
 			iter.cur = iter.cur.Children[r]
 		case 0:
-			return
+			return true
 		default:
 			panic("Get Compare only is allowed in -1, 0, 1")
 		}
@@ -89,14 +89,18 @@ func (iter *Iterator) SeekForPrev(key interface{}) {
 
 }
 
-func (iter *Iterator) SeekForNext(key interface{}) {
+func (iter *Iterator) SeekGE(key interface{}) bool {
 	iter.idx = -1
+	iter.cur = iter.tree.Root
+	if iter.cur == nil {
+		return false
+	}
 
-	for iter.cur = iter.tree.Root; iter.cur != nil; {
+	for {
 		switch c := iter.tree.Compare(key, iter.cur.Key); c {
 		case -1:
 			if iter.cur.Children[l] == nil {
-				return
+				return false
 			}
 			iter.push()
 			iter.cur = iter.cur.Children[l]
@@ -106,38 +110,50 @@ func (iter *Iterator) SeekForNext(key interface{}) {
 					iter.push()
 					iter.cur = nil
 				}
-				return
+				return false
 			}
 			iter.push()
 			iter.cur = iter.cur.Children[r]
 		case 0:
-			return
+			return true
 		default:
 			panic("Get Compare only is allowed in -1, 0, 1")
 		}
 	}
-
 }
 
-func (iter *Iterator) Seek(key interface{}) {
+func (iter *Iterator) SeekGT(key interface{}) bool {
 	iter.idx = -1
+	iter.cur = iter.tree.Root
+	if iter.cur == nil {
+		return false
+	}
 
-	for iter.cur = iter.tree.Root; iter.cur != nil; {
+	for {
 		switch c := iter.tree.Compare(key, iter.cur.Key); c {
 		case -1:
+			if iter.cur.Children[l] == nil {
+				return false
+			}
 			iter.push()
 			iter.cur = iter.cur.Children[l]
 		case 1:
+			if iter.cur.Children[r] == nil {
+				if !iter.rpop() {
+					iter.push()
+					iter.cur = nil
+				}
+				return false
+			}
 			iter.push()
 			iter.cur = iter.cur.Children[r]
 		case 0:
-			return
+
+			return true
 		default:
 			panic("Get Compare only is allowed in -1, 0, 1")
 		}
 	}
-
-	iter.idx = -1
 }
 
 func (iter *Iterator) Vaild() bool {
@@ -232,4 +248,9 @@ func (iter *Iterator) rpop() bool {
 	}
 
 	return false
+}
+
+// Clone 复制一个当前迭代的iterator. 用于复位
+func (iter *Iterator) Clone() *Iterator {
+	return &Iterator{tree: iter.tree, cur: iter.cur, idx: iter.idx}
 }

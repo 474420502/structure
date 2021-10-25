@@ -29,7 +29,7 @@ func TestIteratorIndexForce(t *testing.T) {
 		i := rand.Intn(plen)
 
 		iter := tree.Iterator()
-		iter.Seek([]byte(strconv.Itoa(plist[i])))
+		iter.SeekGE([]byte(strconv.Itoa(plist[i])))
 		if iter.Index() != int64(i) {
 			t.Error()
 		}
@@ -78,7 +78,7 @@ func TestSeekRand(t *testing.T) {
 		m := plist[i]
 		iter := tree.Iterator()
 		mid := []byte(strconv.Itoa(m))
-		iter.Seek(mid)
+		iter.SeekGE(mid)
 		if bytes.Compare(iter.Key(), mid) != 0 {
 			t.Error("seek error")
 		}
@@ -96,7 +96,7 @@ func TestSeekRand(t *testing.T) {
 			}
 		}
 
-		iter.Seek(mid)
+		iter.SeekGE(mid)
 		if i < plen-1 {
 			v := plist[i+1]
 			iter.Next()
@@ -106,7 +106,7 @@ func TestSeekRand(t *testing.T) {
 
 			// log.Println(v - 1)
 			p := []byte(strconv.Itoa(v - 1))
-			iter.SeekForPrev(p)
+			iter.SeekLE(p)
 			if iter.Valid() {
 				if bytes.Compare(iter.Key(), []byte(strconv.Itoa(m))) != 0 {
 					log.Panicln("seek error key:", string(iter.Key()), plist, "mid:", m, string(p))
@@ -179,14 +179,20 @@ func TestSeek(t *testing.T) {
 	}
 
 	iter := tree.Iterator()
-	iter.Seek([]byte("wor"))
+	iter.SeekGE([]byte("wor"))
 	log.Println(string(iter.cur.Key))
+	var checkresult []string
 	for iter.Valid() {
 		v := string(iter.Key())
+		checkresult = append(checkresult, v)
 		if !strings.HasPrefix(v, "wor") {
 			t.Error(v)
 		}
 		iter.Next()
+	}
+
+	if len(checkresult) != 2 {
+		t.Error("checkresult len != 2", checkresult)
 	}
 
 	tree.Clear()
@@ -209,7 +215,7 @@ func TestSeek(t *testing.T) {
 	var correctResult = []string{"1", "10", "11", "14"}
 	var result []string
 	iter = tree.Iterator()
-	iter.SeekForPrev([]byte("1"))
+	iter.SeekLE([]byte("1"))
 	for iter.Valid() {
 		v := string(iter.Key())
 		if strings.HasPrefix(v, "1") {
@@ -220,19 +226,19 @@ func TestSeek(t *testing.T) {
 		iter.Next()
 	}
 
-	iter.SeekForPrev([]byte("0"))
+	iter.SeekLE([]byte("0"))
 	if iter.Valid() {
 		panic("0 not has prev")
 	}
 
-	iter.SeekForNext([]byte("12"))
+	iter.SeekGE([]byte("12"))
 	if iter.Valid() {
 		if string(iter.Key()) != "14" {
-			panic("SeekForNext error")
+			panic("SeekGE error")
 		}
 	}
 
-	iter.SeekForNext([]byte("999"))
+	iter.SeekGE([]byte("999"))
 	if iter.Valid() {
 		panic("999 not has next")
 	}
@@ -242,6 +248,62 @@ func TestSeek(t *testing.T) {
 			t.Error("seek error")
 		}
 	}
+}
+
+func TestSeekDirect(t *testing.T) {
+	tree := New()
+	for _, v := range testutils.TestedBytesSimlpe {
+		tree.Put(v, v)
+	}
+
+	//	│       ┌── c6
+	//	│   ┌── c4
+	//	└── c1
+	//		│   ┌── a5
+	//		└── a3
+	//			└── a1
+
+	iter := tree.Iterator()
+	if !iter.SeekLT([]byte("a5")) { // 由于a5存在
+		t.Error("SeekLT errror")
+	}
+	if iter.Valid() {
+		k := string(iter.Key())
+		if k != "a3" {
+			t.Error("SeekLT errror")
+		}
+	}
+
+	if !iter.SeekGT([]byte("a5")) { // 由于a5存在
+		t.Error("SeekGT errror")
+	}
+	if iter.Valid() {
+		k := string(iter.Key())
+		if k != "c1" {
+			t.Error("SeekGT errror")
+		}
+	}
+
+	if iter.SeekLT([]byte("a4")) { // 由于a5不存在
+		t.Error("SeekLT errror")
+	}
+	if iter.Valid() {
+		k := string(iter.Key())
+		if k != "a3" {
+			t.Error("SeekLT errror")
+		}
+	}
+
+	if iter.SeekGT([]byte("a4")) { // 由于a5不存在
+		t.Error("SeekGT errror")
+	}
+	if iter.Valid() {
+		k := string(iter.Key())
+		if k != "a5" {
+			t.Error("SeekGT errror")
+		}
+	}
+
 }
 
 func TestFirstLast(t *testing.T) {
@@ -293,12 +355,12 @@ func TestIteratorSeekForForce(t *testing.T) {
 			tree.Remove(skey)
 
 			iter := tree.Iterator()
-			iter.SeekForPrev(skey)
+			iter.SeekLE(skey)
 			if string(iter.Key()) != string(pkey) {
 				panic("")
 			}
 
-			iter.SeekForNext(skey)
+			iter.SeekGE(skey)
 			if string(iter.Key()) != string(nkey) {
 				panic("")
 			}

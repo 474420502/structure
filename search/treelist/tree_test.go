@@ -57,7 +57,7 @@ func TestIndex(t *testing.T) {
 			t.Error(s, v)
 		}
 		iter := tree.Iterator()
-		iter.Seek(v)
+		iter.SeekGE(v)
 		if iter.Index() != int64(i) {
 			t.Error("iterator index error")
 		}

@@ -37,16 +37,6 @@ func newAVL(Compare compare.Compare) *Tree {
 	return &Tree{Compare: Compare}
 }
 
-func (tree *Tree) String() string {
-	if tree.size == 0 {
-		return ""
-	}
-	str := "AVLTree\n"
-	output(tree.Root, "", true, &str)
-
-	return str
-}
-
 func (tree *Tree) Size() int {
 	return tree.size
 }
@@ -539,91 +529,6 @@ func (tree *Tree) fixPutHeight(cur *aNode) {
 		}
 		cur = cur.Parent
 	}
-}
-
-func output(node *aNode, prefix string, isTail bool, str *string) {
-
-	if node.Children[1] != nil {
-		newPrefix := prefix
-		if isTail {
-			newPrefix += "│   "
-		} else {
-			newPrefix += "    "
-		}
-		output(node.Children[1], newPrefix, false, str)
-	}
-	*str += prefix
-	if isTail {
-		*str += "└── "
-	} else {
-		*str += "┌── "
-	}
-
-	switch k := node.Key.(type) {
-	case []byte:
-		*str += fmt.Sprintf("%v", string(k)) + "\n"
-	default:
-		*str += fmt.Sprintf("%v", k) + "\n"
-	}
-
-	if node.Children[0] != nil {
-		newPrefix := prefix
-		if isTail {
-			newPrefix += "    "
-		} else {
-			newPrefix += "│   "
-		}
-		output(node.Children[0], newPrefix, true, str)
-	}
-
-}
-
-func outputfordebug(node *aNode, prefix string, isTail bool, str *string) {
-
-	if node.Children[1] != nil {
-		newPrefix := prefix
-		if isTail {
-			newPrefix += "│   "
-		} else {
-			newPrefix += "    "
-		}
-		outputfordebug(node.Children[1], newPrefix, false, str)
-	}
-	*str += prefix
-	if isTail {
-		*str += "└── "
-	} else {
-		*str += "┌── "
-	}
-
-	suffix := "("
-	parentv := ""
-	if node.Parent == nil {
-		parentv = "nil"
-	} else {
-		parentv = fmt.Sprintf("%v", node.Parent.Key)
-	}
-	suffix += parentv + "|" + fmt.Sprintf("%v", node.height) + ")"
-	*str += fmt.Sprintf("%v", node.Key) + suffix + "\n"
-
-	if node.Children[0] != nil {
-		newPrefix := prefix
-		if isTail {
-			newPrefix += "    "
-		} else {
-			newPrefix += "│   "
-		}
-		outputfordebug(node.Children[0], newPrefix, true, str)
-	}
-}
-
-func (tree *Tree) debugString() string {
-	if tree.size == 0 {
-		return ""
-	}
-	str := "AVLTree\n"
-	outputfordebug(tree.Root, "", true, &str)
-	return str
 }
 
 func getRelationship(cur *aNode) int {

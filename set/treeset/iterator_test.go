@@ -30,7 +30,7 @@ func TestIteratorForce(t *testing.T) {
 		// log.Println(priority, idx, len(priority))
 
 		iter := tree.Iterator()
-		iter.SeekForNext(s)
+		iter.SeekGE(s)
 
 		idx := sort.Search(len(priority), func(i int) bool {
 			return priority[i] >= s
@@ -47,7 +47,7 @@ func TestIteratorForce(t *testing.T) {
 				}
 				iter.Next()
 			}
-			iter.SeekForNext(s)
+			iter.SeekGE(s)
 			for i := idx; i >= 0; i-- {
 				if priority[i] != iter.Value() {
 					panic("")
@@ -56,7 +56,7 @@ func TestIteratorForce(t *testing.T) {
 			}
 		}
 
-		iter.SeekForPrev(s)
+		iter.SeekLE(s)
 		idx = sort.Search(len(priority), func(i int) bool {
 			return priority[i] > s
 		})
@@ -72,7 +72,7 @@ func TestIteratorForce(t *testing.T) {
 				}
 				iter.Next()
 			}
-			iter.SeekForPrev(s)
+			iter.SeekLE(s)
 			for i := idx - 1; i >= 0; i-- {
 				if priority[i] != iter.Value() {
 					panic("")
