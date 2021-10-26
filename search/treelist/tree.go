@@ -706,6 +706,8 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 
 func (tree *Tree) Clear() {
 	tree.root.Children[0] = nil
+	tree.root.Direct[0] = nil
+	tree.root.Direct[1] = nil
 }
 
 // Trim range [low:hight]
