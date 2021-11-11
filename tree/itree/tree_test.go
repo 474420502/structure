@@ -274,6 +274,15 @@ func TestRemoveRangeIndex(t *testing.T) {
 	if tree.Size() != 1 || k == 0 {
 		t.Error()
 	}
+
+	for i := 0; i < 10; i++ {
+		v := i
+		tree.Set(v, v)
+	}
+	tree.RemoveRangeByIndex(0, -10)
+	if tree.Size() != 10 {
+		t.Error()
+	}
 }
 
 func TestRemoveRangeIndexForce(t *testing.T) {
