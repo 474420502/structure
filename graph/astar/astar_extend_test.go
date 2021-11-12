@@ -58,7 +58,6 @@ xx..mmmr
 ..rrrrre
 `)
 	graph.Search()
-	result = graph.GetSinglePathTiles()
 	should = `
 sooooooo
 xx..mmmo

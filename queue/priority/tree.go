@@ -449,6 +449,10 @@ func (tree *Queue) RemoveRange(low, hight interface{}) {
 // RemoveRangeByIndex 1.range [low:hight] 2.low hight 必须包含存在的值.[low: hight+1] [low-1: hight].  [low-1: hight+1]. error: [low-1:low-2] or [hight+1:hight+2]
 func (tree *Queue) RemoveRangeByIndex(low, hight int64) {
 
+	if low > hight {
+		return
+	}
+
 	defer func() {
 		if err := recover(); err != nil {
 			panic(fmt.Errorf(errOutOfIndex, low, hight))
