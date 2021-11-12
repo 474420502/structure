@@ -5,6 +5,7 @@ import (
 )
 
 var errOutOfIndex = "out of index"
+var errLowerGtHigh = "low is behind high"
 
 func (tree *Queue) fixPutSize(cur *qNode) {
 	for cur != tree.root {

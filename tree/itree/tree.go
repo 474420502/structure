@@ -592,12 +592,17 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 }
 
 // Trim 保留区间
-func (tree *Tree) Trim(low, hight interface{}) {
+func (tree *Tree) Trim(low, high interface{}) {
 	// root := tree.getRoot()
+
+	if tree.compare(low, high) > 0 {
+		panic(errLowerGtHigh)
+	}
+
 	const L = 0
 	const R = 1
 
-	root := tree.getRangeRoot(low, hight)
+	root := tree.getRangeRoot(low, high)
 
 	var ltrim func(root *Node) *Node
 	ltrim = func(root *Node) *Node {
@@ -629,7 +634,7 @@ func (tree *Tree) Trim(low, hight interface{}) {
 		if root == nil {
 			return nil
 		}
-		c := tree.compare(hight, root.Key)
+		c := tree.compare(high, root.Key)
 		if c < 0 {
 			return rtrim(root.Children[L])
 		} else if c > 0 {
@@ -660,10 +665,14 @@ func (tree *Tree) Trim(low, hight interface{}) {
 }
 
 // TrimByIndex 保留区间 range [low:hight]
-func (tree *Tree) TrimByIndex(low, hight int64) {
+func (tree *Tree) TrimByIndex(low, high int64) {
+	if low > high {
+		panic(errLowerGtHigh)
+	}
+
 	defer func() {
 		if err := recover(); err != nil {
-			panic(fmt.Errorf(errOutOfIndex, low, hight))
+			panic(fmt.Errorf(errOutOfIndex, low, high))
 		}
 	}()
 
@@ -674,10 +683,10 @@ func (tree *Tree) TrimByIndex(low, hight int64) {
 	root := tree.getRoot()
 	var idx int64 = getSize(root.Children[L])
 	for {
-		if idx > low && idx > hight {
+		if idx > low && idx > high {
 			root = root.Children[L]
 			idx -= getSize(root.Children[R]) + 1
-		} else if idx < hight && idx < low {
+		} else if idx < high && idx < low {
 			root = root.Children[R]
 			idx += getSize(root.Children[L]) + 1
 		} else {
@@ -716,9 +725,9 @@ func (tree *Tree) TrimByIndex(low, hight int64) {
 			return nil
 		}
 
-		if idx > hight {
+		if idx > high {
 			return rtrim(idx-getSize(root.Children[L].Children[R])-1, root.Children[L])
-		} else if idx < hight {
+		} else if idx < high {
 			child := rtrim(idx+getSize(root.Children[R].Children[L])+1, root.Children[R])
 			root.Children[R] = child
 			if child != nil {

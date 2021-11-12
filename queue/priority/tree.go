@@ -564,6 +564,11 @@ func (tree *Queue) RemoveRangeByIndex(low, hight int64) {
 // Extract 提取区间的数据. 区间外数据删除(与RemoveRange相反) range [low:hight]
 func (tree *Queue) Extract(low, hight interface{}) {
 	// root := tree.getRoot()
+
+	if tree.compare(low, hight) > 0 {
+		panic(errLowerGtHigh)
+	}
+
 	const L = 0
 	const R = 1
 
@@ -624,6 +629,11 @@ func (tree *Queue) Extract(low, hight interface{}) {
 
 // ExtractByIndex 保留区间(Extract类似, 范围用顺序索引) range [low:hight]
 func (tree *Queue) ExtractByIndex(low, hight int64) {
+
+	if low > hight {
+		panic(errLowerGtHigh)
+	}
+
 	defer func() {
 		if err := recover(); err != nil {
 			panic(fmt.Errorf(errOutOfIndex, low, hight))
