@@ -717,6 +717,10 @@ func (tree *Tree) Clear() {
 // Trim range [low:hight]
 func (tree *Tree) Trim(low, hight []byte) {
 
+	if tree.compare(low, hight) > 0 {
+		panic(errLowerGtHigh)
+	}
+
 	const L = 0
 	const R = 1
 
@@ -798,9 +802,14 @@ func (tree *Tree) Trim(low, hight []byte) {
 
 // TrimByIndex range [low:hight]
 func (tree *Tree) TrimByIndex(low, hight int64) {
+
+	if low > hight {
+		panic(errLowerGtHigh)
+	}
+
 	defer func() {
 		if err := recover(); err != nil {
-			panic(fmt.Errorf(errOutOfIndex, low, hight))
+			panic(fmt.Errorf(errLowerGtHigh, low, hight))
 		}
 	}()
 
