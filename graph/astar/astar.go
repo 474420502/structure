@@ -58,10 +58,7 @@ type Path []*Tile
 type PathList []Path
 
 func (pl PathList) Less(i, j int) bool {
-	if len(pl[i]) < len(pl[j]) {
-		return true
-	}
-	return false
+	return len(pl[i]) < len(pl[j])
 }
 
 func (pl PathList) Swap(i, j int) {
@@ -119,7 +116,7 @@ func NewWithTiles(tiles string) *Graph {
 			continue
 		}
 
-		found := regexp.MustCompile("[^\\s]+").FindAll(line, -1)
+		found := regexp.MustCompile(`[^\s]+`).FindAll(line, -1)
 		if len(found) != 0 {
 			buffer := []byte{}
 
@@ -434,7 +431,7 @@ func (graph *Graph) singlePath(tile *Tile, startTile *Tile, path []*Tile) {
 	}
 
 	graph.pathlist = append(graph.pathlist, path)
-	return
+
 }
 
 func (graph *Graph) multiPath(tile *Tile, startTile *Tile, path []*Tile) {
@@ -466,8 +463,6 @@ func (graph *Graph) multiPath(tile *Tile, startTile *Tile, path []*Tile) {
 	} else {
 		graph.pathlist = append(graph.pathlist, path)
 	}
-
-	return
 }
 
 // search astar search path
@@ -518,7 +513,7 @@ func (graph *Graph) search(multi bool) bool {
 			}
 
 			for _, ntile := range graph.neighbor.GetNeighbor(graph, tile) {
-				if ntile.IsCount == false && ntile.Attr != BLOCK {
+				if !ntile.IsCount && ntile.Attr != BLOCK {
 					graph.countCost.Cost(graph, ntile, tile)
 					graph.countWeight.Weight(graph, ntile, tile)
 					ntile.IsCount = true

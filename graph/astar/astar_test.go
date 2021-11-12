@@ -372,3 +372,31 @@ func Test8dir(t *testing.T) {
 		t.Error("check 8dir")
 	}
 }
+
+// func TestCase(t *testing.T) {
+// 	DIMX := 1024 << 4
+// 	DIMY := 1024 << 4
+// 	a := New(DIMX, DIMY)
+// 	a.SetTarget(0, 0, DIMX-1, DIMY-1)
+// 	a.SetAttr(DIMX/2, DIMY/2, BLOCK)
+// 	r := random.New()
+// 	for i := 0; i < DIMX*DIMY; i++ {
+// 		x := r.Intn(DIMX - 1)
+// 		y := r.Intn(DIMY - 1)
+// 		if a.GetAttr(x, y) == PLAIN {
+// 			a.SetAttr(x, y, BLOCK)
+// 		}
+// 	}
+
+// 	now := time.Now()
+// 	if a.Search() {
+// 		log.Println(time.Since(now), a.GetSingleSteps())
+// 		// t.Error(a.GetSinglePathTiles())
+// 	} else {
+// 		// t.Error(a.GetTiles())
+// 	}
+
+// 	// for _, p := range a.GetPath() {
+// 	// 	t.Error(p.X, p.Y)
+// 	// }
+// }
