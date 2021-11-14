@@ -35,6 +35,7 @@ func New(bitsCap uint64) *Bloom {
 	}
 }
 
+// Add add the key(interface{}) to bloom. interface{} will be encoded to binary data
 func (bl *Bloom) Add(key interface{}) (isExists bool) {
 	var keybuf bytes.Buffer
 	err := binary.Write(&keybuf, binary.BigEndian, key)
@@ -44,6 +45,7 @@ func (bl *Bloom) Add(key interface{}) (isExists bool) {
 	return bl.AddBytes(keybuf.Bytes())
 }
 
+// AddBytes add the key([]byte) to bloom.
 func (bl *Bloom) AddBytes(key []byte) (isExists bool) {
 	defer bl.hashFunc.Reset()
 	_, err := bl.hashFunc.Write(key)
@@ -64,6 +66,7 @@ func (bl *Bloom) AddBytes(key []byte) (isExists bool) {
 	return
 }
 
+// Contains  if the key is in bloom. return true.
 func (bl *Bloom) Contains(key interface{}) (isExists bool) {
 	var keybuf bytes.Buffer
 	err := binary.Write(&keybuf, binary.BigEndian, key)
@@ -73,6 +76,7 @@ func (bl *Bloom) Contains(key interface{}) (isExists bool) {
 	return bl.ContainsBytes(keybuf.Bytes())
 }
 
+// ContainsBytes if the key is in bloom. return true.
 func (bl *Bloom) ContainsBytes(key []byte) (isExists bool) {
 	defer bl.hashFunc.Reset()
 	_, err := bl.hashFunc.Write(key)
@@ -100,6 +104,8 @@ func (bl *Bloom) HitSize() uint64 {
 }
 
 // HitRatio 占用bit的比率 == float64(bl.hitSize) / float64(bl.cap)
+//
+// Ratio of occupied bits. equal to float64(bl.hitSize) / float64(bl.cap)
 func (bl *Bloom) HitRatio() float64 {
 	return float64(bl.hitSize) / float64(bl.cap)
 }
