@@ -25,29 +25,29 @@ func (s *Slice) String() string {
 	return string(s.Key)
 }
 
-type Node struct {
-	Parent   *Node
-	Children [2]*Node
-	Direct   [2]*Node
+type treeNode struct {
+	Parent   *treeNode
+	Children [2]*treeNode
+	Direct   [2]*treeNode
 
 	Size int64
 
 	Slice
 }
 
-func (n *Node) String() string {
+func (n *treeNode) String() string {
 	return string(n.Key)
 }
 
 type Tree struct {
-	root    *Node
+	root    *treeNode
 	compare compare.Compare
 
 	// rcount int
 }
 
 func New() *Tree {
-	return &Tree{compare: compare.Bytes, root: &Node{}}
+	return &Tree{compare: compare.Bytes, root: &treeNode{}}
 }
 
 func (tree *Tree) SetCompare(comp compare.Compare) {
@@ -56,6 +56,10 @@ func (tree *Tree) SetCompare(comp compare.Compare) {
 
 func (tree *Tree) Iterator() *Iterator {
 	return &Iterator{tree: tree}
+}
+
+func (tree *Tree) IteratorRange() *IteratorRange {
+	return &IteratorRange{tree: tree}
 }
 
 func (tree *Tree) Size() int64 {
@@ -80,15 +84,15 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 
 	cur := tree.getRoot()
 	if cur == nil {
-		node := &Node{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
+		node := &treeNode{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
 		tree.root.Children[0] = node
 		tree.root.Direct[L] = node
 		tree.root.Direct[R] = node
 		return false
 	}
 
-	var left *Node = nil
-	var right *Node = nil
+	var left *treeNode = nil
+	var right *treeNode = nil
 
 	for {
 		c := tree.compare(key, cur.Key)
@@ -100,7 +104,7 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 				cur = cur.Children[L]
 			} else {
 
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &treeNode{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
 				cur.Children[L] = node
 
 				if left != nil {
@@ -128,7 +132,7 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &treeNode{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
 				cur.Children[R] = node
 
 				if left != nil {
@@ -163,15 +167,15 @@ func (tree *Tree) Set(key []byte, value interface{}) bool {
 	cur := tree.getRoot()
 	if cur == nil {
 
-		node := &Node{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
+		node := &treeNode{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
 		tree.root.Children[0] = node
 		tree.root.Direct[L] = node
 		tree.root.Direct[R] = node
 		return false
 	}
 
-	var left *Node = nil
-	var right *Node = nil
+	var left *treeNode = nil
+	var right *treeNode = nil
 
 	for {
 		c := tree.compare(key, cur.Key)
@@ -183,7 +187,7 @@ func (tree *Tree) Set(key []byte, value interface{}) bool {
 				cur = cur.Children[L]
 			} else {
 
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &treeNode{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
 				cur.Children[L] = node
 
 				if left != nil {
@@ -211,7 +215,7 @@ func (tree *Tree) Set(key []byte, value interface{}) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &treeNode{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
 				cur.Children[R] = node
 
 				if left != nil {
@@ -245,15 +249,15 @@ func (tree *Tree) Put(key []byte, value interface{}) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		node := &Node{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
+		node := &treeNode{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
 		tree.root.Children[0] = node
 		tree.root.Direct[L] = node
 		tree.root.Direct[R] = node
 		return true
 	}
 
-	var left *Node = nil
-	var right *Node = nil
+	var left *treeNode = nil
+	var right *treeNode = nil
 
 	for {
 		c := tree.compare(key, cur.Key)
@@ -265,7 +269,7 @@ func (tree *Tree) Put(key []byte, value interface{}) bool {
 				cur = cur.Children[L]
 			} else {
 
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &treeNode{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
 				cur.Children[L] = node
 
 				if left != nil {
@@ -293,7 +297,7 @@ func (tree *Tree) Put(key []byte, value interface{}) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &Node{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
+				node := &treeNode{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
 				cur.Children[R] = node
 
 				if left != nil {
@@ -363,8 +367,8 @@ func (tree *Tree) Traverse(every func(s *Slice) bool) {
 		return
 	}
 
-	var traverasl func(cur *Node) bool
-	traverasl = func(cur *Node) bool {
+	var traverasl func(cur *treeNode) bool
+	traverasl = func(cur *treeNode) bool {
 		if cur == nil {
 			return true
 		}
@@ -458,9 +462,9 @@ func (tree *Tree) RemoveRange(low, hight []byte) bool {
 		return false
 	}
 
-	var ltrim, rtrim func(*Node) *Node
-	var dleft *Node
-	ltrim = func(root *Node) *Node {
+	var ltrim, rtrim func(*treeNode) *treeNode
+	var dleft *treeNode
+	ltrim = func(root *treeNode) *treeNode {
 		if root == nil {
 			return nil
 		}
@@ -486,15 +490,15 @@ func (tree *Tree) RemoveRange(low, hight []byte) bool {
 		}
 	}
 
-	var lgroup *Node
+	var lgroup *treeNode
 	if root.Children[L] != nil {
 		lgroup = ltrim(root.Children[L])
 	} else {
 		dleft = root.Direct[L]
 	}
 
-	var dright *Node
-	rtrim = func(root *Node) *Node {
+	var dright *treeNode
+	rtrim = func(root *treeNode) *treeNode {
 		if root == nil {
 			return nil
 		}
@@ -520,7 +524,7 @@ func (tree *Tree) RemoveRange(low, hight []byte) bool {
 		}
 	}
 
-	var rgroup *Node
+	var rgroup *treeNode
 	if root.Children[R] != nil {
 		rgroup = rtrim(root.Children[R])
 	} else {
@@ -594,9 +598,9 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 
 	root := cur
 	// log.Println(low, hight, "low:", tree.index(low), "hight:", tree.index(hight), "root:", root)
-	var ltrim, rtrim func(idx int64, dir int, root *Node) *Node
-	var dleft *Node
-	ltrim = func(idx int64, dir int, root *Node) *Node {
+	var ltrim, rtrim func(idx int64, dir int, root *treeNode) *treeNode
+	var dleft *treeNode
+	ltrim = func(idx int64, dir int, root *treeNode) *treeNode {
 		if root == nil {
 			return nil
 		}
@@ -628,15 +632,15 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 		}
 	}
 
-	var lgroup *Node
+	var lgroup *treeNode
 	if root.Children[L] != nil {
 		lgroup = ltrim(idx, L, root.Children[L])
 	} else {
 		dleft = root.Direct[L]
 	}
 
-	var dright *Node
-	rtrim = func(idx int64, dir int, root *Node) *Node {
+	var dright *treeNode
+	rtrim = func(idx int64, dir int, root *treeNode) *treeNode {
 		if root == nil {
 			return nil
 		}
@@ -668,7 +672,7 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 		}
 	}
 
-	var rgroup *Node
+	var rgroup *treeNode
 	if root.Children[R] != nil {
 		rgroup = rtrim(idx, R, root.Children[R])
 	} else {
@@ -726,8 +730,8 @@ func (tree *Tree) Trim(low, hight []byte) {
 
 	root := tree.getRangeRoot(low, hight)
 
-	var ltrim func(root *Node) *Node
-	ltrim = func(root *Node) *Node {
+	var ltrim func(root *treeNode) *treeNode
+	ltrim = func(root *treeNode) *treeNode {
 		if root == nil {
 			return nil
 		}
@@ -751,8 +755,8 @@ func (tree *Tree) Trim(low, hight []byte) {
 
 	ltrim(root)
 
-	var rtrim func(root *Node) *Node
-	rtrim = func(root *Node) *Node {
+	var rtrim func(root *treeNode) *treeNode
+	rtrim = func(root *treeNode) *treeNode {
 		if root == nil {
 			return nil
 		}
@@ -831,8 +835,8 @@ func (tree *Tree) TrimByIndex(low, hight int64) {
 		}
 	}
 
-	var ltrim func(idx int64, root *Node) *Node
-	ltrim = func(idx int64, root *Node) *Node {
+	var ltrim func(idx int64, root *treeNode) *treeNode
+	ltrim = func(idx int64, root *treeNode) *treeNode {
 		if root == nil {
 			return nil
 		}
@@ -856,8 +860,8 @@ func (tree *Tree) TrimByIndex(low, hight int64) {
 
 	ltrim(idx, root)
 
-	var rtrim func(idx int64, root *Node) *Node
-	rtrim = func(idx int64, root *Node) *Node {
+	var rtrim func(idx int64, root *treeNode) *treeNode
+	rtrim = func(idx int64, root *treeNode) *treeNode {
 		if root == nil {
 			return nil
 		}

@@ -23,12 +23,12 @@ func (tree *Tree) hashString() string {
 	return buf.String()
 }
 
-func (tree *Tree) getRoot() *Node {
+func (tree *Tree) getRoot() *treeNode {
 	return tree.root.Children[0]
 }
 
 // getRangeNodes 获取范围节点的左团和又团
-func (tree *Tree) getRangeRoot(low, hight []byte) (root *Node) {
+func (tree *Tree) getRangeRoot(low, hight []byte) (root *treeNode) {
 	const L = 0
 	const R = 1
 
@@ -52,21 +52,21 @@ func (tree *Tree) getRangeRoot(low, hight []byte) (root *Node) {
 	return
 }
 
-func (tree *Tree) fixPutSize(cur *Node) {
+func (tree *Tree) fixPutSize(cur *treeNode) {
 	for cur != tree.root {
 		cur.Size++
 		cur = cur.Parent
 	}
 }
 
-func (tree *Tree) fixRemoveSize(cur *Node) {
+func (tree *Tree) fixRemoveSize(cur *treeNode) {
 	for cur != tree.root {
 		cur.Size--
 		cur = cur.Parent
 	}
 }
 
-func (tree *Tree) fixPut(cur *Node) {
+func (tree *Tree) fixPut(cur *treeNode) {
 	cur.Size++
 	if cur.Size == 3 {
 		tree.fixPutSize(cur.Parent)
@@ -79,7 +79,7 @@ func (tree *Tree) fixPut(cur *Node) {
 	var height int64 = 2
 	var root2nsize, child2nsize, bottomsize, lsize, rsize int64
 	var relations int = L
-	var parent *Node
+	var parent *treeNode
 
 	if cur.Parent.Children[R] == cur {
 		relations = R
@@ -122,7 +122,7 @@ func (tree *Tree) fixPut(cur *Node) {
 	}
 }
 
-func (tree *Tree) fixRemoveRange(cur *Node) {
+func (tree *Tree) fixRemoveRange(cur *treeNode) {
 	const L = 0
 	const R = 1
 
@@ -153,7 +153,7 @@ func (tree *Tree) fixRemoveRange(cur *Node) {
 
 }
 
-func (tree *Tree) sizeRrotate(cur *Node) *Node {
+func (tree *Tree) sizeRrotate(cur *treeNode) *treeNode {
 	const R = 1
 	llsize, lrsize := getChildrenSize(cur.Children[R])
 	if llsize > lrsize {
@@ -162,7 +162,7 @@ func (tree *Tree) sizeRrotate(cur *Node) *Node {
 	return tree.lrotate(cur)
 }
 
-func (tree *Tree) sizeLrotate(cur *Node) *Node {
+func (tree *Tree) sizeLrotate(cur *treeNode) *treeNode {
 	const L = 0
 	llsize, lrsize := getChildrenSize(cur.Children[L])
 	if llsize < lrsize {
@@ -171,7 +171,7 @@ func (tree *Tree) sizeLrotate(cur *Node) *Node {
 	return tree.rrotate(cur)
 }
 
-func (tree *Tree) lrotate(cur *Node) *Node {
+func (tree *Tree) lrotate(cur *treeNode) *treeNode {
 	// tree.rcount++
 
 	const L = 1
@@ -203,7 +203,7 @@ func (tree *Tree) lrotate(cur *Node) *Node {
 	return mov
 }
 
-func (tree *Tree) rrotate(cur *Node) *Node {
+func (tree *Tree) rrotate(cur *treeNode) *treeNode {
 	// tree.rcount++
 
 	const L = 0
@@ -235,7 +235,7 @@ func (tree *Tree) rrotate(cur *Node) *Node {
 	return mov
 }
 
-func (tree *Tree) mergeGroups(root *Node, group *Node, childGroup *Node, childSize int64, LR int) {
+func (tree *Tree) mergeGroups(root *treeNode, group *treeNode, childGroup *treeNode, childSize int64, LR int) {
 	rparent := root.Parent
 	hand := group
 	for hand.Children[LR] != nil {
@@ -267,7 +267,7 @@ func (tree *Tree) mergeGroups(root *Node, group *Node, childGroup *Node, childSi
 	}
 }
 
-func (tree *Tree) removeNode(cur *Node) (s *Slice) {
+func (tree *Tree) removeNode(cur *treeNode) (s *Slice) {
 	const L = 0
 	const R = 1
 	s = &Slice{Key: cur.Key, Value: cur.Value}
@@ -376,15 +376,15 @@ func (tree *Tree) removeNode(cur *Node) (s *Slice) {
 	return
 }
 
-func (tree *Tree) head() *Node {
+func (tree *Tree) head() *treeNode {
 	return tree.root.Direct[0]
 }
 
-func (tree *Tree) tail() *Node {
+func (tree *Tree) tail() *treeNode {
 	return tree.root.Direct[1]
 }
 
-func (tree *Tree) index(i int64) *Node {
+func (tree *Tree) index(i int64) *treeNode {
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -411,7 +411,7 @@ func (tree *Tree) index(i int64) *Node {
 
 }
 
-func (tree *Tree) getNode(key []byte) *Node {
+func (tree *Tree) getNode(key []byte) *treeNode {
 	const L = 0
 	const R = 1
 
@@ -430,13 +430,13 @@ func (tree *Tree) getNode(key []byte) *Node {
 	return nil
 }
 
-func (tree *Tree) seekNodeWithIndex(key []byte) (node *Node, idx int64, dir int) {
+func (tree *Tree) seekNodeWithIndex(key []byte) (node *treeNode, idx int64, dir int) {
 	const L = 0
 	const R = 1
 
 	cur := tree.getRoot()
 	var offset int64 = getSize(cur.Children[L])
-	var last *Node
+	var last *treeNode
 	var c int
 	for {
 		c = tree.compare(key, cur.Key)
@@ -468,22 +468,22 @@ func (tree *Tree) seekNodeWithIndex(key []byte) (node *Node, idx int64, dir int)
 
 }
 
-func getChildrenSumSize(cur *Node) int64 {
+func getChildrenSumSize(cur *treeNode) int64 {
 	return getSize(cur.Children[0]) + getSize(cur.Children[1])
 }
 
-func getChildrenSize(cur *Node) (int64, int64) {
+func getChildrenSize(cur *treeNode) (int64, int64) {
 	return getSize(cur.Children[0]), getSize(cur.Children[1])
 }
 
-func getSize(cur *Node) int64 {
+func getSize(cur *treeNode) int64 {
 	if cur == nil {
 		return 0
 	}
 	return cur.Size
 }
 
-func getRelationship(cur *Node) int {
+func getRelationship(cur *treeNode) int {
 	if cur.Parent.Children[1] == cur {
 		return 1
 	}
@@ -626,8 +626,8 @@ func (tree *Tree) check() {
 		panic("")
 	}
 
-	var tcheck func(root *Node)
-	tcheck = func(root *Node) {
+	var tcheck func(root *treeNode)
+	tcheck = func(root *treeNode) {
 
 		if root == nil {
 			return

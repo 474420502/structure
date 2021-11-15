@@ -2,6 +2,7 @@ package treelist
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"math/rand"
 	"sort"
@@ -248,6 +249,39 @@ func TestSeek(t *testing.T) {
 			t.Error("seek error")
 		}
 	}
+}
+
+func TestSeekRange(t *testing.T) {
+	tree := New()
+	for _, v := range testutils.TestedBytesSimlpe {
+		tree.Put(v, v)
+	}
+
+	//	│       ┌── c6
+	//	│   ┌── c4
+	//	└── c1
+	//		│   ┌── a5
+	//		└── a3
+	//			└── a1
+
+	iter := tree.Iterator()
+	if !iter.SeekGE([]byte("a3")) { // 由于a5存在
+		t.Error("SeekLT errror")
+	}
+
+	var result []string
+	for ; iter.Valid(); iter.Next() {
+		k := string(iter.Key())
+		result = append(result, k)
+		if k == "c4" {
+			break
+		}
+	}
+
+	if fmt.Sprintf("%v", result) != "[a3 a5 c1 c4]" {
+		t.Error()
+	}
+
 }
 
 func TestSeekDirect(t *testing.T) {
