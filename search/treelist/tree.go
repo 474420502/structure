@@ -82,6 +82,10 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 	const L = 0
 	const R = 1
 
+	if len(key) == 0 {
+		panic(fmt.Errorf("key must not be nil"))
+	}
+
 	cur := tree.getRoot()
 	if cur == nil {
 		node := &treeNode{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
@@ -163,6 +167,10 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 func (tree *Tree) Set(key []byte, value interface{}) bool {
 	const L = 0
 	const R = 1
+
+	if len(key) == 0 {
+		panic(fmt.Errorf("key must not be nil"))
+	}
 
 	cur := tree.getRoot()
 	if cur == nil {
@@ -246,6 +254,10 @@ func (tree *Tree) Set(key []byte, value interface{}) bool {
 func (tree *Tree) Put(key []byte, value interface{}) bool {
 	const L = 0
 	const R = 1
+
+	if len(key) == 0 {
+		panic(fmt.Errorf("key must not be nil"))
+	}
 
 	cur := tree.getRoot()
 	if cur == nil {

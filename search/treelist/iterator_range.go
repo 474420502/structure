@@ -23,6 +23,7 @@ type SliceIndex struct {
 
 // SetDirection set iterator range direction. default Forward(start to end)
 func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
+
 	const (
 		L = 0
 		R = 1
@@ -45,8 +46,9 @@ func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
 		dir = L
 	}
 
-	if cur != nil {
+	if cur != nil && cur.Direct[ir.dir] != end {
 		for {
+			// log.Println(cur.Key, string(cur.Key), end.Key, string(end.Key), []byte("a4"), []byte("c4"))
 			if !do(&SliceIndex{Slice: &cur.Slice, Index: idx}) || cur == end {
 				break
 			}
@@ -78,6 +80,10 @@ func (ir *IteratorRange) Size() int64 {
 // GE2LE [s,e] start with GE, end with LE. (like Seek**)
 func (ir *IteratorRange) GE2LE(start, end []byte) {
 
+	// if ir.tree.compare(start, end) > 0 {
+	// 	panic(fmt.Errorf("start:%s > end:%s", start, end))
+	// }
+
 	const (
 		L = 0
 		R = 1
@@ -103,6 +109,10 @@ func (ir *IteratorRange) GE2LE(start, end []byte) {
 
 // GE2LE (s,e] start with GT, end with LE. (like Seek**)
 func (ir *IteratorRange) GT2LE(start, end []byte) {
+
+	// if ir.tree.compare(start, end) > 0 {
+	// 	panic(fmt.Errorf("start:%s > end:%s", start, end))
+	// }
 
 	const (
 		L = 0
@@ -130,6 +140,10 @@ func (ir *IteratorRange) GT2LE(start, end []byte) {
 // GE2LT [s,e) start with GE, end with LT. (like Seek**)
 func (ir *IteratorRange) GE2LT(start, end []byte) {
 
+	// if ir.tree.compare(start, end) > 0 {
+	// 	panic(fmt.Errorf("start:%s > end:%s", start, end))
+	// }
+
 	const (
 		L = 0
 		R = 1
@@ -155,6 +169,10 @@ func (ir *IteratorRange) GE2LT(start, end []byte) {
 
 // GE2LT (s,e) start with GT, end with LT. (like Seek**)
 func (ir *IteratorRange) GT2LT(start, end []byte) {
+
+	// if ir.tree.compare(start, end) > 0 {
+	// 	panic(fmt.Errorf("start:%s > end:%s", start, end))
+	// }
 
 	const (
 		L = 0
