@@ -93,8 +93,8 @@ func (tree *Tree) trimBad(low, hight []byte) {
 	const L = 0
 	const R = 1
 	root := tree.getRoot()
-	var trim func(root *Node) *Node
-	trim = func(root *Node) *Node {
+	var trim func(root *treeNode) *treeNode
+	trim = func(root *treeNode) *treeNode {
 		if root == nil {
 			return nil
 		}

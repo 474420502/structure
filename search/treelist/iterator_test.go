@@ -2,6 +2,7 @@ package treelist
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"math/rand"
 	"sort"
@@ -250,6 +251,39 @@ func TestSeek(t *testing.T) {
 	}
 }
 
+func TestSeekRange(t *testing.T) {
+	tree := New()
+	for _, v := range testutils.TestedBytesSimlpe {
+		tree.Put(v, v)
+	}
+
+	//	│       ┌── c6
+	//	│   ┌── c4
+	//	└── c1
+	//		│   ┌── a5
+	//		└── a3
+	//			└── a1
+
+	iter := tree.Iterator()
+	if !iter.SeekGE([]byte("a3")) { // 由于a5存在
+		t.Error("SeekLT errror")
+	}
+
+	var result []string
+	for ; iter.Valid(); iter.Next() {
+		k := string(iter.Key())
+		result = append(result, k)
+		if k == "c4" {
+			break
+		}
+	}
+
+	if fmt.Sprintf("%v", result) != "[a3 a5 c1 c4]" {
+		t.Error()
+	}
+
+}
+
 func TestSeekDirect(t *testing.T) {
 	tree := New()
 	for _, v := range testutils.TestedBytesSimlpe {
@@ -343,6 +377,22 @@ func TestIteratorSeekForForce(t *testing.T) {
 		sort.Slice(plist, func(i, j int) bool {
 			return tree.compare(plist[i], plist[j]) < 0
 		})
+
+		iter := tree.Iterator()
+		iter.SeekToFirst()
+
+		for i, key := range plist {
+			if !iter.Valid() {
+				t.Error("")
+			}
+			if iter.Index() != int64(i) {
+				t.Error("")
+			}
+			if iter.Compare(key) != 0 {
+				t.Error("")
+			}
+			iter.Next()
+		}
 
 		for i := 0; i < 5; i++ {
 			idx := rand.Intn(len(plist)-2) + 1

@@ -1,7 +1,7 @@
 package avl
 
-const l = 0
-const r = 1
+const L = 0
+const R = 1
 
 func newIterator(tree *Tree) *Iterator {
 	hight := tree.Height()
@@ -34,9 +34,9 @@ func (iter *Iterator) SeekToFirst() {
 	iter.cur = iter.tree.Root
 	iter.idx = -1
 	if iter.cur != nil {
-		for iter.cur.Children[l] != nil {
+		for iter.cur.Children[L] != nil {
 			iter.push()
-			iter.cur = iter.cur.Children[l]
+			iter.cur = iter.cur.Children[L]
 		}
 	}
 }
@@ -46,9 +46,9 @@ func (iter *Iterator) SeekToLast() {
 	iter.idx = -1
 
 	if iter.cur != nil {
-		for iter.cur.Children[r] != nil {
+		for iter.cur.Children[R] != nil {
 			iter.push()
-			iter.cur = iter.cur.Children[r]
+			iter.cur = iter.cur.Children[R]
 		}
 	}
 }
@@ -64,7 +64,7 @@ func (iter *Iterator) SeekLE(key interface{}) bool {
 	for {
 		switch c := iter.tree.Compare(key, iter.cur.Key); c {
 		case -1:
-			if iter.cur.Children[l] == nil {
+			if iter.cur.Children[L] == nil {
 				if !iter.lpop() {
 					iter.push()
 					iter.cur = nil
@@ -73,20 +73,55 @@ func (iter *Iterator) SeekLE(key interface{}) bool {
 			}
 
 			iter.push()
-			iter.cur = iter.cur.Children[l]
+			iter.cur = iter.cur.Children[L]
 		case 1:
-			if iter.cur.Children[r] == nil {
+			if iter.cur.Children[R] == nil {
 				return false
 			}
 			iter.push()
-			iter.cur = iter.cur.Children[r]
+			iter.cur = iter.cur.Children[R]
 		case 0:
 			return true
 		default:
 			panic("Get Compare only is allowed in -1, 0, 1")
 		}
 	}
+}
 
+func (iter *Iterator) SeekLT(key interface{}) bool {
+
+	iter.idx = -1
+	iter.cur = iter.tree.Root
+	if iter.cur == nil {
+		return false
+	}
+
+	for {
+		switch c := iter.tree.Compare(key, iter.cur.Key); c {
+		case -1:
+			if iter.cur.Children[L] == nil {
+				if !iter.lpop() {
+					iter.push()
+					iter.cur = nil
+				}
+				return false
+			}
+
+			iter.push()
+			iter.cur = iter.cur.Children[L]
+		case 1:
+			if iter.cur.Children[R] == nil {
+				return false
+			}
+			iter.push()
+			iter.cur = iter.cur.Children[R]
+		case 0:
+			iter.Prev()
+			return true
+		default:
+			panic("Get Compare only is allowed in -1, 0, 1")
+		}
+	}
 }
 
 func (iter *Iterator) SeekGE(key interface{}) bool {
@@ -99,13 +134,13 @@ func (iter *Iterator) SeekGE(key interface{}) bool {
 	for {
 		switch c := iter.tree.Compare(key, iter.cur.Key); c {
 		case -1:
-			if iter.cur.Children[l] == nil {
+			if iter.cur.Children[L] == nil {
 				return false
 			}
 			iter.push()
-			iter.cur = iter.cur.Children[l]
+			iter.cur = iter.cur.Children[L]
 		case 1:
-			if iter.cur.Children[r] == nil {
+			if iter.cur.Children[R] == nil {
 				if !iter.rpop() {
 					iter.push()
 					iter.cur = nil
@@ -113,7 +148,7 @@ func (iter *Iterator) SeekGE(key interface{}) bool {
 				return false
 			}
 			iter.push()
-			iter.cur = iter.cur.Children[r]
+			iter.cur = iter.cur.Children[R]
 		case 0:
 			return true
 		default:
@@ -132,13 +167,13 @@ func (iter *Iterator) SeekGT(key interface{}) bool {
 	for {
 		switch c := iter.tree.Compare(key, iter.cur.Key); c {
 		case -1:
-			if iter.cur.Children[l] == nil {
+			if iter.cur.Children[L] == nil {
 				return false
 			}
 			iter.push()
-			iter.cur = iter.cur.Children[l]
+			iter.cur = iter.cur.Children[L]
 		case 1:
-			if iter.cur.Children[r] == nil {
+			if iter.cur.Children[R] == nil {
 				if !iter.rpop() {
 					iter.push()
 					iter.cur = nil
@@ -146,9 +181,9 @@ func (iter *Iterator) SeekGT(key interface{}) bool {
 				return false
 			}
 			iter.push()
-			iter.cur = iter.cur.Children[r]
+			iter.cur = iter.cur.Children[R]
 		case 0:
-
+			iter.Next()
 			return true
 		default:
 			panic("Get Compare only is allowed in -1, 0, 1")
@@ -162,7 +197,7 @@ func (iter *Iterator) Vaild() bool {
 
 func (iter *Iterator) Next() {
 
-	if iter.cur == nil || iter.cur.Children[r] == nil {
+	if iter.cur == nil || iter.cur.Children[R] == nil {
 		// rpop
 		if !iter.rpop() {
 			iter.push()
@@ -172,12 +207,12 @@ func (iter *Iterator) Next() {
 	}
 
 	iter.push()
-	iter.cur = iter.cur.Children[r]
+	iter.cur = iter.cur.Children[R]
 
 	if iter.cur != nil {
-		for iter.cur.Children[l] != nil {
+		for iter.cur.Children[L] != nil {
 			iter.push()
-			iter.cur = iter.cur.Children[l]
+			iter.cur = iter.cur.Children[L]
 		}
 		return
 	}
@@ -185,7 +220,7 @@ func (iter *Iterator) Next() {
 
 func (iter *Iterator) Prev() {
 
-	if iter.cur == nil || iter.cur.Children[l] == nil {
+	if iter.cur == nil || iter.cur.Children[L] == nil {
 		// lpop
 		if !iter.lpop() {
 			iter.push()
@@ -195,12 +230,12 @@ func (iter *Iterator) Prev() {
 	}
 
 	iter.push()
-	iter.cur = iter.cur.Children[l]
+	iter.cur = iter.cur.Children[L]
 
 	if iter.cur != nil {
-		for iter.cur.Children[r] != nil {
+		for iter.cur.Children[R] != nil {
 			iter.push()
-			iter.cur = iter.cur.Children[r]
+			iter.cur = iter.cur.Children[R]
 		}
 		return
 	}
@@ -220,7 +255,7 @@ func (iter *Iterator) lpop() bool {
 	for idx >= 0 {
 		p = iter.stack[idx]
 		idx--
-		if p.Children[r] == cur {
+		if p.Children[R] == cur {
 			iter.cur = p
 			iter.idx = idx
 			return true
@@ -239,7 +274,7 @@ func (iter *Iterator) rpop() bool {
 	for idx >= 0 {
 		p = iter.stack[idx]
 		idx--
-		if p.Children[l] == cur {
+		if p.Children[L] == cur {
 			iter.cur = p
 			iter.idx = idx
 			return true
