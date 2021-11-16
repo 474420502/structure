@@ -447,7 +447,7 @@ func (tree *Tree) seekNodeWithIndex(key []byte) (node *treeNode, idx int64, dir 
 
 			cur = cur.Children[L]
 			if cur != nil {
-				offset -= getSize(cur.Children[L]) + 1
+				offset -= getSize(cur.Children[R]) + 1
 			} else {
 				return last, offset, c
 			}

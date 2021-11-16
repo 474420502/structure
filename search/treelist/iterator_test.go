@@ -378,6 +378,22 @@ func TestIteratorSeekForForce(t *testing.T) {
 			return tree.compare(plist[i], plist[j]) < 0
 		})
 
+		iter := tree.Iterator()
+		iter.SeekToFirst()
+
+		for i, key := range plist {
+			if !iter.Valid() {
+				t.Error("")
+			}
+			if iter.Index() != int64(i) {
+				t.Error("")
+			}
+			if iter.Compare(key) != 0 {
+				t.Error("")
+			}
+			iter.Next()
+		}
+
 		for i := 0; i < 5; i++ {
 			idx := rand.Intn(len(plist)-2) + 1
 

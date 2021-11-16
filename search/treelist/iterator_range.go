@@ -24,6 +24,10 @@ type SliceIndex struct {
 // SetDirection set iterator range direction. default Forward(start to end)
 func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
 
+	if ir.siter.idx > ir.eiter.idx {
+		return
+	}
+
 	const (
 		L = 0
 		R = 1
@@ -46,15 +50,12 @@ func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
 		dir = L
 	}
 
-	if cur != nil && cur.Direct[ir.dir] != end {
-		for {
-			// log.Println(cur.Key, string(cur.Key), end.Key, string(end.Key), []byte("a4"), []byte("c4"))
-			if !do(&SliceIndex{Slice: &cur.Slice, Index: idx}) || cur == end {
-				break
-			}
-			cur = cur.Direct[dir]
-			idx++
+	for {
+		if !do(&SliceIndex{Slice: &cur.Slice, Index: idx}) || cur == end {
+			break
 		}
+		cur = cur.Direct[dir]
+		idx++
 	}
 
 }
@@ -71,10 +72,22 @@ func (ir *IteratorRange) Direction() RangeDirection {
 
 // Size get range size
 func (ir *IteratorRange) Size() int64 {
+
 	if ir.dir == Forward {
-		return ir.eiter.idx - ir.siter.idx
+		// log.Println("Forward")
+
+		if ir.siter.cur == nil || ir.siter.idx > ir.eiter.idx {
+			return 0
+		}
+
+		return ir.eiter.idx - ir.siter.idx + 1
 	}
-	return ir.siter.idx - ir.eiter.idx
+
+	// log.Println("Reverse")
+	if ir.eiter.cur == nil || ir.eiter.cur.Direct[ir.dir] == ir.siter.cur {
+		return 0
+	}
+	return ir.eiter.idx - ir.siter.idx + 1
 }
 
 // GE2LE [s,e] start with GE, end with LE. (like Seek**)
