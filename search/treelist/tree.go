@@ -54,14 +54,19 @@ func (tree *Tree) SetCompare(comp compare.Compare) {
 	tree.compare = comp
 }
 
+// Iterator Return the Iterator of tree. like list or skiplist
 func (tree *Tree) Iterator() *Iterator {
 	return &Iterator{tree: tree}
 }
 
+// IteratorRange Return the Iterator of tree. like list or skiplist.
+//
+// the struct can set range.
 func (tree *Tree) IteratorRange() *IteratorRange {
 	return &IteratorRange{tree: tree}
 }
 
+// Size return the size of treelist
 func (tree *Tree) Size() int64 {
 	if root := tree.getRoot(); root != nil {
 		return root.Size
@@ -69,6 +74,7 @@ func (tree *Tree) Size() int64 {
 	return 0
 }
 
+// Get Get Value from key.
 func (tree *Tree) Get(key []byte) (interface{}, bool) {
 	if cur := tree.getNode(key); cur != nil {
 		return cur.Value, true
@@ -164,6 +170,7 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 
 }
 
+// Set Insert the key In treelist, if key exists, cover
 func (tree *Tree) Set(key []byte, value interface{}) bool {
 	const L = 0
 	const R = 1
@@ -251,6 +258,7 @@ func (tree *Tree) Set(key []byte, value interface{}) bool {
 
 }
 
+// Put Insert the key In treelist, if key exists, ignore
 func (tree *Tree) Put(key []byte, value interface{}) bool {
 	const L = 0
 	const R = 1
@@ -336,11 +344,15 @@ func (tree *Tree) Put(key []byte, value interface{}) bool {
 
 }
 
+// Index return the slice by index.
+//
+// like the index of array(order)
 func (tree *Tree) Index(i int64) *Slice {
 	node := tree.index(i)
 	return &node.Slice
 }
 
+// IndexOf Get the Index of key in the Treelist(Order)
 func (tree *Tree) IndexOf(key []byte) int64 {
 	const L = 0
 	const R = 1
@@ -724,6 +736,7 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 	}
 }
 
+// Clear. Reset the treelist.
 func (tree *Tree) Clear() {
 	tree.root.Children[0] = nil
 	tree.root.Direct[0] = nil

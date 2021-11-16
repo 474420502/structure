@@ -124,9 +124,9 @@ func TestIteratorRangeForce(t *testing.T) {
 				// log.Println("iter2:", string(iter2.Key()), iter2.Index())
 				iter2.Next()
 			}
-			// if fmt.Sprintf("%v", result) != "[a5 c1]" {
-			// 	t.Error(fmt.Sprintf("%v", result))
-			// }
+			if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", result2) {
+				panic("")
+			}
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("start:", string(start), "end:", string(end))
 				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
@@ -159,9 +159,9 @@ func TestIteratorRangeForce(t *testing.T) {
 				// log.Println("iter2:", string(iter2.Key()), iter2.Index())
 				iter2.Next()
 			}
-			// if fmt.Sprintf("%v", result) != "[a5 c1]" {
-			// 	t.Error(fmt.Sprintf("%v", result))
-			// }
+			if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", result2) {
+				panic("")
+			}
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("range size:", iter.Size(), "result len:", len(result))
 				log.Println("start:", string(start), "end:", string(end))
@@ -193,9 +193,9 @@ func TestIteratorRangeForce(t *testing.T) {
 				// log.Println("iter2:", string(iter2.Key()), iter2.Index())
 				iter2.Next()
 			}
-			// if fmt.Sprintf("%v", result) != "[a5 c1]" {
-			// 	t.Error(fmt.Sprintf("%v", result))
-			// }
+			if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", result2) {
+				panic("")
+			}
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("start:", string(start), "end:", string(end))
 				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
@@ -208,15 +208,35 @@ func TestIteratorRangeForce(t *testing.T) {
 		func() {
 			var result []string
 			iter := tree.IteratorRange()
-			iter.SetDirection(Reverse)
-			iter.GT2LE([]byte("a0"), []byte("c9"))
+			iter.GT2LE(start, end) // a4 <= key < c4
 			iter.Range(func(cur *SliceIndex) bool {
+				// log.Println("iter1:", string(cur.Key), cur.Index)
 				result = append(result, string(cur.Key))
 				return true
 			})
-			// if fmt.Sprintf("%v", result) != "[c6 c4 c1 a5 a3 a1]" {
-			// 	t.Error(fmt.Sprintf("%v", result))
-			// }
+
+			// log.Println("------------------------------------")
+			var result2 []string
+			iter2 := tree.Iterator()
+			iter2.SeekGT(start)
+			for iter2.Valid() {
+				if iter2.Compare(end) > 0 {
+					break
+				}
+				result2 = append(result2, string(iter2.Key()))
+				// log.Println("iter2:", string(iter2.Key()), iter2.Index())
+				iter2.Next()
+			}
+			if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", result2) {
+				panic("")
+			}
+			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
+				log.Println("start:", string(start), "end:", string(end))
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
+				log.Println("range size:", iter.Size(), "result len:", len(result))
+				log.Println(result)
+				log.Println()
+			}
 		}()
 
 		// -------------------------------------------------------
@@ -272,6 +292,179 @@ func TestIteratorRangeForce(t *testing.T) {
 			// if fmt.Sprintf("%v", result) != "[c6 c4 c1 a5 a3 a1]" {
 			// 	t.Error(fmt.Sprintf("%v", result))
 			// }
+		}()
+	}
+}
+
+func TestIteratorRangeForce2(t *testing.T) {
+	r := random.New()
+
+	for n := 0; n < 1000; n++ {
+
+		tree := New()
+		var result [][]byte
+		var start, end []byte
+		for i := 0; i < 10; i++ {
+			k := utils.Rangdom(1, 32, r)
+			result = append(result, k)
+			tree.Put(k, k)
+		}
+
+		start = result[r.Intn(len(result))]
+		end = result[r.Intn(len(result))]
+		if bytes.Compare(start, end) > 0 {
+			start, end = end, start
+		}
+		// log.Println(string(start), string(end))
+		// log.Println(tree.debugString(false))
+
+		func() {
+			var result []string
+			iter := tree.IteratorRange()
+			iter.SetDirection(Reverse)
+			iter.GE2LT(start, end) // a4 <= key < c4
+			iter.Range(func(cur *SliceIndex) bool {
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
+				return true
+			})
+
+			// log.Println("------------------------------------")
+			var result2 []string
+			iter2 := tree.Iterator()
+			iter2.SeekLT(end)
+			for iter2.Valid() {
+				if iter2.Compare(start) < 0 {
+					break
+				}
+				result2 = append(result2, string(iter2.Key()))
+				// log.Println("iter2:", string(iter2.Key()), iter2.Index())
+				iter2.Prev()
+			}
+
+			if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", result2) {
+				panic("")
+			}
+
+			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
+				log.Println("start:", string(start), "end:", string(end))
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
+				log.Println("range size:", iter.Size(), "result len:", len(result))
+				log.Println(result)
+				log.Println()
+			}
+
+		}()
+
+		func() {
+			var result []string
+			iter := tree.IteratorRange()
+			iter.SetDirection(Reverse)
+			iter.GT2LT(start, end) // a4 <= key < c4
+			iter.Range(func(cur *SliceIndex) bool {
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
+				return true
+			})
+
+			// log.Println("------------------------------------")
+			var result2 []string
+			iter2 := tree.Iterator()
+			iter2.SeekLT(end)
+			for iter2.Valid() {
+				if iter2.Compare(start) <= 0 {
+					break
+				}
+				result2 = append(result2, string(iter2.Key()))
+				// log.Println("iter2:", string(iter2.Key()), iter2.Index())
+				iter2.Prev()
+			}
+
+			if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", result2) {
+				panic("")
+			}
+
+			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
+				log.Println("range size:", iter.Size(), "result len:", len(result))
+				log.Println("start:", string(start), "end:", string(end))
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
+				log.Println(result)
+				log.Println()
+			}
+		}()
+
+		func() {
+			var result []string
+			iter := tree.IteratorRange()
+			iter.SetDirection(Reverse)
+			iter.GE2LE(start, end) // a4 <= key < c4
+			iter.Range(func(cur *SliceIndex) bool {
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
+				return true
+			})
+
+			// log.Println("------------------------------------")
+			var result2 []string
+			iter2 := tree.Iterator()
+			iter2.SeekLE(end)
+			for iter2.Valid() {
+				if iter2.Compare(start) < 0 {
+					break
+				}
+				result2 = append(result2, string(iter2.Key()))
+				// log.Println("iter2:", string(iter2.Key()), iter2.Index())
+				iter2.Prev()
+			}
+
+			if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", result2) {
+				panic("")
+			}
+
+			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
+				log.Println("start:", string(start), "end:", string(end))
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
+				log.Println("range size:", iter.Size(), "result len:", len(result))
+				log.Println(result)
+				log.Println()
+			}
+		}()
+
+		func() {
+			var result []string
+			iter := tree.IteratorRange()
+			iter.SetDirection(Reverse)
+			iter.GT2LE(start, end) // a4 <= key < c4
+			iter.Range(func(cur *SliceIndex) bool {
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
+				return true
+			})
+
+			// log.Println("------------------------------------")
+			var result2 []string
+			iter2 := tree.Iterator()
+			iter2.SeekLE(end)
+			for iter2.Valid() {
+				if iter2.Compare(start) <= 0 {
+					break
+				}
+				result2 = append(result2, string(iter2.Key()))
+				// log.Println("iter2:", string(iter2.Key()), iter2.Index())
+				iter2.Prev()
+			}
+
+			if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", result2) {
+				panic("")
+			}
+
+			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
+				log.Println("start:", string(start), "end:", string(end))
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
+				log.Println("range size:", iter.Size(), "result len:", len(result))
+				log.Println(result)
+				log.Println()
+			}
 		}()
 	}
 }

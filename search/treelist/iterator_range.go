@@ -73,21 +73,12 @@ func (ir *IteratorRange) Direction() RangeDirection {
 // Size get range size
 func (ir *IteratorRange) Size() int64 {
 
-	if ir.dir == Forward {
-		// log.Println("Forward")
-
-		if ir.siter.cur == nil || ir.siter.idx > ir.eiter.idx {
-			return 0
-		}
-
-		return ir.eiter.idx - ir.siter.idx + 1
-	}
-
-	// log.Println("Reverse")
-	if ir.eiter.cur == nil || ir.eiter.cur.Direct[ir.dir] == ir.siter.cur {
+	if ir.siter.cur == nil || ir.eiter.cur == nil || ir.siter.idx > ir.eiter.idx {
 		return 0
 	}
+
 	return ir.eiter.idx - ir.siter.idx + 1
+
 }
 
 // GE2LE [s,e] start with GE, end with LE. (like Seek**)
