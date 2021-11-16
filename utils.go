@@ -12,8 +12,13 @@ func TryPanic(do func()) (err error) {
 
 var basechars []byte = []byte("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0123456789")
 
-func Rangdom(s, e int) []byte {
-	r := random.NewNoLog()
+func Rangdom(s, e int, seeds ...interface{}) []byte {
+	var r *random.Random
+	if len(seeds) > 0 {
+		r = seeds[0].(*random.Random)
+	} else {
+		r = random.NewNoLog()
+	}
 
 	size := len(basechars)
 	msize := r.Intn(e+s) + s
