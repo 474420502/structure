@@ -17,7 +17,7 @@ func New(Compare compare.Compare) *TreeSet {
 	return &TreeSet{tree: newAVL(Compare)}
 }
 
-// Add Not Cover the key of node
+// Add Not Cover the key of node. if item exists. return false
 func (set *TreeSet) Add(item interface{}) bool {
 	return set.tree.Put(item)
 

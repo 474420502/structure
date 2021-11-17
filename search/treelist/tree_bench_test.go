@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/474420502/random"
+	utils "github.com/474420502/structure"
 	"github.com/474420502/structure/compare"
 )
 
@@ -32,6 +33,30 @@ func BenchmarkPut(b *testing.B) {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
 	}
+}
+
+func BenchmarkPut2(b *testing.B) {
+	b.StopTimer()
+	tree := New()
+
+	var data [][]byte
+	for i := 0; i < Level0; i++ {
+		data = append(data, utils.Rangdom(8, 32))
+	}
+
+	b.ResetTimer()
+	b.StartTimer()
+
+	var idx = 0
+	for i := 0; i < b.N; i++ {
+		if idx >= len(data) {
+			idx = 0
+		}
+		tree.Put(data[idx], data[idx])
+		idx++
+	}
+
+	b.Log(len(data))
 }
 
 func BenchmarkIndex(b *testing.B) {
