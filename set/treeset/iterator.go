@@ -82,6 +82,40 @@ func (iter *Iterator) SeekLE(key interface{}) bool {
 	return false
 }
 
+func (iter *Iterator) SeekLT(key interface{}) bool {
+
+	iter.idx = -1
+
+	for iter.cur = iter.tree.Root; iter.cur != nil; {
+		switch c := iter.tree.Compare(key, iter.cur.Key); c {
+		case -1:
+			if iter.cur.Children[l] == nil {
+				if !iter.lpop() {
+					iter.push()
+					iter.cur = nil
+				}
+				return false
+			}
+
+			iter.push()
+			iter.cur = iter.cur.Children[l]
+		case 1:
+			if iter.cur.Children[r] == nil {
+				return false
+			}
+			iter.push()
+			iter.cur = iter.cur.Children[r]
+		case 0:
+			iter.Prev()
+			return true
+		default:
+			panic("Get Compare only is allowed in -1, 0, 1")
+		}
+	}
+
+	return false
+}
+
 func (iter *Iterator) SeekGE(key interface{}) bool {
 	iter.idx = -1
 
@@ -104,6 +138,38 @@ func (iter *Iterator) SeekGE(key interface{}) bool {
 			iter.push()
 			iter.cur = iter.cur.Children[r]
 		case 0:
+			return true
+		default:
+			panic("Get Compare only is allowed in -1, 0, 1")
+		}
+	}
+
+	return false
+}
+
+func (iter *Iterator) SeekGT(key interface{}) bool {
+	iter.idx = -1
+
+	for iter.cur = iter.tree.Root; iter.cur != nil; {
+		switch c := iter.tree.Compare(key, iter.cur.Key); c {
+		case -1:
+			if iter.cur.Children[l] == nil {
+				return false
+			}
+			iter.push()
+			iter.cur = iter.cur.Children[l]
+		case 1:
+			if iter.cur.Children[r] == nil {
+				if !iter.rpop() {
+					iter.push()
+					iter.cur = nil
+				}
+				return false
+			}
+			iter.push()
+			iter.cur = iter.cur.Children[r]
+		case 0:
+			iter.Next()
 			return true
 		default:
 			panic("Get Compare only is allowed in -1, 0, 1")

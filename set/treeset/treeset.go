@@ -23,13 +23,16 @@ func (set *TreeSet) Add(item interface{}) bool {
 
 }
 
-// Set   Set the key of node
+// Set   Set the key of node.
+//
+// like add(). if compare is special, will cover key.
+// eg. k1 = {a:1,b:2}. k2 = {a:1, b:3}.  k1.a == k2.a. the key will be covered by k2
 func (set *TreeSet) Set(item interface{}) bool {
 	return set.tree.Set(item)
 }
 
-// Covers   Cover the key of nodes
-func (set *TreeSet) Covers(items ...interface{}) {
+// Sets   Cover the key of nodes
+func (set *TreeSet) Sets(items ...interface{}) {
 	for _, item := range items {
 		set.tree.Set(item)
 	}

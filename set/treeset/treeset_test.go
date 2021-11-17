@@ -28,7 +28,7 @@ func TestTreeSet_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			set := New(compare.Int)
-			set.Covers(tt.args.items...)
+			set.Sets(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
 			}
@@ -49,7 +49,7 @@ func TestTreeSet_Add(t *testing.T) {
 	for _, tt := range tests2 {
 		t.Run(tt.name, func(t *testing.T) {
 			set := New(compare.String)
-			set.Covers(tt.args.items...)
+			set.Sets(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
 			}
@@ -92,7 +92,7 @@ func TestTreeSet_Remove(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			set := New(compare.Int)
-			set.Covers(tt.args.addItems...)
+			set.Sets(tt.args.addItems...)
 			set.Remove(tt.args.removeItems...)
 
 			if set.String() != tt.result {
@@ -104,7 +104,7 @@ func TestTreeSet_Remove(t *testing.T) {
 
 func TestTreeSet_Iterator(t *testing.T) {
 	set := New(compare.Int)
-	set.Covers(5, 4, 3, 5)
+	set.Sets(5, 4, 3, 5)
 
 	iter := set.Iterator()
 	iter.SeekToFirst()
