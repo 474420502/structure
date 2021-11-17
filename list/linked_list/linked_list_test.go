@@ -3,6 +3,8 @@ package linkedlist
 import (
 	"fmt"
 	"testing"
+
+	"github.com/474420502/random"
 )
 
 func TestPush(t *testing.T) {
@@ -236,117 +238,6 @@ func TestInsertIf(t *testing.T) {
 	}
 
 	// t.Error(l.Values())
-}
-
-func TestFind(t *testing.T) {
-	l := New()
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.PushFront(i)
-	}
-
-	if v, isfound := l.Find(func(idx uint, value interface{}) bool {
-		if idx == 1 {
-			return true
-		}
-		return false
-	}); isfound {
-		if v != 3 {
-			t.Error("[4 3 2 1 0] index 1 shoud be 3 but value is", v)
-		}
-	} else {
-		t.Error("should be found")
-	}
-
-	if v, isfound := l.Find(func(idx uint, value interface{}) bool {
-		if idx == 5 {
-			return true
-		}
-		return false
-	}); isfound {
-		t.Error("should not be found, but v is found, ", v)
-	}
-}
-
-func TestFindMany(t *testing.T) {
-	l := New()
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.PushFront(i)
-	}
-
-	if values, isfound := l.FindMany(func(idx uint, value interface{}) int {
-		if idx >= 1 {
-			return 1
-		}
-		return 0
-	}); isfound {
-		var result string
-		result = fmt.Sprintf("%v", values)
-		if result != "[3 2 1 0]" {
-			t.Error("result should be [3 2 1 0], reuslt is", result)
-		}
-	} else {
-		t.Error("should be found")
-	}
-
-	if values, isfound := l.FindMany(func(idx uint, value interface{}) int {
-		if idx%2 == 0 {
-			return 1
-		}
-		return 0
-	}); isfound {
-		var result string
-		result = fmt.Sprintf("%v", values)
-		if result != "[4 2 0]" {
-			t.Error("result should be [3 2 1 0], reuslt is", result)
-		}
-	} else {
-		t.Error("should be found")
-	}
-
-	if values, isfound := l.FindMany(func(idx uint, value interface{}) int {
-		if value == 0 || value == 2 || value == 4 || value == 7 {
-			return 1
-		}
-		return 0
-	}); isfound {
-		var result string
-		result = fmt.Sprintf("%v", values)
-		if result != "[4 2 0]" {
-			t.Error("result should be [4 2 0], reuslt is", result)
-		}
-	} else {
-		t.Error("should be found")
-	}
-
-	if values, isfound := l.FindMany(func(idx uint, value interface{}) int {
-		if value.(int) <= 2 {
-			return -1
-		}
-
-		if value.(int) <= 4 && value.(int) > 2 {
-			return 1
-		}
-
-		return 0
-	}); isfound {
-		var result string
-		result = fmt.Sprintf("%v", values)
-		if result != "[4 3]" {
-			t.Error("result should be [4 2 0], reuslt is", result)
-		}
-	} else {
-		t.Error("should be found")
-	}
-	// if v, isfound := l.Find(func(idx uint, value interface{}) bool {
-	// 	if idx == 5 {
-	// 		return true
-	// 	}
-	// 	return false
-	// }); isfound {
-	// 	t.Error("should not be found, but v is found, ", v)
-	// }
 }
 
 func TestIndex(t *testing.T) {
@@ -699,6 +590,77 @@ func TestContains(t *testing.T) {
 
 	if v, ok := ll.Front(); ok {
 		t.Error(v)
+	}
+}
+
+func TestForce(t *testing.T) {
+
+	rand := random.New(t.Name())
+	l := New()
+	// "[4 3 2 1 0]"
+	for n := 0; n < 2000; n++ {
+
+		for i := 0; i < 200; i++ {
+
+			if rand.Bool() {
+				l.PushFront(rand.Intn(1000))
+			} else {
+				l.PushBack(rand.Intn(1000))
+			}
+
+			if rand.Bool() {
+				idx := uint(rand.Intn(int(l.Size())))
+				v := rand.Intn(1000)
+				l.Insert(idx, v)
+				var i = uint(0)
+				l.Traverse(func(value interface{}) bool {
+					if i == idx {
+						if value != v {
+							panic("")
+						}
+					}
+					i++
+					return true
+				})
+			}
+		}
+
+		idx := rand.Intn(int(l.Size()))
+		v, ok := l.Index(idx)
+		if !ok {
+			panic("")
+		}
+
+		var i = 0
+		l.Traverse(func(value interface{}) bool {
+			if i == idx {
+				if value != v {
+					panic("")
+				}
+			}
+			i++
+			return true
+		})
+
+		var lsize = l.Size()
+		var result1 = make([]int, lsize)
+		var result2 = make([]int, lsize)
+		citer := l.CircularIterator()
+		for citer.Next() {
+			if len(result1) != int(lsize) {
+				result1 = append(result1, citer.Value().(int))
+			} else if len(result2) != int(lsize) {
+				result2 = append(result2, citer.Value().(int))
+			} else {
+				break
+			}
+		}
+
+		if fmt.Sprintf("%v", result1) != fmt.Sprintf("%v", result2) {
+			panic("")
+		}
+
+		l.Clear()
 	}
 }
 

@@ -152,37 +152,6 @@ func (l *LinkedList) Back() (result interface{}, found bool) {
 	return nil, false
 }
 
-func (l *LinkedList) Find(every func(idx uint, value interface{}) bool) (interface{}, bool) {
-
-	idx := uint(0)
-	// 头部
-	for cur := l.head.next; cur != l.tail; cur = cur.next {
-		if every(idx, cur.value) {
-			return cur.value, true
-		}
-		idx++
-	}
-	return nil, false
-}
-
-func (l *LinkedList) FindMany(every func(idx uint, value interface{}) int) (result []interface{}, isfound bool) {
-	// the default of isfould  is  false
-	idx := uint(0)
-	// 头部
-	for cur := l.head.next; cur != l.tail; cur = cur.next {
-		j := every(idx, cur.value)
-		switch {
-		case j > 0:
-			result = append(result, cur.value)
-			isfound = true
-		case j < 0:
-			return result, isfound
-		}
-		idx++
-	}
-	return result, isfound
-}
-
 func (l *LinkedList) Index(idx int) (interface{}, bool) {
 
 	if idx < 0 {
@@ -490,7 +459,7 @@ func (l *LinkedList) String() string {
 	return fmt.Sprintf("%v", l.Values())
 }
 
-func (l *LinkedList) Traverse(every func(interface{}) bool) {
+func (l *LinkedList) Traverse(every func(value interface{}) bool) {
 	for cur := l.head.next; cur != l.tail; cur = cur.next {
 		if !every(cur.value) {
 			break
