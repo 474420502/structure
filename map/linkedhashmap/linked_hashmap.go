@@ -167,6 +167,7 @@ func (lhmap *LinkedHashmap) Get(key interface{}) (interface{}, bool) {
 // Set if key exists set value and return true. else return false.
 func (lhmap *LinkedHashmap) Set(key, value interface{}) bool {
 	if node, ok := lhmap.hmap[key]; ok {
+		node.key = key
 		node.value = value
 		return true
 	}

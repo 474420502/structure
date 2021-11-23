@@ -1,4 +1,4 @@
-package indextree
+package indextreetest
 
 import (
 	"fmt"
@@ -126,7 +126,7 @@ func (tree *Tree) Set(key, value interface{}) bool {
 				return false
 			}
 		default:
-			cur.Key = key
+			cur.Key = value
 			cur.Value = value
 			return true
 		}

@@ -1,4 +1,4 @@
-package indextree
+package indextreetest
 
 import "fmt"
 
