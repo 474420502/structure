@@ -251,6 +251,7 @@ func (tree *Tree) Set(key []byte, value interface{}) bool {
 				return false
 			}
 		default:
+			cur.Slice.Key = key
 			cur.Slice.Value = value
 			return true
 		}

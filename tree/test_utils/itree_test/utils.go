@@ -1,4 +1,4 @@
-package indextree
+package indextreetest
 
 import (
 	"log"
@@ -21,6 +21,7 @@ func (tree *Tree) fixRemoveSize(cur *Node) {
 func (tree *Tree) fixPut(cur *Node) {
 
 	cur.Size++
+
 	if cur.Size == 3 {
 		tree.fixPutSize(cur.Parent)
 		return
@@ -37,29 +38,55 @@ func (tree *Tree) fixPut(cur *Node) {
 	if cur.Parent.Children[R] == cur {
 		relations = R
 	}
-	cur = cur.Parent
-
+	cur = cur.Parent // 第三点起
+	// var rcount = 0
+	// var debugshow []string
 	for cur != tree.root {
 		cur.Size++
 		parent = cur.Parent
-
-		root2nsize = (int64(1) << height)
+		root2nsize = (int64(1) << height) - (height - 2)
 		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
 		if cur.Size < root2nsize {
 
 			child2nsize = root2nsize >> 2
-			bottomsize = child2nsize + child2nsize>>(height>>1)
+			bottomsize = child2nsize + (child2nsize >> (height >> 1))
 			lsize, rsize = getChildrenSize(cur)
 			// 右就检测左边
 			if relations == R {
 				if rsize-lsize >= bottomsize {
+					// rcount++
+					// ckey := setColor(cur, color_5)
+					// // log.Println(tree.debugString(false), root2nsize)
+					// debugshow = append(debugshow, tree.debugString(true))
 					cur = tree.sizeRrotate(cur)
+					// log.Println(tree.debugString(false))
+					// debugshow = append(debugshow, tree.debugString(true))
+					// delColor(ckey)
 					height--
+					// if rcount >= 2 {
+					// 	for _, s := range debugshow {
+					// 		log.Println(s)
+					// 	}
+					// 	log.Println()
+					// }
 				}
 			} else {
 				if lsize-rsize >= bottomsize {
+					// rcount++
+					// ckey := setColor(cur, color_5)
+					// // log.Println(tree.debugString(false), root2nsize)
+					// debugshow = append(debugshow, tree.debugString(true))
 					cur = tree.sizeLrotate(cur)
+					// log.Println(tree.debugString(false))
+					// debugshow = append(debugshow, tree.debugString(true))
+					// delColor(ckey)
 					height--
+					// if rcount >= 2 {
+					// 	for _, s := range debugshow {
+					// 		log.Println(s)
+					// 	}
+					// 	log.Println()
+					// }
 				}
 			}
 		}

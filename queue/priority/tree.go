@@ -16,8 +16,6 @@ type qNode struct {
 
 	Size int64
 
-	// Key   interface{}
-	// Value interface{}
 	Slice
 }
 
@@ -116,7 +114,9 @@ func (tree *Queue) Gets(key interface{}) (result []*Slice) {
 	return
 }
 
-// Put 插入成功. 队列无去重
+// Put 插入数据. (队列不存在去重)
+//
+// put the data to queue.
 func (tree *Queue) Put(key, value interface{}) {
 
 	cur := tree.getRoot()

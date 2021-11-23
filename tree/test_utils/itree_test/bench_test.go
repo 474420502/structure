@@ -1,4 +1,4 @@
-package indextree
+package indextreetest
 
 import (
 	"log"
@@ -36,7 +36,7 @@ func TestCase10(t *testing.T) {
 	for n := 0; n < 10000; n++ {
 		tree := New(compare.Int)
 		for i := 0; i < 1000; i++ {
-			v := r.Intn(100)
+			v := r.Intn(1000)
 			tree.Put(v, v)
 			// t.Error(tree.debugString(false))
 		}

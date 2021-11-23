@@ -2,6 +2,7 @@ package avl
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/474420502/structure/compare"
 )
@@ -56,10 +57,6 @@ func (tree *Tree) Height() int {
 		return 0
 	}
 	return tree.Root.height + 1
-}
-
-func (tree *Tree) Iterator() *Iterator {
-	return newIterator(tree)
 }
 
 func (tree *Tree) Remove(key interface{}) (interface{}, bool) {
@@ -471,11 +468,31 @@ func getHeight(cur *Node) int {
 	return cur.height
 }
 
+func countSize(cur *Node) int {
+	var size = 0
+	var count func(cur *Node)
+	count = func(cur *Node) {
+		if cur == nil {
+			return
+		}
+		size++
+		count(cur.Children[0])
+		count(cur.Children[1])
+	}
+	count(cur)
+	return size
+}
+
+func countSizeEx(cur *Node) (int, int, int) {
+	l := countSize(cur.Children[0])
+	r := countSize(cur.Children[1])
+	return l + r + 1, l, r
+}
+
 func (tree *Tree) fixRemoveHeight(cur *Node) {
 	for {
 
 		lefth, rigthh, lrmax := getMaxAndChildrenHeight(cur)
-
 		// 判断当前节点是否有变化, 如果没变化的时候, 不需要往上修复
 		curheight := lrmax + 1
 		cur.height = curheight
@@ -484,6 +501,7 @@ func (tree *Tree) fixRemoveHeight(cur *Node) {
 		diff := lefth - rigthh
 		if diff < -HeightDiff {
 			r := cur.Children[1] // 根据左旋转的右边节点的子节点 左右高度选择旋转的方式
+
 			if getHeight(r.Children[0]) > getHeight(r.Children[1]) {
 				tree.lrrotate(cur)
 			} else {
@@ -491,6 +509,7 @@ func (tree *Tree) fixRemoveHeight(cur *Node) {
 			}
 		} else if diff > HeightDiff {
 			l := cur.Children[0]
+
 			if getHeight(l.Children[1]) > getHeight(l.Children[0]) {
 				tree.rlrotate(cur)
 			} else {
@@ -522,6 +541,8 @@ func (tree *Tree) fixPutHeight(cur *Node) {
 		diff := lefth - rigthh
 		if diff < -HeightDiff {
 			r := cur.Children[1] // 根据左旋转的右边节点的子节点 左右高度选择旋转的方式
+			log.Println(countSizeEx(cur))
+			log.Println(tree.debugString(), cur.Key)
 			if getHeight(r.Children[0]) > getHeight(r.Children[1]) {
 				tree.lrrotate(cur)
 			} else {
@@ -529,6 +550,8 @@ func (tree *Tree) fixPutHeight(cur *Node) {
 			}
 		} else if diff > HeightDiff {
 			l := cur.Children[0]
+			log.Println(countSizeEx(cur))
+			log.Println(tree.debugString(), cur.Key)
 			if getHeight(l.Children[1]) > getHeight(l.Children[0]) {
 				tree.rlrotate(cur)
 			} else {

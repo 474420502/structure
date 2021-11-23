@@ -63,7 +63,7 @@ func BenchmarkIndex(b *testing.B) {
 	b.StopTimer()
 	tree := New()
 
-	for i := 0; i < Level3; i++ {
+	for i := 0; i < Level1; i++ {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
 	}
@@ -71,8 +71,8 @@ func BenchmarkIndex(b *testing.B) {
 	b.ResetTimer()
 	b.StartTimer()
 
-	b.N = Level3
-	for i := 0; i < Level3; i++ {
+	// b.N = Level3
+	for i := 0; i < Level1; i++ {
 		tree.Index(int64(i))
 	}
 }
