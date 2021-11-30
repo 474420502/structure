@@ -24,7 +24,7 @@ func output(node *treeNode, prefix string, isTail bool, str *string) {
 		*str += "\033[31;40m┌── \033[0m"
 	}
 
-	*str += "(" + fmt.Sprintf("%v", node.Key) + "->" + fmt.Sprintf("%v", node.Value) + ")" + "\n"
+	*str += "(" + fmt.Sprintf("%v", node.Key.([]byte)) + "->" + fmt.Sprintf("%v", node.Value) + ")" + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -61,7 +61,7 @@ func outputfordebug(node *treeNode, prefix string, isTail bool, str *string) {
 	if node.Parent == nil {
 		parentv = "nil"
 	} else {
-		parentv = fmt.Sprintf("%v", string(node.Parent.Key))
+		parentv = fmt.Sprintf("%v", string(node.Parent.Key.([]byte)))
 	}
 
 	// suffix += parentv + "|" + fmt.Sprintf("%v",node.Size) + " " + ldirect + "<->" + rdirect + ")"
@@ -69,7 +69,7 @@ func outputfordebug(node *treeNode, prefix string, isTail bool, str *string) {
 	// suffix = ""
 	k := node.Key
 
-	*str += fmt.Sprintf("%v", string(k)) + suffix + "\n"
+	*str += fmt.Sprintf("%v", string(k.([]byte))) + suffix + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -102,7 +102,7 @@ func outputfordebugNoSuffix(node *treeNode, prefix string, isTail bool, str *str
 
 	k := node.Key
 
-	*str += fmt.Sprintf("%v", string(k)) + "\n"
+	*str += fmt.Sprintf("%v", string(k.([]byte))) + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -148,7 +148,7 @@ func (tree *Tree) debugString(isSuffix bool) string {
 	for start != nil {
 		i++
 		if i <= 100 {
-			str += fmt.Sprintf("%v", string(start.Key)) + ","
+			str += fmt.Sprintf("%v", string(start.Key.([]byte))) + ","
 		}
 		start = start.Direct[1]
 	}
@@ -162,11 +162,11 @@ func (tree *Tree) debugString(isSuffix bool) string {
 
 // func (tree *IndexTree) debugLookNode(cur *Node) {
 // 	var temp interface{} = cur.Key
-// 	cur.Key = []byte(fmt.Sprintf("\033[32m%s\033[0m", cur.Key))
+// 	cur.Key = []byte(fmt.Sprintf("\033[32m%s\033[0m", cur.Key.([]byte)))
 // 	log.Println(tree.debugString(true))
 // 	cur.Key = temp
 // }
 
 func colorNode(cur *treeNode, color int) {
-	cur.Key = []byte(fmt.Sprintf("\033[%dm%s\033[0m", color, cur.Key))
+	cur.Key = []byte(fmt.Sprintf("\033[%dm%s\033[0m", color, cur.Key.([]byte)))
 }

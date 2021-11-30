@@ -33,6 +33,7 @@ func BenchmarkPut(b *testing.B) {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
 	}
+
 }
 
 func BenchmarkPut2(b *testing.B) {

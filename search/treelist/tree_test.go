@@ -37,8 +37,8 @@ func TestIndexForce(t *testing.T) {
 		for i, v := range arr {
 			vv := []byte(strconv.Itoa(v))
 			s := tree.Index(int64(i))
-			if bytes.Compare(s.Key, vv) != 0 {
-				t.Error("error ", string(vv), string(s.Key))
+			if compare.Bytes(s.Key, vv) != 0 {
+				t.Error("error ", string(vv), string(s.Key.([]byte)))
 			}
 		}
 	}
@@ -53,7 +53,7 @@ func TestIndex(t *testing.T) {
 		tree.Put(v, v)
 
 		s := tree.Index(int64(i))
-		if bytes.Compare(s.Key, v) != 0 {
+		if compare.Bytes(s.Key, v) != 0 {
 			t.Error(s, v)
 		}
 		iter := tree.Iterator()
@@ -97,8 +97,8 @@ func TestRemove1(t *testing.T) {
 
 	for _, v := range tree.Slices() {
 		r := tree.Remove(v.Key)
-		if bytes.Compare(r.Key, v.Key) != 0 {
-			log.Println("remove error check it", string(r.Key), string(v.Key))
+		if compare.Bytes(r.Key, v.Key) != 0 {
+			log.Println("remove error check it", string(r.Key.([]byte)), string(v.Key.([]byte)))
 		}
 	}
 
@@ -121,7 +121,7 @@ func TestRemove2(t *testing.T) {
 	}
 
 	for _, v := range tree.Slices() {
-		tree.Remove(v.Key)
+		tree.Remove(v.Key.([]byte))
 	}
 
 	if tree.Size() != 0 {
@@ -151,7 +151,7 @@ func TestRemoveNode(t *testing.T) {
 				if r == nil {
 					t.Error(r)
 				}
-				if bytes.Compare(r.Key, v) != 0 {
+				if bytes.Compare(r.Key.([]byte), v) != 0 {
 					t.Error()
 				}
 			} else {
@@ -478,7 +478,7 @@ func TestRemoveRangeIndex(t *testing.T) {
 	}
 
 	tree.RemoveRangeByIndex(0, tree.Size()-2)
-	if tree.Size() != 1 || string(tree.Index(0).Key) == "0" {
+	if tree.Size() != 1 || string(tree.Index(0).Key.([]byte)) == "0" {
 		t.Error()
 	}
 
@@ -653,7 +653,7 @@ func TestTrimIndex(t *testing.T) {
 
 	var result []string
 	tree.Traverse(func(s *Slice) bool {
-		result = append(result, string(s.Key))
+		result = append(result, string(s.Key.([]byte)))
 		return true
 	})
 
@@ -689,7 +689,7 @@ func TestIntersectionSlice(t *testing.T) {
 
 		var result1 []string
 		for _, s := range tree1.intersectionSlice(tree2) {
-			result1 = append(result1, string(s.Key))
+			result1 = append(result1, string(s.Key.([]byte)))
 		}
 
 		var result2 []string
@@ -734,7 +734,7 @@ func TestIntersection(t *testing.T) {
 
 		var result1 []string
 		tree1.Intersection(tree2).Traverse(func(s *Slice) bool {
-			result1 = append(result1, string(s.Key))
+			result1 = append(result1, string(s.Key.([]byte)))
 			return true
 		})
 
@@ -780,7 +780,7 @@ func TestUnionSetSlice(t *testing.T) {
 
 		var result1 []string
 		for _, s := range tree1.unionSetSlice(tree2) {
-			result1 = append(result1, string(s.Key))
+			result1 = append(result1, string(s.Key.([]byte)))
 		}
 
 		var result2 []string
@@ -823,7 +823,7 @@ func TestUnionSet(t *testing.T) {
 
 		var result1 []string
 		tree1.UnionSets(tree2).Traverse(func(s *Slice) bool {
-			result1 = append(result1, string(s.Key))
+			result1 = append(result1, string(s.Key.([]byte)))
 			return true
 		})
 
@@ -867,7 +867,7 @@ func TestDifferenceSets(t *testing.T) {
 
 		var result1 []string
 		tree1.DifferenceSets(tree2).Traverse(func(s *Slice) bool {
-			result1 = append(result1, string(s.Key))
+			result1 = append(result1, string(s.Key.([]byte)))
 			return true
 		})
 

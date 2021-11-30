@@ -420,7 +420,7 @@ func TestTrimIndex(t *testing.T) {
 
 func TestAllForce(t *testing.T) {
 
-	rand := random.New(t.Name())
+	rand := random.New(1638243012458975830)
 	for n := 0; n < 2000; n++ {
 
 		tree1 := New(compare.Int)
@@ -433,6 +433,7 @@ func TestAllForce(t *testing.T) {
 
 		}
 
+		log.Println(tree1.debugString(true))
 		for k, v := range dict {
 			if r, ok := tree1.Get(k); !ok || r != v {
 				panic("")

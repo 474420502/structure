@@ -126,7 +126,7 @@ func (tree *Tree) Set(key, value interface{}) bool {
 				return false
 			}
 		default:
-			cur.Key = value
+			cur.Key = key
 			cur.Value = value
 			return true
 		}
