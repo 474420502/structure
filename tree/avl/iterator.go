@@ -13,6 +13,7 @@ func newIterator(tree *Tree) *Iterator {
 	return iter
 }
 
+// Iterator tree iterator
 type Iterator struct {
 	tree *Tree
 
@@ -30,6 +31,7 @@ func (iter *Iterator) Value() interface{} {
 	return iter.cur.Value
 }
 
+// SeekToFirst seek to first item
 func (iter *Iterator) SeekToFirst() {
 	iter.cur = iter.tree.Root
 	iter.idx = -1
@@ -41,6 +43,7 @@ func (iter *Iterator) SeekToFirst() {
 	}
 }
 
+// SeekToFirst seek to last item
 func (iter *Iterator) SeekToLast() {
 	iter.cur = iter.tree.Root
 	iter.idx = -1

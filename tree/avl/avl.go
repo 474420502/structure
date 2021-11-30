@@ -58,6 +58,7 @@ func (tree *Tree) Height() int {
 	return tree.Root.height + 1
 }
 
+// Iterator must call Seek*.
 func (tree *Tree) Iterator() *Iterator {
 	return newIterator(tree)
 }
