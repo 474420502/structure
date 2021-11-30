@@ -147,7 +147,7 @@ func (iter *Iterator) Index() int64 {
 
 // Key 当前item的key
 func (iter *Iterator) Key() []byte {
-	return iter.cur.Key
+	return iter.cur.Key.([]byte)
 }
 
 // Value 当前item的value

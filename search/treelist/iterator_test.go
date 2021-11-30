@@ -181,7 +181,7 @@ func TestSeek(t *testing.T) {
 
 	iter := tree.Iterator()
 	iter.SeekGE([]byte("wor"))
-	log.Println(string(iter.cur.Key))
+	log.Println(string(iter.cur.Key.([]byte)))
 	var checkresult []string
 	for iter.Valid() {
 		v := string(iter.Key())
@@ -344,7 +344,7 @@ func TestFirstLast(t *testing.T) {
 	tree := New()
 	for _, v := range testutils.TestedBytes {
 		tree.Put(v, v)
-		log.Println(string(tree.root.Direct[0].Key), string(tree.root.Direct[1].Key))
+		log.Println(string(tree.root.Direct[0].Key.([]byte)), string(tree.root.Direct[1].Key.([]byte)))
 	}
 
 	iter := tree.Iterator()

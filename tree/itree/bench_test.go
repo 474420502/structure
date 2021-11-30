@@ -3,6 +3,7 @@ package indextree
 import (
 	"log"
 	"math/rand"
+	"strconv"
 	"testing"
 
 	"github.com/474420502/random"
@@ -11,11 +12,26 @@ import (
 )
 
 func BenchmarkPut(b *testing.B) {
+
 	tree := New(compare.Int64)
 	for i := 0; i < b.N; i++ {
 		v := rand.Int63()
 		tree.Put(v, v)
 	}
+	b.Log(tree.Size())
+}
+
+func BenchmarkPut2(b *testing.B) {
+	b.StopTimer()
+	tree := New(compare.Bytes)
+	b.ResetTimer()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		v := []byte(strconv.Itoa(i))
+		tree.Put(v, v)
+	}
+
 }
 
 func BenchmarkAvlPut(b *testing.B) {
