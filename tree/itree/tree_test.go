@@ -628,5 +628,5 @@ func TestCase(t *testing.T) {
 		v := rand.Intn(1000)
 		tree1.Put(v, v)
 	}
-	log.Println(tree1.debugString(false))
+	// log.Println(tree1.debugString(false))
 }

@@ -18,6 +18,26 @@ func (tree *Tree) fixRemoveSize(cur *Node) {
 	}
 }
 
+type heightLimitSize struct {
+	rootsize   int64
+	bottomsize int64
+}
+
+var rootSizeTable []*heightLimitSize = func() []*heightLimitSize {
+	table := make([]*heightLimitSize, 64)
+	for i := 2; i < 64; i++ {
+		root2nsize := (int64(1) << i)
+		child2nsize := root2nsize >> 2
+		bottomsize := child2nsize + (child2nsize >> (i >> 1))
+
+		table[i] = &heightLimitSize{
+			rootsize:   root2nsize,
+			bottomsize: bottomsize,
+		}
+	}
+	return table
+}()
+
 func (tree *Tree) fixPut(cur *Node) {
 
 	cur.Size++
@@ -30,7 +50,7 @@ func (tree *Tree) fixPut(cur *Node) {
 	const R = 1
 
 	var height int64 = 2
-	var root2nsize, child2nsize, bottomsize, lsize, rsize int64
+	var lsize, rsize int64
 	var relations int = L
 	var parent *Node
 
@@ -43,22 +63,21 @@ func (tree *Tree) fixPut(cur *Node) {
 		cur.Size++
 		parent = cur.Parent
 
-		root2nsize = (int64(1) << height)
-		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
-		if cur.Size < root2nsize {
+		limitSize := rootSizeTable[height]
 
-			child2nsize = root2nsize >> 2
-			bottomsize = child2nsize + child2nsize>>(height>>1)
+		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
+		if cur.Size < limitSize.rootsize {
+
 			lsize, rsize = getChildrenSize(cur)
 			// 右就检测左边
 			if relations == R {
-				if rsize-lsize >= bottomsize {
-					cur = tree.sizeRrotate(cur)
+				if rsize-lsize >= limitSize.bottomsize {
+					cur = tree.sizeRRotate(cur)
 					height--
 				}
 			} else {
-				if lsize-rsize >= bottomsize {
-					cur = tree.sizeLrotate(cur)
+				if lsize-rsize >= limitSize.bottomsize {
+					cur = tree.sizeLRotate(cur)
 					height--
 				}
 			}
@@ -70,12 +89,11 @@ func (tree *Tree) fixPut(cur *Node) {
 		} else {
 			relations = L
 		}
-
 		cur = parent
 	}
 }
 
-func (tree *Tree) sizeRrotate(cur *Node) *Node {
+func (tree *Tree) sizeRRotate(cur *Node) *Node {
 	const R = 1
 	llsize, lrsize := getChildrenSize(cur.Children[R])
 	if llsize > lrsize {
@@ -84,7 +102,7 @@ func (tree *Tree) sizeRrotate(cur *Node) *Node {
 	return tree.lrotate(cur)
 }
 
-func (tree *Tree) sizeLrotate(cur *Node) *Node {
+func (tree *Tree) sizeLRotate(cur *Node) *Node {
 	const L = 0
 	llsize, lrsize := getChildrenSize(cur.Children[L])
 	if llsize < lrsize {
@@ -352,6 +370,29 @@ func (tree *Tree) check() {
 func (tree *Tree) hight() int {
 
 	root := tree.getRoot()
+
+	maxHight := 0
+	var getHigh func(cur *Node, hight int)
+	getHigh = func(cur *Node, hight int) {
+		if cur == nil {
+			return
+		}
+		if cur.Size == 1 {
+			if maxHight < hight {
+				maxHight = hight
+			}
+			return
+		}
+		getHigh(cur.Children[0], hight+1)
+		getHigh(cur.Children[1], hight+1)
+	}
+
+	getHigh(root, 0)
+	return maxHight
+}
+
+func (node *Node) hight() int {
+	root := node
 
 	maxHight := 0
 	var getHigh func(cur *Node, hight int)

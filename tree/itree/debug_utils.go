@@ -171,7 +171,7 @@ func lookTree(root *Node) string {
 	if root == nil {
 		return str + "nil"
 	}
-	outputfordebug(root, "", true, &str, 1)
+	outputfordebugNoSuffix(root, "", true, &str)
 	return str
 }
 
