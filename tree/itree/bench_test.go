@@ -11,9 +11,18 @@ import (
 	"github.com/474420502/structure/tree/avl"
 )
 
+// var data []int64 = func() []int64 {
+// 	var r []int64
+// 	for i := 0; i < 2000000; i++ {
+// 		r = append(r, rand.Int63())
+// 	}
+// 	return r
+// }()
+
 func BenchmarkPut(b *testing.B) {
 
 	tree := New(compare.Int64)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		v := rand.Int63()
 		tree.Put(v, v)
@@ -22,10 +31,8 @@ func BenchmarkPut(b *testing.B) {
 }
 
 func BenchmarkPut2(b *testing.B) {
-	b.StopTimer()
-	tree := New(compare.Bytes)
 	b.ResetTimer()
-	b.StartTimer()
+	tree := New(compare.Bytes)
 
 	for i := 0; i < b.N; i++ {
 		v := []byte(strconv.Itoa(i))
@@ -35,11 +42,14 @@ func BenchmarkPut2(b *testing.B) {
 }
 
 func BenchmarkAvlPut(b *testing.B) {
+
 	tree := avl.New(compare.Int64)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		v := rand.Int63()
-		tree.Set(v, v)
+		tree.Put(v, v)
 	}
+	b.Log(tree.Size())
 }
 
 func TestCase10(t *testing.T) {

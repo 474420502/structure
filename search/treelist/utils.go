@@ -66,6 +66,26 @@ func (tree *Tree) fixRemoveSize(cur *treeNode) {
 	}
 }
 
+type heightLimitSize struct {
+	rootsize   int64
+	bottomsize int64
+}
+
+var rootSizeTable []*heightLimitSize = func() []*heightLimitSize {
+	table := make([]*heightLimitSize, 64)
+	for i := 2; i < 64; i++ {
+		root2nsize := (int64(1) << i)
+		child2nsize := root2nsize >> 2
+		bottomsize := child2nsize + (child2nsize >> (i >> 1))
+
+		table[i] = &heightLimitSize{
+			rootsize:   root2nsize,
+			bottomsize: bottomsize,
+		}
+	}
+	return table
+}()
+
 func (tree *Tree) fixPut(cur *treeNode) {
 	cur.Size++
 	if cur.Size == 3 {
@@ -77,7 +97,7 @@ func (tree *Tree) fixPut(cur *treeNode) {
 	const R = 1
 
 	var height int64 = 2
-	var root2nsize, child2nsize, bottomsize, lsize, rsize int64
+	var lsize, rsize int64
 	var relations int = L
 	var parent *treeNode
 
@@ -90,21 +110,19 @@ func (tree *Tree) fixPut(cur *treeNode) {
 		cur.Size++
 		parent = cur.Parent
 
-		root2nsize = (int64(1) << height)
+		limitsize := rootSizeTable[height]
 		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
-		if cur.Size < root2nsize {
+		if cur.Size < limitsize.rootsize {
 
-			child2nsize = root2nsize >> 2
-			bottomsize = child2nsize + child2nsize>>(height>>1)
 			lsize, rsize = getChildrenSize(cur)
 			// 右就检测左边
 			if relations == R {
-				if rsize-lsize >= bottomsize {
+				if rsize-lsize >= limitsize.bottomsize {
 					cur = tree.sizeRrotate(cur)
 					height--
 				}
 			} else {
-				if lsize-rsize >= bottomsize {
+				if lsize-rsize >= limitsize.bottomsize {
 					cur = tree.sizeLrotate(cur)
 					height--
 				}
