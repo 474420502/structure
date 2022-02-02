@@ -2,7 +2,7 @@ package compare
 
 import "time"
 
-type Compare func(k1, k2 interface{}) int
+type Compare[T any] func(k1, k2 T) int
 
 // Bytes []byte compare
 func Bytes(k1, k2 interface{}) int {
