@@ -62,18 +62,7 @@ func BenchmarkPut(b *testing.B) {
 			v := data[i+start]
 			tree.Put(v, v)
 		}
-		b.Log(tree.Size())
-	})
-
-	b.Run("avl", func(b *testing.B) {
-		tree := avl.New(CompareAny[int64])
-
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			v := data[i]
-			tree.Put(v, v)
-		}
-		b.Log(tree.Size())
+		// b.Log(tree.Size())
 	})
 
 	b.Run("indextree", func(b *testing.B) {
@@ -86,7 +75,18 @@ func BenchmarkPut(b *testing.B) {
 			v := data[i+start]
 			tree.Put(v, v)
 		}
-		b.Log(tree.Size())
+
+	})
+
+	b.Run("avl", func(b *testing.B) {
+		tree := avl.New(CompareAny[int64])
+
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			v := data[i+start]
+			tree.Put(v, v)
+		}
+
 	})
 
 }
@@ -101,9 +101,13 @@ func TestHeight(t *testing.T) {
 		itree.Put(v, v)
 		avltree.Put(v, v)
 
-		if h1, h2 := itree.hight(), avltree.Height(); math.Abs(float64(h1-h2)) > 1 {
+		if itree.Size() != avltree.Size() {
+			log.Panic()
+		}
+
+		if h1, h2 := itree.hight(), avltree.Height(); math.Abs(float64(h1-h2)) >= 1 {
 			diffcount++
-			log.Println("height:", h1, h2, "diff:", diffcount, h1-h2, "size:", itree.Size(), avltree.Size())
+			log.Println("height:", h1, h2, "diff:", diffcount, h1-h2)
 		}
 	}
 }
