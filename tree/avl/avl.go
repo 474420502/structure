@@ -30,7 +30,7 @@ func (n *Node[T]) String() string {
 
 type Tree[T any] struct {
 	Root    *Node[T]
-	size    int
+	size    int64
 	Compare compare.Compare[T]
 }
 
@@ -48,7 +48,7 @@ func (tree *Tree[T]) String() string {
 	return str
 }
 
-func (tree *Tree[T]) Size() int {
+func (tree *Tree[T]) Size() int64 {
 	return tree.size
 }
 
@@ -136,7 +136,7 @@ func (tree *Tree[T]) Clear() {
 
 // Values 返回先序遍历的值
 func (tree *Tree[T]) Values() []interface{} {
-	mszie := 0
+	var mszie int64 = 0
 	if tree.Root != nil {
 		mszie = tree.size
 	}

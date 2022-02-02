@@ -27,7 +27,14 @@ var rootSizeTable []*heightLimitSize = func() []*heightLimitSize {
 	table := make([]*heightLimitSize, 48)
 	for i := 2; i < 48; i++ {
 		root2nsize := (int64(1) << i)
-		bottomsize := root2nsize>>1 - root2nsize>>4 - root2nsize>>3
+		bottomsize := root2nsize >> 1
+		for x := 3; x < 48; x++ {
+			rsize := root2nsize >> x
+			if rsize == 0 {
+				break
+			}
+			bottomsize -= rsize
+		}
 		table[i] = &heightLimitSize{
 			rootsize:   root2nsize,
 			bottomsize: bottomsize,
@@ -71,12 +78,16 @@ func (tree *Tree[T]) fixPut(cur *Node[T]) {
 			if relations == R {
 				if rsize-lsize >= limitSize.bottomsize {
 					cur = tree.sizeRRotate(cur)
-					height--
+					// height--
+					tree.fixPutSize(parent)
+					return
 				}
 			} else {
 				if lsize-rsize >= limitSize.bottomsize {
 					cur = tree.sizeLRotate(cur)
-					height--
+					// height--
+					tree.fixPutSize(parent)
+					return
 				}
 			}
 		}

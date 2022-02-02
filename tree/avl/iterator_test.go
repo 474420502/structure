@@ -165,7 +165,7 @@ func TestIteratorForce(t *testing.T) {
 				log.Panicln(iter.Value(), priority)
 			}
 		} else {
-			for i := idx; i < tree.Size(); i++ {
+			for i := idx; i < int(tree.Size()); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}
@@ -190,7 +190,7 @@ func TestIteratorForce(t *testing.T) {
 				log.Panicln(iter.Value(), priority, idx-1, s)
 			}
 		} else {
-			for i := idx - 1; i < tree.Size(); i++ {
+			for i := idx - 1; i < int(tree.Size()); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}
@@ -256,7 +256,7 @@ func TestIteratorForce2(t *testing.T) {
 				log.Panicln(iter.Value(), priority)
 			}
 		} else {
-			for i := idx; i < tree.Size(); i++ {
+			for i := idx; i < int(tree.Size()); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}
@@ -282,7 +282,7 @@ func TestIteratorForce2(t *testing.T) {
 				log.Panicln(iter.Value(), priority, idx-1, s)
 			}
 		} else {
-			for i := idx - 1; i < tree.Size(); i++ {
+			for i := idx - 1; i < int(tree.Size()); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}

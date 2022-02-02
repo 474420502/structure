@@ -18,7 +18,7 @@ func TestPutGet(t *testing.T) {
 
 	// log.Println(tree.String())
 
-	for i := 0; i < tree.Size(); i++ {
+	for i := 0; i < int(tree.Size()); i++ {
 		if v, b := tree.Get(i); !b || v != i {
 			t.Error("error", b, v)
 		}
@@ -29,12 +29,12 @@ func TestPutGet(t *testing.T) {
 		tree.Set(i, i)
 	}
 
-	if tree.Size() != len(testutils.TestedArray) {
+	if int(tree.Size()) != len(testutils.TestedArray) {
 		t.Error(tree.Values())
 	}
 
 	vs := tree.Values()
-	if vs[0] != 1 || vs[tree.Size()-1] != 99 {
+	if vs[0] != 1 || vs[int(tree.Size())-1] != 99 {
 		t.Error(tree.Values())
 	}
 }
@@ -47,15 +47,15 @@ func TestRemove2(t *testing.T) {
 		}
 	}
 
-	if tree.Size() != len(testutils.TestedBigArray)-4 {
-		t.Error(tree.Size(), tree.Values())
+	if int(tree.Size()) != len(testutils.TestedBigArray)-4 {
+		t.Error(int(tree.Size()), tree.Values())
 	}
 
 	for _, v := range tree.Values() {
 		tree.Remove(v)
 	}
 
-	if tree.Size() != 0 {
+	if int(tree.Size()) != 0 {
 		t.Error(tree.Values())
 	}
 }
@@ -68,8 +68,8 @@ func TestRemove1(t *testing.T) {
 		}
 	}
 
-	if tree.Size() != len(testutils.TestedArray) {
-		t.Error(tree.Size(), tree.Values())
+	if int(int(tree.Size())) != len(testutils.TestedArray) {
+		t.Error(int(tree.Size()), tree.Values())
 	}
 
 	// log.Println(tree.debugString())
@@ -78,7 +78,7 @@ func TestRemove1(t *testing.T) {
 		log.Println(tree.debugString())
 	}
 
-	if tree.Size() != 0 {
+	if int(tree.Size()) != 0 {
 		t.Error(tree.Values())
 	}
 }
@@ -97,7 +97,7 @@ func TestForce(t *testing.T) {
 			}
 		}
 
-		if tree.Size() != len(priority) {
+		if int(tree.Size()) != len(priority) {
 			panic("")
 		}
 
