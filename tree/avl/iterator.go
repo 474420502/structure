@@ -3,36 +3,36 @@ package avl
 const L = 0
 const R = 1
 
-func newIterator(tree *Tree) *Iterator {
+func newIterator[T any](tree *Tree[T]) *Iterator[T] {
 	hight := tree.Height()
-	iter := &Iterator{
+	iter := &Iterator[T]{
 		tree:  tree,
 		idx:   -1,
-		stack: make([]*Node, hight),
+		stack: make([]*Node[T], hight),
 	}
 	return iter
 }
 
 // Iterator tree iterator
-type Iterator struct {
-	tree *Tree
+type Iterator[T any] struct {
+	tree *Tree[T]
 
-	cur   *Node
-	stack []*Node
+	cur   *Node[T]
+	stack []*Node[T]
 
 	idx int8
 }
 
-func (iter *Iterator) Key() interface{} {
+func (iter *Iterator[T]) Key() interface{} {
 	return iter.cur.Key
 }
 
-func (iter *Iterator) Value() interface{} {
+func (iter *Iterator[T]) Value() interface{} {
 	return iter.cur.Value
 }
 
 // SeekToFirst seek to first item
-func (iter *Iterator) SeekToFirst() {
+func (iter *Iterator[T]) SeekToFirst() {
 	iter.cur = iter.tree.Root
 	iter.idx = -1
 	if iter.cur != nil {
@@ -44,7 +44,7 @@ func (iter *Iterator) SeekToFirst() {
 }
 
 // SeekToFirst seek to last item
-func (iter *Iterator) SeekToLast() {
+func (iter *Iterator[T]) SeekToLast() {
 	iter.cur = iter.tree.Root
 	iter.idx = -1
 
@@ -56,7 +56,7 @@ func (iter *Iterator) SeekToLast() {
 	}
 }
 
-func (iter *Iterator) SeekLE(key interface{}) bool {
+func (iter *Iterator[T]) SeekLE(key T) bool {
 
 	iter.idx = -1
 	iter.cur = iter.tree.Root
@@ -91,7 +91,7 @@ func (iter *Iterator) SeekLE(key interface{}) bool {
 	}
 }
 
-func (iter *Iterator) SeekLT(key interface{}) bool {
+func (iter *Iterator[T]) SeekLT(key T) bool {
 
 	iter.idx = -1
 	iter.cur = iter.tree.Root
@@ -127,7 +127,7 @@ func (iter *Iterator) SeekLT(key interface{}) bool {
 	}
 }
 
-func (iter *Iterator) SeekGE(key interface{}) bool {
+func (iter *Iterator[T]) SeekGE(key T) bool {
 	iter.idx = -1
 	iter.cur = iter.tree.Root
 	if iter.cur == nil {
@@ -160,7 +160,7 @@ func (iter *Iterator) SeekGE(key interface{}) bool {
 	}
 }
 
-func (iter *Iterator) SeekGT(key interface{}) bool {
+func (iter *Iterator[T]) SeekGT(key T) bool {
 	iter.idx = -1
 	iter.cur = iter.tree.Root
 	if iter.cur == nil {
@@ -194,11 +194,11 @@ func (iter *Iterator) SeekGT(key interface{}) bool {
 	}
 }
 
-func (iter *Iterator) Vaild() bool {
+func (iter *Iterator[T]) Vaild() bool {
 	return iter.cur != nil
 }
 
-func (iter *Iterator) Next() {
+func (iter *Iterator[T]) Next() {
 
 	if iter.cur == nil || iter.cur.Children[R] == nil {
 		// rpop
@@ -221,7 +221,7 @@ func (iter *Iterator) Next() {
 	}
 }
 
-func (iter *Iterator) Prev() {
+func (iter *Iterator[T]) Prev() {
 
 	if iter.cur == nil || iter.cur.Children[L] == nil {
 		// lpop
@@ -244,16 +244,16 @@ func (iter *Iterator) Prev() {
 	}
 }
 
-func (iter *Iterator) push() {
+func (iter *Iterator[T]) push() {
 	iter.idx++
 	iter.stack[iter.idx] = iter.cur
 }
 
-func (iter *Iterator) lpop() bool {
+func (iter *Iterator[T]) lpop() bool {
 
 	idx := iter.idx
 	cur := iter.cur
-	var p *Node
+	var p *Node[T]
 
 	for idx >= 0 {
 		p = iter.stack[idx]
@@ -268,11 +268,11 @@ func (iter *Iterator) lpop() bool {
 	return false
 }
 
-func (iter *Iterator) rpop() bool {
+func (iter *Iterator[T]) rpop() bool {
 
 	idx := iter.idx
 	cur := iter.cur
-	var p *Node
+	var p *Node[T]
 
 	for idx >= 0 {
 		p = iter.stack[idx]
@@ -289,6 +289,6 @@ func (iter *Iterator) rpop() bool {
 }
 
 // Clone 复制一个当前迭代的iterator. 用于复位
-func (iter *Iterator) Clone() *Iterator {
-	return &Iterator{tree: iter.tree, cur: iter.cur, idx: iter.idx}
+func (iter *Iterator[T]) Clone() *Iterator[T] {
+	return &Iterator[T]{tree: iter.tree, cur: iter.cur, idx: iter.idx}
 }

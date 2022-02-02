@@ -14,14 +14,12 @@ const (
 	color_9 = "\033[39m%v\033[0m"
 )
 
-type colorNode struct {
-	Node  *Node
+type colorNode[T any] struct {
+	Node  *Node[T]
 	Color string
 }
 
-var debug_color_nodes map[*Node]*colorNode
-
-func output(node *Node, prefix string, isTail bool, str *string) {
+func output[T any](node *Node[T], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -53,7 +51,7 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 
 }
 
-func outputfordebug(node *Node, prefix string, isTail bool, str *string, deep int) {
+func outputfordebug[T any](node *Node[T], prefix string, isTail bool, str *string, deep int) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -83,9 +81,7 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string, deep in
 	suffix += parentv + fmt.Sprintf("|%v|%d", node.Size, deep) + ")"
 	// suffix = ""
 	k := node.Key
-	if colornode, ok := debug_color_nodes[node]; ok {
-		k = fmt.Sprintf(colornode.Color, k)
-	}
+
 	*str += fmt.Sprintf("%v", k) + suffix + "\n"
 
 	if node.Children[0] != nil {
@@ -99,7 +95,7 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string, deep in
 	}
 }
 
-func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string) {
+func outputfordebugNoSuffix[T any](node *Node[T], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -118,9 +114,7 @@ func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string)
 	}
 
 	k := node.Key
-	if colornode, ok := debug_color_nodes[node]; ok {
-		k = fmt.Sprintf(colornode.Color, k)
-	}
+
 	*str += fmt.Sprintf("%v", k) + "\n"
 
 	if node.Children[0] != nil {
@@ -134,7 +128,7 @@ func outputfordebugNoSuffix(node *Node, prefix string, isTail bool, str *string)
 	}
 }
 
-func (tree *Tree) debugString(isSuffix bool) string {
+func (tree *Tree[T]) debugString(isSuffix bool) string {
 
 	str := "IndexTree\n"
 	root := tree.getRoot()
@@ -151,22 +145,7 @@ func (tree *Tree) debugString(isSuffix bool) string {
 	return str
 }
 
-func setColor(cur *Node, colorstr string) *Node {
-	if debug_color_nodes == nil {
-		debug_color_nodes = make(map[*Node]*colorNode)
-	}
-	debug_color_nodes[cur] = &colorNode{
-		Node:  cur,
-		Color: colorstr,
-	}
-	return cur
-}
-
-func delColor(cur *Node) {
-	delete(debug_color_nodes, cur)
-}
-
-func lookTree(root *Node) string {
+func lookTree[T any](root *Node[T]) string {
 	str := "\n"
 	if root == nil {
 		return str + "nil"
@@ -175,7 +154,7 @@ func lookTree(root *Node) string {
 	return str
 }
 
-// func (tree *IndexTree) debugLookNode(cur *Node) {
+// func (tree *IndexTree) debugLookNode[T any](cur *Node[T]) {
 // 	var temp interface{} = cur.Key
 // 	cur.Key = []byte(fmt.Sprintf("\033[32m%s\033[0m", cur.Key))
 // 	log.Println(tree.debugString(true))

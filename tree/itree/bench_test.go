@@ -1,7 +1,6 @@
 package indextree
 
 import (
-	"log"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -19,10 +18,27 @@ import (
 // 	return r
 // }()
 
+type DefaultCompareType interface {
+	int | int64 | int32 | int8 | float32 | float64 | uint8 | uint | uint32 | uint64
+}
+
+func CompareAny[T DefaultCompareType](k1, k2 T) int {
+
+	switch {
+	case k1 > k2:
+		return 1
+	case k1 < k2:
+		return -1
+	default:
+		return 0
+	}
+}
+
 func BenchmarkPut(b *testing.B) {
 
-	tree := New(compare.Int64)
-	b.ResetTimer()
+	tree := New(CompareAny[int64])
+	// b.ResetTimer()
+	// b.N = 100
 	for i := 0; i < b.N; i++ {
 		v := rand.Int63()
 		tree.Put(v, v)
@@ -38,12 +54,11 @@ func BenchmarkPut2(b *testing.B) {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
 	}
-
 }
 
 func BenchmarkAvlPut(b *testing.B) {
 
-	tree := avl.New(compare.Int64)
+	tree := avl.New(CompareAny[int64])
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		v := rand.Int63()
@@ -71,22 +86,22 @@ func TestCase10(t *testing.T) {
 }
 
 func estDiffHight(t *testing.T) {
-	tree := New(compare.Int64)
-	avltree := avl.New(compare.Int64)
+	// tree := New(compare.Int64)
+	// avltree := avl.New(compare.Int64)
 
-	for n := 0; n < 100000; n++ {
-		for i := 0; i < 1000; i++ {
-			v := rand.Int63n(3000)
-			avltree.Put(v, v)
-			tree.Put(v, v)
-		}
+	// for n := 0; n < 100000; n++ {
+	// 	for i := 0; i < 1000; i++ {
+	// 		v := rand.Int63n(3000)
+	// 		avltree.Put(v, v)
+	// 		tree.Put(v, v)
+	// 	}
 
-		if avltree.Height()-tree.hight() > 1 {
-			log.Println(avltree.Height() - tree.hight())
-		}
+	// 	if avltree.Height()-tree.hight() > 1 {
+	// 		log.Println(avltree.Height() - tree.hight())
+	// 	}
 
-		tree.Clear()
-		avltree.Clear()
-	}
+	// 	tree.Clear()
+	// 	avltree.Clear()
+	// }
 
 }

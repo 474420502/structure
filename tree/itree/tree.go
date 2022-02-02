@@ -6,40 +6,36 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
-func init() {
-
-}
-
-type Node struct {
-	Parent   *Node
-	Children [2]*Node
+type Node[T any] struct {
+	Parent   *Node[T]
+	Children [2]*Node[T]
 
 	Size  int64
-	Key   interface{}
+	Key   T
 	Value interface{}
 }
 
-type Tree struct {
-	root    *Node
-	compare compare.Compare
+type Tree[T any] struct {
+	root    *Node[T]
+	compare compare.Compare[T]
 }
 
-func New(comp compare.Compare) *Tree {
-	return &Tree{compare: comp, root: &Node{}}
+func New[T any](comp compare.Compare[T]) *Tree[T] {
+	return &Tree[T]{compare: comp, root: &Node[T]{}}
 }
 
-func (tree *Tree) String() string {
+func (tree *Tree[T]) String() string {
 	return tree.debugString(true)
 }
 
-func (tree *Tree) Size() int64 {
+func (tree *Tree[T]) Size() int64 {
 	if root := tree.getRoot(); root != nil {
 		return root.Size
 	}
 	return 0
 }
 
-func (tree *Tree) Get(key interface{}) (interface{}, bool) {
+func (tree *Tree[T]) Get(key T) (interface{}, bool) {
 	if cur := tree.getNode(key); cur != nil {
 		return cur.Value, true
 	}
@@ -47,11 +43,11 @@ func (tree *Tree) Get(key interface{}) (interface{}, bool) {
 }
 
 // Put 插入成功,返回true. 存在不插入 返回false
-func (tree *Tree) Put(key, value interface{}) bool {
+func (tree *Tree[T]) Put(key T, value interface{}) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		tree.root.Children[0] = &Node{Key: key, Value: value, Size: 1, Parent: tree.root}
+		tree.root.Children[0] = &Node[T]{Key: key, Value: value, Size: 1, Parent: tree.root}
 		return true
 	}
 
@@ -66,7 +62,7 @@ func (tree *Tree) Put(key, value interface{}) bool {
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
-				node := &Node{Parent: cur, Key: key, Value: value, Size: 1}
+				node := &Node[T]{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[L] = node
 				tree.fixPut(cur)
 				return true
@@ -77,7 +73,7 @@ func (tree *Tree) Put(key, value interface{}) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &Node{Parent: cur, Key: key, Value: value, Size: 1}
+				node := &Node[T]{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[R] = node
 				tree.fixPut(cur)
 				return true
@@ -90,11 +86,11 @@ func (tree *Tree) Put(key, value interface{}) bool {
 }
 
 // Set 插入成功,返回false. 存在覆盖 返回true
-func (tree *Tree) Set(key, value interface{}) bool {
+func (tree *Tree[T]) Set(key T, value interface{}) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		tree.root.Children[0] = &Node{Key: key, Value: value, Size: 1, Parent: tree.root}
+		tree.root.Children[0] = &Node[T]{Key: key, Value: value, Size: 1, Parent: tree.root}
 		return true
 	}
 
@@ -109,7 +105,7 @@ func (tree *Tree) Set(key, value interface{}) bool {
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
-				node := &Node{Parent: cur, Key: key, Value: value, Size: 1}
+				node := &Node[T]{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[L] = node
 				tree.fixPut(cur)
 				return false
@@ -120,7 +116,7 @@ func (tree *Tree) Set(key, value interface{}) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &Node{Parent: cur, Key: key, Value: value, Size: 1}
+				node := &Node[T]{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[R] = node
 				tree.fixPut(cur)
 				return false
@@ -134,12 +130,12 @@ func (tree *Tree) Set(key, value interface{}) bool {
 
 }
 
-func (tree *Tree) Index(i int64) (key, value interface{}) {
+func (tree *Tree[T]) Index(i int64) (key T, value interface{}) {
 	node := tree.index(i)
 	return node.Key, node.Value
 }
 
-func (tree *Tree) IndexOf(key interface{}) int64 {
+func (tree *Tree[T]) IndexOf(key T) int64 {
 	const L = 0
 	const R = 1
 
@@ -171,7 +167,7 @@ func (tree *Tree) IndexOf(key interface{}) int64 {
 
 }
 
-func (tree *Tree) RankOf(key interface{}) (idx int64, isExists bool) {
+func (tree *Tree[T]) RankOf(key T) (idx int64, isExists bool) {
 	const L = 0
 	const R = 1
 
@@ -204,14 +200,14 @@ func (tree *Tree) RankOf(key interface{}) (idx int64, isExists bool) {
 }
 
 // Traverse 遍历的方法 默认是LDR 从小到大 Compare 为 l < r
-func (tree *Tree) Traverse(every func(k, v interface{}) bool) {
+func (tree *Tree[T]) Traverse(every func(k T, v interface{}) bool) {
 	root := tree.getRoot()
 	if root == nil {
 		return
 	}
 
-	var traverasl func(cur *Node) bool
-	traverasl = func(cur *Node) bool {
+	var traverasl func(cur *Node[T]) bool
+	traverasl = func(cur *Node[T]) bool {
 		if cur == nil {
 			return true
 		}
@@ -229,21 +225,21 @@ func (tree *Tree) Traverse(every func(k, v interface{}) bool) {
 	traverasl(root)
 }
 
-func (tree *Tree) Values() []interface{} {
+func (tree *Tree[T]) Values() []interface{} {
 	var mszie int64
 	root := tree.getRoot()
 	if root != nil {
 		mszie = root.Size
 	}
 	result := make([]interface{}, 0, mszie)
-	tree.Traverse(func(k, v interface{}) bool {
+	tree.Traverse(func(k T, v interface{}) bool {
 		result = append(result, v)
 		return true
 	})
 	return result
 }
 
-func (tree *Tree) Remove(key interface{}) interface{} {
+func (tree *Tree[T]) Remove(key T) interface{} {
 	const L = 0
 	const R = 1
 
@@ -317,7 +313,7 @@ func (tree *Tree) Remove(key interface{}) interface{} {
 	return nil
 }
 
-func (tree *Tree) RemoveIndex(index int64) interface{} {
+func (tree *Tree[T]) RemoveIndex(index int64) interface{} {
 	const L = 0
 	const R = 1
 
@@ -391,7 +387,7 @@ func (tree *Tree) RemoveIndex(index int64) interface{} {
 	return nil
 }
 
-func (tree *Tree) RemoveRange(low, hight interface{}) {
+func (tree *Tree[T]) RemoveRange(low, hight T) {
 
 	const L = 0
 	const R = 1
@@ -409,8 +405,8 @@ func (tree *Tree) RemoveRange(low, hight interface{}) {
 		return
 	}
 
-	var ltrim, rtrim func(*Node) *Node
-	ltrim = func(root *Node) *Node {
+	var ltrim, rtrim func(*Node[T]) *Node[T]
+	ltrim = func(root *Node[T]) *Node[T] {
 		if root == nil {
 			return nil
 		}
@@ -428,12 +424,12 @@ func (tree *Tree) RemoveRange(low, hight interface{}) {
 		}
 	}
 
-	var lgroup *Node
+	var lgroup *Node[T]
 	if root.Children[L] != nil {
 		lgroup = ltrim(root.Children[L])
 	}
 
-	rtrim = func(root *Node) *Node {
+	rtrim = func(root *Node[T]) *Node[T] {
 		if root == nil {
 			return nil
 		}
@@ -451,7 +447,7 @@ func (tree *Tree) RemoveRange(low, hight interface{}) {
 		}
 	}
 
-	var rgroup *Node
+	var rgroup *Node[T]
 	if root.Children[R] != nil {
 		rgroup = rtrim(root.Children[R])
 	}
@@ -479,7 +475,7 @@ func (tree *Tree) RemoveRange(low, hight interface{}) {
 }
 
 // RemoveRangeByIndex 1.range [low:hight] 2.low hight 必须包含存在的值.[low: hight+1] [low-1: hight].  [low-1: hight+1]. error: [low-1:low-2] or [hight+1:hight+2]
-func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
+func (tree *Tree[T]) RemoveRangeByIndex(low, hight int64) {
 	if low > hight {
 		return
 	}
@@ -508,8 +504,8 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 	}
 
 	root := cur
-	var ltrim, rtrim func(idx int64, dir int, root *Node) *Node
-	ltrim = func(idx int64, dir int, root *Node) *Node {
+	var ltrim, rtrim func(idx int64, dir int, root *Node[T]) *Node[T]
+	ltrim = func(idx int64, dir int, root *Node[T]) *Node[T] {
 		if root == nil {
 			return nil
 		}
@@ -535,12 +531,12 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 		}
 	}
 
-	var lgroup *Node
+	var lgroup *Node[T]
 	if root.Children[L] != nil {
 		lgroup = ltrim(idx, L, root.Children[L])
 	}
 
-	rtrim = func(idx int64, dir int, root *Node) *Node {
+	rtrim = func(idx int64, dir int, root *Node[T]) *Node[T] {
 		if root == nil {
 			return nil
 		}
@@ -566,7 +562,7 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 		}
 	}
 
-	var rgroup *Node
+	var rgroup *Node[T]
 	if root.Children[R] != nil {
 		rgroup = rtrim(idx, R, root.Children[R])
 	}
@@ -593,7 +589,7 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 }
 
 // Trim 保留区间
-func (tree *Tree) Trim(low, high interface{}) {
+func (tree *Tree[T]) Trim(low, high T) {
 	// root := tree.getRoot()
 
 	if tree.compare(low, high) > 0 {
@@ -605,8 +601,8 @@ func (tree *Tree) Trim(low, high interface{}) {
 
 	root := tree.getRangeRoot(low, high)
 
-	var ltrim func(root *Node) *Node
-	ltrim = func(root *Node) *Node {
+	var ltrim func(root *Node[T]) *Node[T]
+	ltrim = func(root *Node[T]) *Node[T] {
 		if root == nil {
 			return nil
 		}
@@ -630,8 +626,8 @@ func (tree *Tree) Trim(low, high interface{}) {
 
 	ltrim(root)
 
-	var rtrim func(root *Node) *Node
-	rtrim = func(root *Node) *Node {
+	var rtrim func(root *Node[T]) *Node[T]
+	rtrim = func(root *Node[T]) *Node[T] {
 		if root == nil {
 			return nil
 		}
@@ -666,7 +662,7 @@ func (tree *Tree) Trim(low, high interface{}) {
 }
 
 // TrimByIndex 保留区间 range [low:hight]
-func (tree *Tree) TrimByIndex(low, high int64) {
+func (tree *Tree[T]) TrimByIndex(low, high int64) {
 	if low > high {
 		panic(errLowerGtHigh)
 	}
@@ -695,8 +691,8 @@ func (tree *Tree) TrimByIndex(low, high int64) {
 		}
 	}
 
-	var ltrim func(idx int64, root *Node) *Node
-	ltrim = func(idx int64, root *Node) *Node {
+	var ltrim func(idx int64, root *Node[T]) *Node[T]
+	ltrim = func(idx int64, root *Node[T]) *Node[T] {
 		if root == nil {
 			return nil
 		}
@@ -720,8 +716,8 @@ func (tree *Tree) TrimByIndex(low, high int64) {
 
 	ltrim(idx, root)
 
-	var rtrim func(idx int64, root *Node) *Node
-	rtrim = func(idx int64, root *Node) *Node {
+	var rtrim func(idx int64, root *Node[T]) *Node[T]
+	rtrim = func(idx int64, root *Node[T]) *Node[T] {
 		if root == nil {
 			return nil
 		}
@@ -767,7 +763,7 @@ func (tree *Tree) TrimByIndex(low, high int64) {
 }
 
 // SplitContain Split 原树不包含Key. 拆分到返回的树
-func (tree *Tree) Split(key interface{}) *Tree {
+func (tree *Tree[T]) Split(key T) *Tree[T] {
 	root := tree.getRoot()
 	if root == nil {
 		return nil
@@ -778,7 +774,7 @@ func (tree *Tree) Split(key interface{}) *Tree {
 
 	cur := root
 	// 寻找左右根
-	var lroot, rroot *Node
+	var lroot, rroot *Node[T]
 
 	for cur != nil {
 		c := tree.compare(cur.Key, key)
@@ -798,8 +794,8 @@ func (tree *Tree) Split(key interface{}) *Tree {
 		}
 	}
 
-	var traverse func(cur *Node, lroot, rroot *Node)
-	traverse = func(cur, lroot, rroot *Node) {
+	var traverse func(cur *Node[T], lroot, rroot *Node[T])
+	traverse = func(cur, lroot, rroot *Node[T]) {
 		if cur == nil { // 就算是nil也要赋值拼接
 			lroot.Children[R] = nil
 			lroot.Size = getSize(lroot.Children[L]) + 1
@@ -890,7 +886,7 @@ func (tree *Tree) Split(key interface{}) *Tree {
 }
 
 // SplitContain Split 原树包含Key
-func (tree *Tree) SplitContain(key interface{}) *Tree {
+func (tree *Tree[T]) SplitContain(key T) *Tree[T] {
 	root := tree.getRoot()
 	if root == nil {
 		return nil
@@ -901,7 +897,7 @@ func (tree *Tree) SplitContain(key interface{}) *Tree {
 
 	cur := root
 	// 寻找左右根
-	var lroot, rroot *Node
+	var lroot, rroot *Node[T]
 
 	for cur != nil {
 		c := tree.compare(cur.Key, key)
@@ -920,8 +916,8 @@ func (tree *Tree) SplitContain(key interface{}) *Tree {
 		}
 	}
 
-	var traverse func(cur *Node, lroot, rroot *Node)
-	traverse = func(cur, lroot, rroot *Node) {
+	var traverse func(cur *Node[T], lroot, rroot *Node[T])
+	traverse = func(cur, lroot, rroot *Node[T]) {
 		if cur == nil { // 就算是nil也要赋值拼接
 			lroot.Children[R] = nil
 			lroot.Size = getSize(lroot.Children[L]) + 1
@@ -1011,6 +1007,6 @@ func (tree *Tree) SplitContain(key interface{}) *Tree {
 	return rtree
 }
 
-func (tree *Tree) Clear() {
+func (tree *Tree[T]) Clear() {
 	tree.root.Children[0] = nil
 }
