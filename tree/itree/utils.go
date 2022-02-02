@@ -24,10 +24,10 @@ type heightLimitSize struct {
 }
 
 var rootSizeTable []*heightLimitSize = func() []*heightLimitSize {
-	table := make([]*heightLimitSize, 64)
-	for i := 2; i < 64; i++ {
+	table := make([]*heightLimitSize, 48)
+	for i := 2; i < 48; i++ {
 		root2nsize := (int64(1) << i)
-		bottomsize := root2nsize >> 1
+		bottomsize := root2nsize>>1 - root2nsize>>4 - root2nsize>>3
 		table[i] = &heightLimitSize{
 			rootsize:   root2nsize,
 			bottomsize: bottomsize,

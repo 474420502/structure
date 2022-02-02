@@ -1,13 +1,17 @@
 package indextree
 
 import (
+	"log"
+	"math"
 	"math/rand"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/474420502/random"
 	"github.com/474420502/structure/compare"
 	"github.com/474420502/structure/tree/avl"
+	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
 // var data []int64 = func() []int64 {
@@ -35,21 +39,79 @@ func CompareAny[T DefaultCompareType](k1, k2 T) int {
 }
 
 func BenchmarkPut(b *testing.B) {
+	var data []int64
 
-	tree := New(CompareAny[int64])
-	// b.ResetTimer()
-	// b.N = 100
-	for i := 0; i < b.N; i++ {
-		v := rand.Int63()
-		tree.Put(v, v)
+	if !testutils.LoadData("BenchmarkPut", data) {
+		for i := 0; i < 4000000; i++ {
+			v := rand.Int63()
+			data = append(data, v)
+		}
+		testutils.SaveData("BenchmarkPut", data)
 	}
-	b.Log(tree.Size())
+
+	b.ResetTimer()
+
+	rand.Seed(time.Now().Unix())
+	start := int(rand.Int63n(500000))
+
+	b.Run("pre", func(b *testing.B) {
+		tree := avl.New(CompareAny[int64])
+
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			v := data[i+start]
+			tree.Put(v, v)
+		}
+		b.Log(tree.Size())
+	})
+
+	b.Run("avl", func(b *testing.B) {
+		tree := avl.New(CompareAny[int64])
+
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			v := data[i]
+			tree.Put(v, v)
+		}
+		b.Log(tree.Size())
+	})
+
+	b.Run("indextree", func(b *testing.B) {
+		tree := New(CompareAny[int64])
+
+		b.ResetTimer()
+
+		// b.N = 100
+		for i := 0; i < b.N; i++ {
+			v := data[i+start]
+			tree.Put(v, v)
+		}
+		b.Log(tree.Size())
+	})
+
+}
+
+func TestHeight(t *testing.T) {
+	itree := New(CompareAny[int64])
+	avltree := avl.New(CompareAny[int64])
+
+	var diffcount = 0
+	for i := 0; i < 500000; i++ {
+		v := rand.Int63()
+		itree.Put(v, v)
+		avltree.Put(v, v)
+
+		if h1, h2 := itree.hight(), avltree.Height(); math.Abs(float64(h1-h2)) > 1 {
+			diffcount++
+			log.Println("height:", h1, h2, "diff:", diffcount, h1-h2, "size:", itree.Size(), avltree.Size())
+		}
+	}
 }
 
 func BenchmarkPut2(b *testing.B) {
-	b.ResetTimer()
-	tree := New(compare.Bytes)
 
+	tree := New(compare.Bytes)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
