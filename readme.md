@@ -2,6 +2,30 @@
 
 ## Provide a powerful and easy-to-use data structure
 
+## Compare gods. RBTree is not ideal, I don't think it's not as good as avl
+
+```bash
+goos: linux
+goarch: amd64
+pkg: github.com/474420502/structure/tree/itree
+cpu: Intel(R) Core(TM) i9-9980HK CPU @ 2.40GHz
+
+BenchmarkPut/gods.avl-16    	 1887860	       788.8 ns/op	      80 B/op	       3 allocs/op
+BenchmarkPut/gods.rb-16     	 2009631	       816.2 ns/op	      80 B/op	       3 allocs/op
+BenchmarkPut/indextree-16   	 1896847	       783.6 ns/op	      80 B/op	       3 allocs/op
+BenchmarkPut/avl-16         	 1942905	       728.7 ns/op	      80 B/op	       3 allocs/op
+
+BenchmarkPut/gods.avl-16    	 1827474	       795.1 ns/op	      80 B/op	       3 allocs/op
+BenchmarkPut/gods.rb-16     	 2018786	       749.3 ns/op	      80 B/op	       3 allocs/op
+BenchmarkPut/indextree-16   	 1866698	       771.9 ns/op	      80 B/op	       3 allocs/op
+BenchmarkPut/avl-16         	 2081934	       744.2 ns/op	      80 B/op	       3 allocs/op
+
+BenchmarkPut/gods.avl-16    	 1835031	       754.6 ns/op	      80 B/op	       3 allocs/op
+BenchmarkPut/gods.rb-16     	 2092953	       751.9 ns/op	      80 B/op	       3 allocs/op
+BenchmarkPut/indextree-16   	 1861862	       789.6 ns/op	      80 B/op	       3 allocs/op
+BenchmarkPut/avl-16         	 1965009	       743.1 ns/op	      80 B/op	       3 allocs/op
+```
+
 * PriorityQueue
 
 ```go

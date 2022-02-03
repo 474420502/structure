@@ -1,2 +1,4 @@
 github.com/474420502/random v0.0.2 h1:A9ZfI3Odd0Naz+IcA7dmFDMHLH9P2Kx/R3AL4FQMH4U=
 github.com/474420502/random v0.0.2/go.mod h1:51QVTqbWTDUBTA+4phZZjjVsJXWz0zayPTdDEBu+2sA=
+github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg=
+github.com/emirpasic/gods v1.12.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
