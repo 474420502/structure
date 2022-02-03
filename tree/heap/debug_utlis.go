@@ -2,10 +2,10 @@ package heap
 
 import "fmt"
 
-func (tree *Tree) outputfordebug(idx int, prefix string, isTail bool, str *string) {
+func (tree *Tree[T]) outputfordebug(idx int, prefix string, isTail bool, str *string) {
 
 	ridx := idx<<1 + 2
-	if ridx < tree.size && tree.elements[ridx] != nil {
+	if ridx < tree.size {
 		newPrefix := prefix
 		if isTail {
 			newPrefix += "\033[34m│   \033[0m"
@@ -25,7 +25,7 @@ func (tree *Tree) outputfordebug(idx int, prefix string, isTail bool, str *strin
 
 	lidx := idx<<1 + 1
 
-	if lidx < tree.size && tree.elements[lidx] != nil {
+	if lidx < tree.size {
 		newPrefix := prefix
 		if isTail {
 			newPrefix += "    "
@@ -36,9 +36,9 @@ func (tree *Tree) outputfordebug(idx int, prefix string, isTail bool, str *strin
 	}
 }
 
-func (tree *Tree) debugString() string {
+func (tree *Tree[T]) debugString() string {
 	str := "Heap\n"
-	if tree.elements[0] == nil {
+	if tree.size == 0 {
 		return str + "nil"
 	}
 

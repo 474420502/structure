@@ -4,60 +4,60 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
-type Tree struct {
+type Tree[T any] struct {
 	size     int
-	elements []interface{}
-	Compare  compare.Compare
+	elements []T
+	Compare  compare.Compare[T]
 }
 
-func New(Compare compare.Compare) *Tree {
-	h := &Tree{Compare: Compare}
-	h.elements = make([]interface{}, 16, 16)
+func New[T any](Compare compare.Compare[T]) *Tree[T] {
+	h := &Tree[T]{Compare: Compare}
+	h.elements = make([]T, 16, 16)
 	return h
 }
 
-func (h *Tree) Size() int {
+func (h *Tree[T]) Size() int {
 	return h.size
 }
 
-func (h *Tree) Values() []interface{} {
+func (h *Tree[T]) Values() []T {
 	return h.elements[0:h.size]
 }
 
-func (h *Tree) grow() {
+func (h *Tree[T]) grow() {
 	ecap := len(h.elements)
 	if h.size >= ecap {
 		ecap = ecap << 1
-		grow := make([]interface{}, ecap, ecap)
+		grow := make([]T, ecap, ecap)
 		copy(grow, h.elements)
 		h.elements = grow
 	}
 }
 
-func (h *Tree) Empty() bool {
+func (h *Tree[T]) Empty() bool {
 	return h.size < 1
 }
 
-func (h *Tree) Clear() {
+func (h *Tree[T]) Clear() {
 	h.size = 0
 }
 
-func (h *Tree) Reborn() {
+func (h *Tree[T]) Reborn() {
 	h.size = 0
-	h.elements = make([]interface{}, 16, 16)
+	h.elements = make([]T, 16, 16)
 }
 
-func (h *Tree) Top() (interface{}, bool) {
+func (h *Tree[T]) Top() (result T, ok bool) {
 	if h.size != 0 {
-		return h.elements[0], true
-	}
-	return nil, false
-}
-
-func (h *Tree) Put(v interface{}) {
-	if v == nil {
+		result = h.elements[0]
+		ok = true
 		return
 	}
+	ok = false
+	return
+}
+
+func (h *Tree[T]) Put(v T) {
 
 	h.grow()
 
@@ -77,14 +77,14 @@ func (h *Tree) Put(v interface{}) {
 	h.elements[curidx] = v
 }
 
-func (h *Tree) slimming() {
+func (h *Tree[T]) slimming() {
 
 	elen := len(h.elements)
 	if elen >= 32 {
 		ecap := elen >> 1
 		if h.size <= ecap {
 			ecap = elen - (ecap >> 1)
-			slimming := make([]interface{}, ecap, ecap)
+			slimming := make([]T, ecap, ecap)
 			copy(slimming, h.elements)
 			h.elements = slimming
 		}
@@ -92,7 +92,7 @@ func (h *Tree) slimming() {
 
 }
 
-func (h *Tree) Pop() (interface{}, bool) {
+func (h *Tree[T]) Pop() (interface{}, bool) {
 
 	if h.size == 0 {
 		return nil, false

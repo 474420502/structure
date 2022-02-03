@@ -4,6 +4,95 @@ import "time"
 
 type Compare[T any] func(k1, k2 T) int
 
+type BytesCompareType interface {
+	[]byte
+}
+
+// Bytes []byte compare
+func CompareBytesLen[T BytesCompareType](k1, k2 T) int {
+
+	switch {
+	case len(k1) > len(k2):
+		return 1
+	case len(k1) < len(k2):
+		return -1
+	default:
+		for i := 0; i < len(k1); i++ {
+			if k1[i] != k2[i] {
+				if k1[i] > k2[i] {
+					return 1
+				}
+				return -1
+			}
+		}
+		return 0
+	}
+}
+
+func CompareBytes[T BytesCompareType](k1, k2 T) int {
+	switch {
+	case len(k1) > len(k2):
+		for i := 0; i < len(k2); i++ {
+			if k1[i] != k2[i] {
+				if k1[i] > k2[i] {
+					return 1
+				}
+				return -1
+			}
+		}
+		return 1
+	case len(k1) < len(k2):
+		for i := 0; i < len(k1); i++ {
+			if k1[i] != k2[i] {
+				if k1[i] > k2[i] {
+					return 1
+				}
+				return -1
+			}
+		}
+		return -1
+	default:
+		for i := 0; i < len(k1); i++ {
+			if k1[i] != k2[i] {
+				if k1[i] > k2[i] {
+					return 1
+				}
+				return -1
+			}
+		}
+		return 0
+	}
+
+}
+
+type DefaultCompareType interface {
+	int | int64 | int32 | int8 | float32 | float64 | uint8 | uint | uint32 | uint64
+}
+
+func CompareAny[T DefaultCompareType](k1, k2 T) int {
+
+	switch {
+	case k1 > k2:
+		return 1
+	case k1 < k2:
+		return -1
+	default:
+		return 0
+	}
+}
+
+func CompareAnyDesc[T DefaultCompareType](k1, k2 T) int {
+
+	switch {
+	case k1 > k2:
+		return -1
+	case k1 < k2:
+		return 1
+	default:
+		return 0
+	}
+}
+
 // Bytes []byte compare
 func Bytes(k1, k2 interface{}) int {
 	s1 := k1.([]byte)

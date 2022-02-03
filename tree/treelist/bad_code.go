@@ -89,51 +89,51 @@ package treelist
 // 	return
 // }
 
-func (tree *Tree) trimBad(low, hight interface{}) {
-	const L = 0
-	const R = 1
-	root := tree.getRoot()
-	var trim func(root *treeNode) *treeNode
-	trim = func(root *treeNode) *treeNode {
-		if root == nil {
-			return nil
-		}
+// func (tree *Tree) trimBad(low, hight interface{}) {
+// 	const L = 0
+// 	const R = 1
+// 	root := tree.getRoot()
+// 	var trim func(root *treeNode) *treeNode
+// 	trim = func(root *treeNode) *treeNode {
+// 		if root == nil {
+// 			return nil
+// 		}
 
-		if tree.compare(root.Key, hight) > 0 {
-			return trim(root.Children[L])
-		}
+// 		if tree.compare(root.Key, hight) > 0 {
+// 			return trim(root.Children[L])
+// 		}
 
-		if tree.compare(root.Key, low) < 0 {
-			return trim(root.Children[R])
-		}
+// 		if tree.compare(root.Key, low) < 0 {
+// 			return trim(root.Children[R])
+// 		}
 
-		root.Children[L] = trim(root.Children[L])
-		root.Children[R] = trim(root.Children[R])
-		root.Size = getChildrenSumSize(root) + 1
-		return root
-	}
+// 		root.Children[L] = trim(root.Children[L])
+// 		root.Children[R] = trim(root.Children[R])
+// 		root.Size = getChildrenSumSize(root) + 1
+// 		return root
+// 	}
 
-	croot := trim(root)
-	if root != croot {
-		tree.root.Children[L] = croot
-	}
-	// list
-	if croot != nil {
-		croot.Parent = tree.root
+// 	croot := trim(root)
+// 	if root != croot {
+// 		tree.root.Children[L] = croot
+// 	}
+// 	// list
+// 	if croot != nil {
+// 		croot.Parent = tree.root
 
-		lhand := croot
-		for lhand.Children[L] != nil {
-			lhand = lhand.Children[L]
-		}
-		lhand.Direct[L] = nil
+// 		lhand := croot
+// 		for lhand.Children[L] != nil {
+// 			lhand = lhand.Children[L]
+// 		}
+// 		lhand.Direct[L] = nil
 
-		rhand := croot
-		for rhand.Children[R] != nil {
-			rhand = rhand.Children[R]
-		}
-		rhand.Direct[R] = nil
-	}
-}
+// 		rhand := croot
+// 		for rhand.Children[R] != nil {
+// 			rhand = rhand.Children[R]
+// 		}
+// 		rhand.Direct[R] = nil
+// 	}
+// }
 
 // func (tree *Tree) trimVeryBad(root *Node, low, hight []byte) *Node {
 // 	if root == nil {

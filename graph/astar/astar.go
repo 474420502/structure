@@ -42,7 +42,7 @@ type Graph struct {
 	countCost   CountCost
 	countWeight CountWeight
 
-	openHeap *heap.Tree
+	openHeap *heap.Tree[*Tile]
 }
 
 // Point point x y
