@@ -6,8 +6,6 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
-const HeightDiff = 1
-
 type Node[T any] struct {
 	Children [2]*Node[T]
 	Parent   *Node[T]
@@ -29,13 +27,14 @@ func (n *Node[T]) String() string {
 }
 
 type Tree[T any] struct {
-	Root    *Node[T]
-	size    int64
-	Compare compare.Compare[T]
+	Root       *Node[T]           // Tree Root
+	HeightDiff int                // Allowable height difference is 1(default). if heightdiff == 2, will fast rbtree.
+	size       int64              // The size of treenode
+	Compare    compare.Compare[T] // The compare function of the key of node
 }
 
 func New[T any](Compare compare.Compare[T]) *Tree[T] {
-	return &Tree[T]{Compare: Compare}
+	return &Tree[T]{Compare: Compare, HeightDiff: 1}
 }
 
 func (tree *Tree[T]) String() string {
@@ -64,6 +63,7 @@ func (tree *Tree[T]) Iterator() *Iterator[T] {
 	return newIterator(tree)
 }
 
+// Remove remove key
 func (tree *Tree[T]) Remove(key T) (interface{}, bool) {
 
 	if n, ok := tree.getNode(key); ok {
@@ -129,12 +129,13 @@ func (tree *Tree[T]) Remove(key T) (interface{}, bool) {
 	return nil, false
 }
 
+// Clear clear all nodes
 func (tree *Tree[T]) Clear() {
 	tree.size = 0
 	tree.Root = nil
 }
 
-// Values 返回先序遍历的值
+// Values return all nodes. 返回先序遍历的值
 func (tree *Tree[T]) Values() []interface{} {
 	var mszie int64 = 0
 	if tree.Root != nil {
@@ -484,14 +485,14 @@ func (tree *Tree[T]) fixRemoveHeight(cur *Node[T]) {
 
 		// 计算高度的差值 绝对值大于2的时候需要旋转
 		diff := lefth - rigthh
-		if diff < -HeightDiff {
+		if diff < -tree.HeightDiff {
 			r := cur.Children[1] // 根据左旋转的右边节点的子节点 左右高度选择旋转的方式
 			if getHeight(r.Children[0]) > getHeight(r.Children[1]) {
 				tree.lrrotate(cur)
 			} else {
 				tree.lrotate(cur)
 			}
-		} else if diff > HeightDiff {
+		} else if diff > tree.HeightDiff {
 			l := cur.Children[0]
 			if getHeight(l.Children[1]) > getHeight(l.Children[0]) {
 				tree.rlrotate(cur)
@@ -522,14 +523,14 @@ func (tree *Tree[T]) fixPutHeight(cur *Node[T]) {
 
 		// 计算高度的差值 绝对值大于2的时候需要旋转
 		diff := lefth - rigthh
-		if diff < -HeightDiff {
+		if diff < -tree.HeightDiff {
 			r := cur.Children[1] // 根据左旋转的右边节点的子节点 左右高度选择旋转的方式
 			if getHeight(r.Children[0]) > getHeight(r.Children[1]) {
 				tree.lrrotate(cur)
 			} else {
 				tree.lrotate(cur)
 			}
-		} else if diff > HeightDiff {
+		} else if diff > tree.HeightDiff {
 			l := cur.Children[0]
 			if getHeight(l.Children[1]) > getHeight(l.Children[0]) {
 				tree.rlrotate(cur)

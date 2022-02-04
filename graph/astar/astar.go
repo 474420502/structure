@@ -168,8 +168,8 @@ func NewWithTiles(tiles string) *Graph {
 	return graph
 }
 
-func weightCompare(x1, x2 interface{}) int {
-	p1, p2 := x1.(*Tile), x2.(*Tile)
+func weightCompare(p1, p2 *Tile) int {
+	// p1, p2 := x1.(*Tile), x2.(*Tile)
 	if p1.Weight > p2.Weight { // 权重大的优先
 		return 1
 	}
