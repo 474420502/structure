@@ -4,7 +4,7 @@ package treequeue
 
 import "fmt"
 
-func output(node *qNode, prefix string, isTail bool, str *string) {
+func output[T any](node *qNode[T], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -36,7 +36,7 @@ func output(node *qNode, prefix string, isTail bool, str *string) {
 
 }
 
-func outputfordebug(node *qNode, prefix string, isTail bool, str *string) {
+func outputfordebug[T any](node *qNode[T], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -78,7 +78,7 @@ func outputfordebug(node *qNode, prefix string, isTail bool, str *string) {
 	}
 }
 
-func outputfordebugNoSuffix(node *qNode, prefix string, isTail bool, str *string) {
+func outputfordebugNoSuffix[T any](node *qNode[T], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -111,7 +111,7 @@ func outputfordebugNoSuffix(node *qNode, prefix string, isTail bool, str *string
 	}
 }
 
-func outputfordebugValue(node *qNode, prefix string, isTail bool, str *string, idx *int) {
+func outputfordebugValue[T any](node *qNode[T], prefix string, isTail bool, str *string, idx *int) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -147,7 +147,7 @@ func outputfordebugValue(node *qNode, prefix string, isTail bool, str *string, i
 	}
 }
 
-func (tree *Queue) debugString(isSuffix bool) string {
+func (tree *Queue[T]) debugString(isSuffix bool) string {
 	str := "BinarayList\n"
 	root := tree.getRoot()
 	if root == nil {
@@ -163,7 +163,7 @@ func (tree *Queue) debugString(isSuffix bool) string {
 	return str
 }
 
-func (tree *Queue) debugStringWithValue() string {
+func (tree *Queue[T]) debugStringWithValue() string {
 	str := "BinarayList\n"
 	root := tree.getRoot()
 	if root == nil {
