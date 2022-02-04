@@ -5,7 +5,7 @@ import "time"
 type Compare[T any] func(k1, k2 T) int
 
 type BytesCompareType interface {
-	[]byte
+	[]byte | string
 }
 
 // Bytes []byte compare
