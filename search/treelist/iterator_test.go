@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/474420502/random"
-	"github.com/474420502/structure/compare"
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
@@ -19,7 +18,7 @@ func TestIteratorIndexForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 		tree := New()
-		tree.compare = compare.BytesLen
+		tree.compare = compareBytesLen
 		var plist []int
 		for i := 0; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
@@ -66,7 +65,7 @@ func TestSeekRand(t *testing.T) {
 	for n := 0; n < 2000; n++ {
 
 		tree := New()
-		tree.compare = compare.BytesLen
+		tree.compare = compareBytesLen
 		var plist []int
 		for i := 0; i < 200; i += rand.Intn(4) + 1 {
 			v := []byte(strconv.Itoa(i))
@@ -130,7 +129,7 @@ func TestSeekByIndexForce(t *testing.T) {
 	for n := 0; n < 2000; n++ {
 
 		tree := New()
-		tree.compare = compare.BytesLen
+		tree.compare = compareBytesLen
 		var plist []int
 		for i := 0; i < 200; i += rand.Intn(8) + 4 {
 			v := []byte(strconv.Itoa(i))
@@ -181,7 +180,7 @@ func TestSeek(t *testing.T) {
 
 	iter := tree.Iterator()
 	iter.SeekGE([]byte("wor"))
-	log.Println(string(iter.cur.Key.([]byte)))
+	log.Println(string(iter.cur.Key))
 	var checkresult []string
 	for iter.Valid() {
 		v := string(iter.Key())
@@ -344,7 +343,7 @@ func TestFirstLast(t *testing.T) {
 	tree := New()
 	for _, v := range testutils.TestedBytes {
 		tree.Put(v, v)
-		log.Println(string(tree.root.Direct[0].Key.([]byte)), string(tree.root.Direct[1].Key.([]byte)))
+		log.Println(string(tree.root.Direct[0].Key), string(tree.root.Direct[1].Key))
 	}
 
 	iter := tree.Iterator()

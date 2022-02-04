@@ -6,40 +6,36 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
-func init() {
-
-}
-
-type qNode struct {
-	Parent   *qNode
-	Children [2]*qNode
+type qNode[T any] struct {
+	Parent   *qNode[T]
+	Children [2]*qNode[T]
 
 	Size int64
 
-	Slice
+	Slice[T]
 }
 
-type Queue struct {
-	root    *qNode
-	compare compare.Compare
+type Queue[T any] struct {
+	root    *qNode[T]
+	compare compare.Compare[T]
 }
 
-func New(comp compare.Compare) *Queue {
-	return &Queue{compare: comp, root: &qNode{}}
+func New[T any](comp compare.Compare[T]) *Queue[T] {
+	return &Queue[T]{compare: comp, root: &qNode[T]{}}
 }
 
-func (tree *Queue) String() string {
+func (tree *Queue[T]) String() string {
 	return fmt.Sprintf("%v", tree.Values())
 }
 
-func (tree *Queue) Size() int64 {
+func (tree *Queue[T]) Size() int64 {
 	if root := tree.getRoot(); root != nil {
 		return root.Size
 	}
 	return 0
 }
 
-func (tree *Queue) Head() *Slice {
+func (tree *Queue[T]) Head() *Slice[T] {
 	const L = 0
 
 	root := tree.getRoot()
@@ -49,11 +45,11 @@ func (tree *Queue) Head() *Slice {
 	for root.Children[L] != nil {
 		root = root.Children[L]
 	}
-	var s Slice = root.Slice
+	var s Slice[T] = root.Slice
 	return &s
 }
 
-func (tree *Queue) RemoveHead() *Slice {
+func (tree *Queue[T]) RemoveHead() *Slice[T] {
 	const L = 0
 
 	root := tree.getRoot()
@@ -68,7 +64,7 @@ func (tree *Queue) RemoveHead() *Slice {
 	return tree.remove(root)
 }
 
-func (tree *Queue) Tail() *Slice {
+func (tree *Queue[T]) Tail() *Slice[T] {
 	const R = 1
 
 	root := tree.getRoot()
@@ -78,11 +74,11 @@ func (tree *Queue) Tail() *Slice {
 	for root.Children[R] != nil {
 		root = root.Children[R]
 	}
-	var s Slice = root.Slice
+	var s Slice[T] = root.Slice
 	return &s
 }
 
-func (tree *Queue) RemoveTail() *Slice {
+func (tree *Queue[T]) RemoveTail() *Slice[T] {
 	const R = 1
 
 	root := tree.getRoot()
@@ -97,7 +93,7 @@ func (tree *Queue) RemoveTail() *Slice {
 }
 
 // Get 按Key获取Value, 如果Key值相等, 返回最先入队的值
-func (tree *Queue) Get(key interface{}) *Slice {
+func (tree *Queue[T]) Get(key T) *Slice[T] {
 	if cur := tree.getNode(key); cur != nil {
 		return &cur.Slice
 	}
@@ -105,7 +101,7 @@ func (tree *Queue) Get(key interface{}) *Slice {
 }
 
 // Gets 按Key获取Value, 如果Key值相等, 返回所有相当值的Value. 顺序也按先后
-func (tree *Queue) Gets(key interface{}) (result []*Slice) {
+func (tree *Queue[T]) Gets(key T) (result []*Slice[T]) {
 
 	for _, node := range tree.getNodes(key) {
 		result = append(result, &node.Slice)
@@ -117,11 +113,11 @@ func (tree *Queue) Gets(key interface{}) (result []*Slice) {
 // Put 插入数据. (队列不存在去重)
 //
 // put the data to queue.
-func (tree *Queue) Put(key, value interface{}) {
+func (tree *Queue[T]) Put(key T, value interface{}) {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		node := &qNode{Size: 1, Parent: tree.root}
+		node := &qNode[T]{Size: 1, Parent: tree.root}
 		node.key = key
 		node.value = value
 		tree.root.Children[0] = node
@@ -139,7 +135,7 @@ func (tree *Queue) Put(key, value interface{}) {
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
-				node := &qNode{Parent: cur, Size: 1}
+				node := &qNode[T]{Parent: cur, Size: 1}
 				node.key = key
 				node.value = value
 				cur.Children[L] = node
@@ -152,7 +148,7 @@ func (tree *Queue) Put(key, value interface{}) {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &qNode{Parent: cur, Size: 1}
+				node := &qNode[T]{Parent: cur, Size: 1}
 				node.key = key
 				node.value = value
 				cur.Children[R] = node
@@ -166,12 +162,12 @@ func (tree *Queue) Put(key, value interface{}) {
 
 }
 
-func (tree *Queue) Index(i int64) *Slice {
+func (tree *Queue[T]) Index(i int64) *Slice[T] {
 	node := tree.index(i)
 	return &node.Slice
 }
 
-func (tree *Queue) IndexOf(key interface{}) int64 {
+func (tree *Queue[T]) IndexOf(key T) int64 {
 	const L = 0
 	const R = 1
 
@@ -226,14 +222,14 @@ func (tree *Queue) IndexOf(key interface{}) int64 {
 }
 
 // Traverse 遍历的方法 默认是LDR 从小到大 Compare 为 l < r
-func (tree *Queue) Traverse(every func(s *Slice) bool) {
+func (tree *Queue[T]) Traverse(every func(s *Slice[T]) bool) {
 	root := tree.getRoot()
 	if root == nil {
 		return
 	}
 
-	var traverasl func(cur *qNode) bool
-	traverasl = func(cur *qNode) bool {
+	var traverasl func(cur *qNode[T]) bool
+	traverasl = func(cur *qNode[T]) bool {
 		if cur == nil {
 			return true
 		}
@@ -251,28 +247,28 @@ func (tree *Queue) Traverse(every func(s *Slice) bool) {
 	traverasl(root)
 }
 
-func (tree *Queue) Slices() []*Slice {
+func (tree *Queue[T]) Slices() []*Slice[T] {
 	var mszie int64
 	root := tree.getRoot()
 	if root != nil {
 		mszie = root.Size
 	}
-	result := make([]*Slice, 0, mszie)
-	tree.Traverse(func(s *Slice) bool {
+	result := make([]*Slice[T], 0, mszie)
+	tree.Traverse(func(s *Slice[T]) bool {
 		result = append(result, s)
 		return true
 	})
 	return result
 }
 
-func (tree *Queue) Values() []interface{} {
+func (tree *Queue[T]) Values() []interface{} {
 	var mszie int64
 	root := tree.getRoot()
 	if root != nil {
 		mszie = root.Size
 	}
 	result := make([]interface{}, 0, mszie)
-	tree.Traverse(func(s *Slice) bool {
+	tree.Traverse(func(s *Slice[T]) bool {
 		result = append(result, s.value)
 		return true
 	})
@@ -280,14 +276,14 @@ func (tree *Queue) Values() []interface{} {
 }
 
 // Remove 按Key删除一个数据, 如果存在Key相同的情况下
-func (tree *Queue) Remove(key interface{}) *Slice {
+func (tree *Queue[T]) Remove(key T) *Slice[T] {
 	if cur := tree.getNode(key); cur != nil {
 		return tree.remove(cur)
 	}
 	return nil
 }
 
-func (tree *Queue) RemoveIndex(index int64) *Slice {
+func (tree *Queue[T]) RemoveIndex(index int64) *Slice[T] {
 	const L = 0
 	const R = 1
 
@@ -359,7 +355,7 @@ func (tree *Queue) RemoveIndex(index int64) *Slice {
 }
 
 // RemoveRange 删除区间. [low:hight]
-func (tree *Queue) RemoveRange(low, hight interface{}) {
+func (tree *Queue[T]) RemoveRange(low, hight T) {
 
 	const L = 0
 	const R = 1
@@ -378,8 +374,8 @@ func (tree *Queue) RemoveRange(low, hight interface{}) {
 		return
 	}
 
-	var ltrim, rtrim func(*qNode) *qNode
-	ltrim = func(root *qNode) *qNode {
+	var ltrim, rtrim func(*qNode[T]) *qNode[T]
+	ltrim = func(root *qNode[T]) *qNode[T] {
 		if root == nil {
 			return nil
 		}
@@ -397,12 +393,12 @@ func (tree *Queue) RemoveRange(low, hight interface{}) {
 		}
 	}
 
-	var lgroup *qNode
+	var lgroup *qNode[T]
 	if root.Children[L] != nil {
 		lgroup = ltrim(root.Children[L])
 	}
 
-	rtrim = func(root *qNode) *qNode {
+	rtrim = func(root *qNode[T]) *qNode[T] {
 		if root == nil {
 			return nil
 		}
@@ -420,7 +416,7 @@ func (tree *Queue) RemoveRange(low, hight interface{}) {
 		}
 	}
 
-	var rgroup *qNode
+	var rgroup *qNode[T]
 	if root.Children[R] != nil {
 		rgroup = rtrim(root.Children[R])
 	}
@@ -447,7 +443,7 @@ func (tree *Queue) RemoveRange(low, hight interface{}) {
 }
 
 // RemoveRangeByIndex 1.range [low:hight] 2.low hight 必须包含存在的值.[low: hight+1] [low-1: hight].  [low-1: hight+1]. error: [low-1:low-2] or [hight+1:hight+2]
-func (tree *Queue) RemoveRangeByIndex(low, hight int64) {
+func (tree *Queue[T]) RemoveRangeByIndex(low, hight int64) {
 
 	if low > hight {
 		return
@@ -477,8 +473,8 @@ func (tree *Queue) RemoveRangeByIndex(low, hight int64) {
 	}
 
 	root := cur
-	var ltrim, rtrim func(idx int64, dir int, root *qNode) *qNode
-	ltrim = func(idx int64, dir int, root *qNode) *qNode {
+	var ltrim, rtrim func(idx int64, dir int, root *qNode[T]) *qNode[T]
+	ltrim = func(idx int64, dir int, root *qNode[T]) *qNode[T] {
 		if root == nil {
 			return nil
 		}
@@ -504,12 +500,12 @@ func (tree *Queue) RemoveRangeByIndex(low, hight int64) {
 		}
 	}
 
-	var lgroup *qNode
+	var lgroup *qNode[T]
 	if root.Children[L] != nil {
 		lgroup = ltrim(idx, L, root.Children[L])
 	}
 
-	rtrim = func(idx int64, dir int, root *qNode) *qNode {
+	rtrim = func(idx int64, dir int, root *qNode[T]) *qNode[T] {
 		if root == nil {
 			return nil
 		}
@@ -535,7 +531,7 @@ func (tree *Queue) RemoveRangeByIndex(low, hight int64) {
 		}
 	}
 
-	var rgroup *qNode
+	var rgroup *qNode[T]
 	if root.Children[R] != nil {
 		rgroup = rtrim(idx, R, root.Children[R])
 	}
@@ -562,7 +558,7 @@ func (tree *Queue) RemoveRangeByIndex(low, hight int64) {
 }
 
 // Extract 提取区间的数据. 区间外数据删除(与RemoveRange相反) range [low:hight]
-func (tree *Queue) Extract(low, hight interface{}) {
+func (tree *Queue[T]) Extract(low, hight T) {
 	// root := tree.getRoot()
 
 	if tree.compare(low, hight) > 0 {
@@ -574,8 +570,8 @@ func (tree *Queue) Extract(low, hight interface{}) {
 
 	root := tree.getRangeRoot(low, hight)
 
-	var ltrim func(root *qNode) *qNode
-	ltrim = func(root *qNode) *qNode {
+	var ltrim func(root *qNode[T]) *qNode[T]
+	ltrim = func(root *qNode[T]) *qNode[T] {
 		if root == nil {
 			return nil
 		}
@@ -596,8 +592,8 @@ func (tree *Queue) Extract(low, hight interface{}) {
 
 	ltrim(root)
 
-	var rtrim func(root *qNode) *qNode
-	rtrim = func(root *qNode) *qNode {
+	var rtrim func(root *qNode[T]) *qNode[T]
+	rtrim = func(root *qNode[T]) *qNode[T] {
 		if root == nil {
 			return nil
 		}
@@ -628,7 +624,7 @@ func (tree *Queue) Extract(low, hight interface{}) {
 }
 
 // ExtractByIndex 保留区间(Extract类似, 范围用顺序索引) range [low:hight]
-func (tree *Queue) ExtractByIndex(low, hight int64) {
+func (tree *Queue[T]) ExtractByIndex(low, hight int64) {
 
 	if low > hight {
 		panic(errLowerGtHigh)
@@ -658,8 +654,8 @@ func (tree *Queue) ExtractByIndex(low, hight int64) {
 		}
 	}
 
-	var ltrim func(idx int64, root *qNode) *qNode
-	ltrim = func(idx int64, root *qNode) *qNode {
+	var ltrim func(idx int64, root *qNode[T]) *qNode[T]
+	ltrim = func(idx int64, root *qNode[T]) *qNode[T] {
 		if root == nil {
 			return nil
 		}
@@ -683,8 +679,8 @@ func (tree *Queue) ExtractByIndex(low, hight int64) {
 
 	ltrim(idx, root)
 
-	var rtrim func(idx int64, root *qNode) *qNode
-	rtrim = func(idx int64, root *qNode) *qNode {
+	var rtrim func(idx int64, root *qNode[T]) *qNode[T]
+	rtrim = func(idx int64, root *qNode[T]) *qNode[T] {
 		if root == nil {
 			return nil
 		}
@@ -729,6 +725,6 @@ func (tree *Queue) ExtractByIndex(low, hight int64) {
 	}
 }
 
-func (tree *Queue) Clear() {
+func (tree *Queue[T]) Clear() {
 	tree.root.Children[0] = nil
 }

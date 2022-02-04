@@ -96,7 +96,7 @@ func TestHeight(t *testing.T) {
 	avltree := avl.New(CompareAny[int64])
 
 	var diffcount = 0
-	for i := 0; i < 500000; i++ {
+	for i := 0; i < 5000; i++ {
 		v := rand.Int63()
 		itree.Put(v, v)
 		avltree.Put(v, v)
