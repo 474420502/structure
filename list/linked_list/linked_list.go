@@ -4,28 +4,28 @@ import (
 	"fmt"
 )
 
-type Node struct {
-	prev  *Node
-	next  *Node
-	value interface{}
+type Node[T comparable] struct {
+	prev  *Node[T]
+	next  *Node[T]
+	value T
 }
 
-func (node *Node) Value() interface{} {
+func (node *Node[T]) Value() T {
 	return node.value
 }
 
-type LinkedList struct {
-	head *Node
-	tail *Node
+type LinkedList[T comparable] struct {
+	head *Node[T]
+	tail *Node[T]
 	size uint
 }
 
-func New() *LinkedList {
-	l := &LinkedList{}
-	l.head = &Node{}
+func New[T comparable]() *LinkedList[T] {
+	l := &LinkedList[T]{}
+	l.head = &Node[T]{}
 	l.head.prev = nil
 
-	l.tail = &Node{}
+	l.tail = &Node[T]{}
 	l.tail.next = nil
 
 	l.head.next = l.tail
@@ -33,15 +33,15 @@ func New() *LinkedList {
 	return l
 }
 
-func (l *LinkedList) Iterator() *Iterator {
-	return &Iterator{ll: l, cur: l.head}
+func (l *LinkedList[T]) Iterator() *Iterator[T] {
+	return &Iterator[T]{ll: l, cur: l.head}
 }
 
-func (l *LinkedList) CircularIterator() *CircularIterator {
-	return &CircularIterator{pl: l, cur: l.head}
+func (l *LinkedList[T]) CircularIterator() *CircularIterator[T] {
+	return &CircularIterator[T]{pl: l, cur: l.head}
 }
 
-func (l *LinkedList) Clear() {
+func (l *LinkedList[T]) Clear() {
 
 	l.head.next = l.tail
 	l.tail.prev = l.head
@@ -49,19 +49,19 @@ func (l *LinkedList) Clear() {
 	l.size = 0
 }
 
-func (l *LinkedList) Empty() bool {
+func (l *LinkedList[T]) Empty() bool {
 	return l.size == 0
 }
 
-func (l *LinkedList) Size() uint {
+func (l *LinkedList[T]) Size() uint {
 	return l.size
 }
 
-func (l *LinkedList) Push(value interface{}) {
-	var node *Node
+func (l *LinkedList[T]) Push(value T) {
+	var node *Node[T]
 	l.size++
 
-	node = &Node{}
+	node = &Node[T]{}
 	node.value = value
 
 	tprev := l.tail.prev
@@ -72,12 +72,12 @@ func (l *LinkedList) Push(value interface{}) {
 	l.tail.prev = node
 }
 
-func (l *LinkedList) PushFront(values ...interface{}) {
+func (l *LinkedList[T]) PushFront(values ...T) {
 
-	var node *Node
+	var node *Node[T]
 	l.size += uint(len(values))
 	for _, v := range values {
-		node = &Node{}
+		node = &Node[T]{}
 		node.value = v
 
 		hnext := l.head.next
@@ -89,12 +89,12 @@ func (l *LinkedList) PushFront(values ...interface{}) {
 	}
 }
 
-func (l *LinkedList) PushBack(values ...interface{}) {
+func (l *LinkedList[T]) PushBack(values ...T) {
 
-	var node *Node
+	var node *Node[T]
 	l.size += uint(len(values))
 	for _, v := range values {
-		node = &Node{}
+		node = &Node[T]{}
 		node.value = v
 
 		tprev := l.tail.prev
@@ -106,7 +106,7 @@ func (l *LinkedList) PushBack(values ...interface{}) {
 	}
 }
 
-func (l *LinkedList) PopFront() (result interface{}, found bool) {
+func (l *LinkedList[T]) PopFront() (result interface{}, found bool) {
 	if l.size != 0 {
 		l.size--
 
@@ -122,7 +122,7 @@ func (l *LinkedList) PopFront() (result interface{}, found bool) {
 	return nil, false
 }
 
-func (l *LinkedList) PopBack() (result interface{}, found bool) {
+func (l *LinkedList[T]) PopBack() (result interface{}, found bool) {
 	if l.size != 0 {
 		l.size--
 
@@ -138,21 +138,21 @@ func (l *LinkedList) PopBack() (result interface{}, found bool) {
 	return nil, false
 }
 
-func (l *LinkedList) Front() (result interface{}, found bool) {
+func (l *LinkedList[T]) Front() (result interface{}, found bool) {
 	if l.size != 0 {
 		return l.head.next.value, true
 	}
 	return nil, false
 }
 
-func (l *LinkedList) Back() (result interface{}, found bool) {
+func (l *LinkedList[T]) Back() (result interface{}, found bool) {
 	if l.size != 0 {
 		return l.tail.prev.value, true
 	}
 	return nil, false
 }
 
-func (l *LinkedList) Index(idx int) (interface{}, bool) {
+func (l *LinkedList[T]) Index(idx int) (interface{}, bool) {
 
 	if idx < 0 {
 		return nil, false
@@ -186,7 +186,7 @@ func (l *LinkedList) Index(idx int) (interface{}, bool) {
 	return nil, false
 }
 
-func (l *LinkedList) Insert(idx uint, values ...interface{}) bool {
+func (l *LinkedList[T]) Insert(idx uint, values ...T) bool {
 	if idx > l.size { // 插入的方式 可能导致size的范围判断不一样
 		return false
 	}
@@ -198,14 +198,14 @@ func (l *LinkedList) Insert(idx uint, values ...interface{}) bool {
 
 			if idx == 0 {
 
-				var start *Node
-				var end *Node
+				var start *Node[T]
+				var end *Node[T]
 
-				start = &Node{value: values[0]}
+				start = &Node[T]{value: values[0]}
 				end = start
 
 				for _, value := range values[1:] {
-					node := &Node{value: value}
+					node := &Node[T]{value: value}
 					end.next = node
 					node.prev = end
 					end = node
@@ -230,14 +230,14 @@ func (l *LinkedList) Insert(idx uint, values ...interface{}) bool {
 		for cur := l.head.next; cur != nil; cur = cur.next {
 			if idx == 0 {
 
-				var start *Node
-				var end *Node
+				var start *Node[T]
+				var end *Node[T]
 
-				start = &Node{value: values[0]}
+				start = &Node[T]{value: values[0]}
 				end = start
 
 				for _, value := range values[1:] {
-					node := &Node{value: value}
+					node := &Node[T]{value: value}
 					end.next = node
 					node.prev = end
 					end = node
@@ -281,7 +281,7 @@ const (
 )
 
 // InsertIf  every函数的枚举  从左到右遍历 1 为前 2 为后 insert here(2) ->cur-> insert here(1)
-func (l *LinkedList) InsertIf(every func(idx uint, value interface{}) InsertState, values ...interface{}) {
+func (l *LinkedList[T]) InsertIf(every func(idx uint, value T) InsertState, values ...T) {
 
 	idx := uint(0)
 	// 头部
@@ -293,14 +293,14 @@ func (l *LinkedList) InsertIf(every func(idx uint, value interface{}) InsertStat
 		}
 
 		if insertState > 0 { // 1 为前 2 为后 insert here(2) ->cur-> insert here(1)
-			var start *Node
-			var end *Node
+			var start *Node[T]
+			var end *Node[T]
 
-			start = &Node{value: values[0]}
+			start = &Node[T]{value: values[0]}
 			end = start
 
 			for _, value := range values[1:] {
-				node := &Node{value: value}
+				node := &Node[T]{value: value}
 				end.next = node
 				node.prev = end
 				end = node
@@ -329,7 +329,7 @@ func (l *LinkedList) InsertIf(every func(idx uint, value interface{}) InsertStat
 	}
 }
 
-func remove(cur *Node) {
+func remove[T comparable](cur *Node[T]) {
 	curPrev := cur.prev
 	curNext := cur.next
 	curPrev.next = curNext
@@ -338,7 +338,7 @@ func remove(cur *Node) {
 	cur.next = nil
 }
 
-func (l *LinkedList) Remove(idx int) (interface{}, bool) {
+func (l *LinkedList[T]) Remove(idx int) (interface{}, bool) {
 
 	if idx < 0 {
 		return nil, false
@@ -396,7 +396,7 @@ const (
 )
 
 // RemoveIf every的遍历函数操作remove过程 如果没删除result 返回nil, isRemoved = false
-func (l *LinkedList) RemoveIf(every func(idx uint, value interface{}) RemoveState) (result []interface{}, isRemoved bool) {
+func (l *LinkedList[T]) RemoveIf(every func(idx uint, value T) RemoveState) (result []interface{}, isRemoved bool) {
 	// 头部
 	idx := uint(0)
 TOPFOR:
@@ -429,7 +429,7 @@ TOPFOR:
 	return
 }
 
-func (l *LinkedList) Contains(values ...interface{}) bool {
+func (l *LinkedList[T]) Contains(values ...T) bool {
 
 	for _, searchValue := range values {
 		found := false
@@ -447,19 +447,19 @@ func (l *LinkedList) Contains(values ...interface{}) bool {
 	return true
 }
 
-func (l *LinkedList) Values() (result []interface{}) {
-	l.Traverse(func(value interface{}) bool {
+func (l *LinkedList[T]) Values() (result []interface{}) {
+	l.Traverse(func(value T) bool {
 		result = append(result, value)
 		return true
 	})
 	return
 }
 
-func (l *LinkedList) String() string {
+func (l *LinkedList[T]) String() string {
 	return fmt.Sprintf("%v", l.Values())
 }
 
-func (l *LinkedList) Traverse(every func(value interface{}) bool) {
+func (l *LinkedList[T]) Traverse(every func(value T) bool) {
 	for cur := l.head.next; cur != l.tail; cur = cur.next {
 		if !every(cur.value) {
 			break

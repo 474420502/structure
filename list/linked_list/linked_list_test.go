@@ -8,7 +8,7 @@ import (
 )
 
 func TestPush(t *testing.T) {
-	l := New()
+	l := New[int]()
 	for i := 0; i < 5; i++ {
 		l.Push(i)
 	}
@@ -26,7 +26,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestPushFront(t *testing.T) {
-	l := New()
+	l := New[int]()
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
 	}
@@ -44,7 +44,7 @@ func TestPushFront(t *testing.T) {
 }
 
 func TestPushBack(t *testing.T) {
-	l := New()
+	l := New[int]()
 	for i := 0; i < 5; i++ {
 		l.PushBack(i)
 	}
@@ -62,7 +62,7 @@ func TestPushBack(t *testing.T) {
 }
 
 func TestPopFront(t *testing.T) {
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -85,7 +85,7 @@ func TestPopFront(t *testing.T) {
 }
 
 func TestPopBack(t *testing.T) {
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -109,7 +109,7 @@ func TestPopBack(t *testing.T) {
 }
 
 func TestInsert2(t *testing.T) {
-	l := New()
+	l := New[int]()
 
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
@@ -132,8 +132,8 @@ func TestInsert2(t *testing.T) {
 }
 
 func TestInsert1(t *testing.T) {
-	l1 := New()
-	l2 := New()
+	l1 := New[int]()
+	l2 := New[int]()
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l1.Insert(0, i)
@@ -183,7 +183,7 @@ func TestInsert1(t *testing.T) {
 }
 
 func TestInsertIf(t *testing.T) {
-	l := New()
+	l := New[int]()
 
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
@@ -192,7 +192,7 @@ func TestInsertIf(t *testing.T) {
 
 	// "[4 3 2 1 0]" 插入两个11
 	for i := 0; i < 2; i++ {
-		l.InsertIf(func(idx uint, value interface{}) InsertState {
+		l.InsertIf(func(idx uint, value int) InsertState {
 			if value == 3 {
 				return InsertFront
 			}
@@ -209,7 +209,7 @@ func TestInsertIf(t *testing.T) {
 
 	// "[4 3 2 1 0]"
 	for i := 0; i < 2; i++ {
-		l.InsertIf(func(idx uint, value interface{}) InsertState {
+		l.InsertIf(func(idx uint, value int) InsertState {
 			if value == 0 {
 				return InsertBack
 			}
@@ -224,7 +224,7 @@ func TestInsertIf(t *testing.T) {
 
 	// "[4 3 2 1 0]"
 	for i := 0; i < 2; i++ {
-		l.InsertIf(func(idx uint, value interface{}) InsertState {
+		l.InsertIf(func(idx uint, value int) InsertState {
 			if value == 0 {
 				return InsertFront
 			}
@@ -241,7 +241,7 @@ func TestInsertIf(t *testing.T) {
 }
 
 func TestIndex(t *testing.T) {
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -278,7 +278,7 @@ func TestIndex(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -322,13 +322,13 @@ func TestRemove(t *testing.T) {
 }
 
 func TestRemoveIf(t *testing.T) {
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
 	}
 
-	if result, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
+	if result, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
 		if value == 0 {
 			return RemoveAndContinue
 		}
@@ -341,7 +341,7 @@ func TestRemoveIf(t *testing.T) {
 		t.Error("should be ok")
 	}
 
-	if result, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
+	if result, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
 		if value == 4 {
 			return RemoveAndContinue
 		}
@@ -360,7 +360,7 @@ func TestRemoveIf(t *testing.T) {
 		t.Error("should be [3 2 1] but result is", result)
 	}
 
-	if result, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
+	if result, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
 		if value == 4 {
 			return RemoveAndContinue
 		}
@@ -378,7 +378,7 @@ func TestRemoveIf(t *testing.T) {
 		t.Error("should be [3 2 1] but result is", result)
 	}
 
-	l.RemoveIf(func(idx uint, value interface{}) RemoveState {
+	l.RemoveIf(func(idx uint, value int) RemoveState {
 		if value == 3 || value == 2 || value == 1 {
 			return RemoveAndContinue
 		}
@@ -390,7 +390,7 @@ func TestRemoveIf(t *testing.T) {
 		t.Error("result should be [], but now result is", result)
 	}
 
-	if results, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
+	if results, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
 		if value == 3 || value == 2 || value == 1 {
 			return RemoveAndContinue
 		}
@@ -406,7 +406,7 @@ func TestRemoveIf(t *testing.T) {
 }
 
 func TestRemoveIf2(t *testing.T) {
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -417,7 +417,7 @@ func TestRemoveIf2(t *testing.T) {
 	}
 
 	// 只删除一个
-	if result, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
+	if result, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
 		if value == 0 {
 			return RemoveAndBreak
 		}
@@ -437,7 +437,7 @@ func TestRemoveIf2(t *testing.T) {
 	}
 
 	// 只删除多个
-	if result, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
+	if result, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
 		if value == 4 {
 			return RemoveAndContinue
 		}
@@ -460,14 +460,14 @@ func TestRemoveIf2(t *testing.T) {
 }
 
 func TestTraversal(t *testing.T) {
-	l := New()
+	l := New[uint]()
 	for i := 0; i < 5; i++ {
 		l.PushFront(uint(i))
 	}
 
 	var result []interface{}
 
-	l.Traverse(func(v interface{}) bool {
+	l.Traverse(func(v uint) bool {
 		result = append(result, v)
 		return true
 	})
@@ -478,7 +478,7 @@ func TestTraversal(t *testing.T) {
 
 	l.PushBack(7, 8)
 	result = nil
-	l.Traverse(func(v interface{}) bool {
+	l.Traverse(func(v uint) bool {
 		result = append(result, v)
 		return true
 	})
@@ -489,7 +489,7 @@ func TestTraversal(t *testing.T) {
 }
 
 func TestIterator(t *testing.T) {
-	ll := New()
+	ll := New[int]()
 	for i := 0; i < 10; i++ {
 		ll.PushFront(i)
 	}
@@ -514,7 +514,7 @@ func TestIterator(t *testing.T) {
 }
 
 func TestCircularIterator(t *testing.T) {
-	ll := New()
+	ll := New[int]()
 	for i := 0; i < 10; i++ {
 		ll.PushFront(i)
 	}
@@ -558,7 +558,7 @@ func TestCircularIterator(t *testing.T) {
 }
 
 func TestContains(t *testing.T) {
-	ll := New()
+	ll := New[int]()
 	for i := 0; i < 10; i++ {
 		ll.Push(i)
 	}
@@ -596,7 +596,7 @@ func TestContains(t *testing.T) {
 func TestForce(t *testing.T) {
 
 	rand := random.New(t.Name())
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for n := 0; n < 2000; n++ {
 
@@ -613,7 +613,7 @@ func TestForce(t *testing.T) {
 				v := rand.Intn(1000)
 				l.Insert(idx, v)
 				var i = uint(0)
-				l.Traverse(func(value interface{}) bool {
+				l.Traverse(func(value int) bool {
 					if i == idx {
 						if value != v {
 							panic("")
@@ -632,7 +632,7 @@ func TestForce(t *testing.T) {
 		}
 
 		var i = 0
-		l.Traverse(func(value interface{}) bool {
+		l.Traverse(func(value int) bool {
 			if i == idx {
 				if value != v {
 					panic("")
@@ -671,7 +671,7 @@ func TestForce(t *testing.T) {
 // 	b.N = cs * ec
 
 // 	for c := 0; c < ec; c++ {
-// 		l := New()
+// 		l := New[int]()
 // 		for i := 0; i < cs; i++ {
 // 			l.PushBack(i)
 // 		}
@@ -685,7 +685,7 @@ func TestForce(t *testing.T) {
 // 	b.N = cs * ec
 
 // 	for c := 0; c < ec; c++ {
-// 		l := New()
+// 		l := New[int]()
 // 		for i := 0; i < cs; i++ {
 // 			l.PushFront(i)
 // 		}
@@ -700,7 +700,7 @@ func TestForce(t *testing.T) {
 // 	b.N = cs * ec
 
 // 	for c := 0; c < ec; c++ {
-// 		l := New()
+// 		l := New[int]()
 // 		for i := 0; i < cs; i++ {
 // 			ridx := randomdata.Number(0, int(l.Size())+1)
 // 			l.Insert(uint(ridx), i)

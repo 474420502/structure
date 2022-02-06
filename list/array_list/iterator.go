@@ -1,17 +1,17 @@
 package arraylist
 
-type Iterator struct {
-	al     *ArrayList
+type Iterator[T comparable] struct {
+	al     *ArrayList[T]
 	cur    uint
 	isInit bool
 }
 
-func (iter *Iterator) Value() interface{} {
+func (iter *Iterator[T]) Value() interface{} {
 	v, _ := iter.al.Index((int)(iter.cur))
 	return v
 }
 
-func (iter *Iterator) Prev() bool {
+func (iter *Iterator[T]) Prev() bool {
 
 	if !iter.isInit {
 		if iter.al.size != 0 {
@@ -29,7 +29,7 @@ func (iter *Iterator) Prev() bool {
 	return true
 }
 
-func (iter *Iterator) Next() bool {
+func (iter *Iterator[T]) Next() bool {
 
 	if !iter.isInit {
 		if iter.al.size != 0 {
@@ -47,28 +47,28 @@ func (iter *Iterator) Next() bool {
 	return true
 }
 
-func (iter *Iterator) ToHead() {
+func (iter *Iterator[T]) ToHead() {
 	iter.isInit = true
 	iter.cur = 0
 }
 
-func (iter *Iterator) ToTail() {
+func (iter *Iterator[T]) ToTail() {
 	iter.isInit = true
 	iter.cur = iter.al.size - 1
 }
 
-type CircularIterator struct {
-	al     *ArrayList
+type CircularIterator[T comparable] struct {
+	al     *ArrayList[T]
 	cur    uint
 	isInit bool
 }
 
-func (iter *CircularIterator) Value() interface{} {
+func (iter *CircularIterator[T]) Value() interface{} {
 	v, _ := iter.al.Index((int)(iter.cur))
 	return v
 }
 
-func (iter *CircularIterator) Prev() bool {
+func (iter *CircularIterator[T]) Prev() bool {
 
 	if !iter.isInit {
 		if iter.al.size != 0 {
@@ -91,7 +91,7 @@ func (iter *CircularIterator) Prev() bool {
 	return true
 }
 
-func (iter *CircularIterator) Next() bool {
+func (iter *CircularIterator[T]) Next() bool {
 
 	if !iter.isInit {
 		if iter.al.size != 0 {
@@ -114,12 +114,12 @@ func (iter *CircularIterator) Next() bool {
 	return true
 }
 
-func (iter *CircularIterator) ToHead() {
+func (iter *CircularIterator[T]) ToHead() {
 	iter.isInit = true
 	iter.cur = 0
 }
 
-func (iter *CircularIterator) ToTail() {
+func (iter *CircularIterator[T]) ToTail() {
 	iter.isInit = true
 	iter.cur = iter.al.size - 1
 }
