@@ -14,7 +14,7 @@ func TestForce(t *testing.T) {
 	log.Println(t.Name(), seed)
 	rand.Seed(seed)
 
-	s1 := New()
+	s1 := New[int]()
 	s2 := list.New()
 
 	for i := 0; i < 2000; i++ {
@@ -80,7 +80,7 @@ func TestString(t *testing.T) {
 	seed := time.Now().UnixNano()
 	log.Println(t.Name(), seed)
 	rand.Seed(seed)
-	s1 := New()
+	s1 := New[int]()
 
 	for i := 0; i < 10; i++ {
 		v := rand.Intn(100)

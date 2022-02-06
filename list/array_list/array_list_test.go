@@ -6,7 +6,7 @@ import (
 )
 
 func TestIterator(t *testing.T) {
-	l := New()
+	l := New[int]()
 
 	for i := 0; i < 5; i++ {
 		l.Push(i)
@@ -67,7 +67,7 @@ func TestIterator(t *testing.T) {
 }
 
 func TestPush(t *testing.T) {
-	l := New()
+	l := New[int]()
 
 	for i := 0; i < 2; i++ {
 		l.PushFront(1)
@@ -95,7 +95,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestGrowth(t *testing.T) {
-	l := New()
+	l := New[int]()
 	for i := 0; i < 5; i++ {
 		l.PushFront(1)
 	}
@@ -106,7 +106,7 @@ func TestGrowth(t *testing.T) {
 		t.Error(result)
 	}
 
-	l = New()
+	l = New[int]()
 	for i := 0; i < 7; i++ {
 		l.PushBack(1)
 	}
@@ -126,7 +126,7 @@ func TestGrowth(t *testing.T) {
 }
 
 func TestPop(t *testing.T) {
-	l := New()
+	l := New[int]()
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
 	}
@@ -165,7 +165,7 @@ func TestPop(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	l := New()
+	l := New[uint]()
 	for i := 0; i < 5; i++ {
 		l.PushFront(uint(i))
 	}
@@ -211,7 +211,7 @@ func TestRemove(t *testing.T) {
 }
 
 func TestTraversal(t *testing.T) {
-	l := New()
+	l := New[uint]()
 	for i := 0; i < 5; i++ {
 		l.PushFront(uint(i))
 	}
@@ -240,7 +240,7 @@ func TestTraversal(t *testing.T) {
 }
 
 func TestRemain(t *testing.T) {
-	l := New()
+	l := New[int]()
 	for i := 0; i < 10; i++ {
 		l.Push(i)
 		if !l.Contains(i) {

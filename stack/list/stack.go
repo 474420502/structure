@@ -2,41 +2,41 @@ package liststack
 
 import "fmt"
 
-type Node struct {
-	value interface{}
-	down  *Node
+type Node[T any] struct {
+	value T
+	down  *Node[T]
 }
 
-type Stack struct {
-	top  *Node
+type Stack[T any] struct {
+	top  *Node[T]
 	size uint
 }
 
-func New() *Stack {
-	s := &Stack{}
+func New[T any]() *Stack[T] {
+	s := &Stack[T]{}
 	s.size = 0
 	return s
 }
 
-func (ls *Stack) Clear() {
+func (ls *Stack[T]) Clear() {
 	ls.size = 0
 	ls.top = nil
 }
 
-func (ls *Stack) Empty() bool {
+func (ls *Stack[T]) Empty() bool {
 	return ls.size == 0
 }
 
-func (ls *Stack) Size() uint {
+func (ls *Stack[T]) Size() uint {
 	return ls.size
 }
 
 // String 从左到右 左边第一个表示Top 如链表 a(top)->b->c
-func (ls *Stack) String() string {
+func (ls *Stack[T]) String() string {
 	return fmt.Sprintf("%v", ls.Values())
 }
 
-func (ls *Stack) Values() []interface{} {
+func (ls *Stack[T]) Values() []interface{} {
 
 	if ls.size == 0 {
 		return nil
@@ -54,14 +54,14 @@ func (ls *Stack) Values() []interface{} {
 	return result
 }
 
-func (ls *Stack) Push(v interface{}) {
-	nv := &Node{value: v}
+func (ls *Stack[T]) Push(v T) {
+	nv := &Node[T]{value: v}
 	nv.down = ls.top
 	ls.top = nv
 	ls.size++
 }
 
-func (ls *Stack) Pop() (interface{}, bool) {
+func (ls *Stack[T]) Pop() (interface{}, bool) {
 	if ls.size == 0 {
 		return nil, false
 	}
@@ -74,7 +74,7 @@ func (ls *Stack) Pop() (interface{}, bool) {
 	return result.value, true
 }
 
-func (ls *Stack) Peek() (interface{}, bool) {
+func (ls *Stack[T]) Peek() (interface{}, bool) {
 	if ls.size == 0 {
 		return nil, false
 	}

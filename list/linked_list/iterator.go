@@ -1,15 +1,15 @@
 package linkedlist
 
-type Iterator struct {
-	ll  *LinkedList
-	cur *Node
+type Iterator[T comparable] struct {
+	ll  *LinkedList[T]
+	cur *Node[T]
 }
 
-func (iter *Iterator) Value() interface{} {
+func (iter *Iterator[T]) Value() interface{} {
 	return iter.cur.value
 }
 
-func (iter *Iterator) Prev() bool {
+func (iter *Iterator[T]) Prev() bool {
 	if iter.cur == iter.ll.head {
 		return false
 	}
@@ -17,7 +17,7 @@ func (iter *Iterator) Prev() bool {
 	return iter.cur != iter.ll.head
 }
 
-func (iter *Iterator) Next() bool {
+func (iter *Iterator[T]) Next() bool {
 	if iter.cur == iter.ll.tail {
 		return false
 	}
@@ -25,24 +25,24 @@ func (iter *Iterator) Next() bool {
 	return iter.cur != iter.ll.tail
 }
 
-func (iter *Iterator) ToHead() {
+func (iter *Iterator[T]) ToHead() {
 	iter.cur = iter.ll.head
 }
 
-func (iter *Iterator) ToTail() {
+func (iter *Iterator[T]) ToTail() {
 	iter.cur = iter.ll.tail
 }
 
-type CircularIterator struct {
-	pl  *LinkedList
-	cur *Node
+type CircularIterator[T comparable] struct {
+	pl  *LinkedList[T]
+	cur *Node[T]
 }
 
-func (iter *CircularIterator) Value() interface{} {
+func (iter *CircularIterator[T]) Value() interface{} {
 	return iter.cur.value
 }
 
-func (iter *CircularIterator) Prev() bool {
+func (iter *CircularIterator[T]) Prev() bool {
 	if iter.pl.size == 0 {
 		return false
 	}
@@ -60,7 +60,7 @@ func (iter *CircularIterator) Prev() bool {
 	return true
 }
 
-func (iter *CircularIterator) Next() bool {
+func (iter *CircularIterator[T]) Next() bool {
 	if iter.pl.size == 0 {
 		return false
 	}
@@ -78,10 +78,10 @@ func (iter *CircularIterator) Next() bool {
 	return true
 }
 
-func (iter *CircularIterator) ToHead() {
+func (iter *CircularIterator[T]) ToHead() {
 	iter.cur = iter.pl.head
 }
 
-func (iter *CircularIterator) ToTail() {
+func (iter *CircularIterator[T]) ToTail() {
 	iter.cur = iter.pl.tail
 }
