@@ -6,12 +6,26 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
-const HeightDiff = 1
+// var HeightTable []int = func() []int {
+// 	var table []int = make([]int, 64)
+// 	for i := 0; i < 64; i++ {
+
+// 		if i < 6 {
+// 			table[i] = 2
+// 		} else if i < 16 {
+// 			table[i] = 1
+// 		} else {
+// 			table[i] = 1
+// 		}
+// 	}
+
+// 	return table
+// }()
 
 type Node struct {
 	Children   [2]*Node
 	Parent     *Node
-	height     int
+	height     int8
 	Key, Value interface{}
 }
 
@@ -28,13 +42,15 @@ func (n *Node) String() string {
 }
 
 type Tree struct {
-	Root    *Node
-	size    int
-	Compare compare.Compare
+	Root              *Node
+	size              int
+	Compare           compare.Compare
+	HeightRotateLimit int8
+	RotateCount       int
 }
 
 func New(Compare compare.Compare) *Tree {
-	return &Tree{Compare: Compare}
+	return &Tree{Compare: Compare, HeightRotateLimit: 1}
 }
 
 func (tree *Tree) String() string {
@@ -55,7 +71,7 @@ func (tree *Tree) Height() int {
 	if tree.Root == nil {
 		return 0
 	}
-	return tree.Root.height + 1
+	return int(tree.Root.height) + 1
 }
 
 // Iterator must call Seek*.
@@ -444,7 +460,7 @@ func (tree *Tree) lrotate(cur *Node) {
 	cur.height = getMaxChildrenHeight(cur) + 1
 }
 
-func getMaxAndChildrenHeight(cur *Node) (h1, h2, maxh int) {
+func getMaxAndChildrenHeight(cur *Node) (h1, h2, maxh int8) {
 	h1 = getHeight(cur.Children[0])
 	h2 = getHeight(cur.Children[1])
 	if h1 > h2 {
@@ -456,7 +472,7 @@ func getMaxAndChildrenHeight(cur *Node) (h1, h2, maxh int) {
 	return
 }
 
-func getMaxChildrenHeight(cur *Node) int {
+func getMaxChildrenHeight(cur *Node) int8 {
 	h1 := getHeight(cur.Children[0])
 	h2 := getHeight(cur.Children[1])
 	if h1 > h2 {
@@ -465,7 +481,7 @@ func getMaxChildrenHeight(cur *Node) int {
 	return h2
 }
 
-func getHeight(cur *Node) int {
+func getHeight(cur *Node) int8 {
 	if cur == nil {
 		return -1
 	}
@@ -483,14 +499,14 @@ func (tree *Tree) fixRemoveHeight(cur *Node) {
 
 		// 计算高度的差值 绝对值大于2的时候需要旋转
 		diff := lefth - rigthh
-		if diff < -HeightDiff {
+		if diff < -tree.HeightRotateLimit {
 			r := cur.Children[1] // 根据左旋转的右边节点的子节点 左右高度选择旋转的方式
 			if getHeight(r.Children[0]) > getHeight(r.Children[1]) {
 				tree.lrrotate(cur)
 			} else {
 				tree.lrotate(cur)
 			}
-		} else if diff > HeightDiff {
+		} else if diff > tree.HeightRotateLimit {
 			l := cur.Children[0]
 			if getHeight(l.Children[1]) > getHeight(l.Children[0]) {
 				tree.rlrotate(cur)
@@ -520,28 +536,35 @@ func (tree *Tree) fixPutHeight(cur *Node) {
 		rigthh := getHeight(cur.Children[1])
 
 		// 计算高度的差值 绝对值大于2的时候需要旋转
-		diff := lefth - rigthh
-		if diff < -HeightDiff {
-			r := cur.Children[1] // 根据左旋转的右边节点的子节点 左右高度选择旋转的方式
-			if getHeight(r.Children[0]) > getHeight(r.Children[1]) {
-				tree.lrrotate(cur)
-			} else {
-				tree.lrotate(cur)
-			}
-		} else if diff > HeightDiff {
-			l := cur.Children[0]
-			if getHeight(l.Children[1]) > getHeight(l.Children[0]) {
-				tree.rlrotate(cur)
-			} else {
-				tree.rrotate(cur)
-			}
 
-		} else {
-			// 选择一个child的最大高度 + 1为 高度
-			if lefth > rigthh {
-				cur.height = lefth + 1
-			} else {
+		if lefth < rigthh {
+			diff := rigthh - lefth
+			if diff > tree.HeightRotateLimit {
+				r := cur.Children[1] // 根据左旋转的右边节点的子节点 左右高度选择旋转的方式
+				if getHeight(r.Children[0]) > getHeight(r.Children[1]) {
+					tree.lrrotate(cur)
+					tree.RotateCount += 2
+				} else {
+					tree.lrotate(cur)
+					tree.RotateCount++
+				}
+			} else { // 选择一个child的最大高度 + 1为 高度
 				cur.height = rigthh + 1
+			}
+		} else if lefth > rigthh {
+			diff := lefth - rigthh
+			if diff > tree.HeightRotateLimit {
+				l := cur.Children[0]
+				if getHeight(l.Children[1]) > getHeight(l.Children[0]) {
+
+					tree.rlrotate(cur)
+					tree.RotateCount += 2
+				} else {
+					tree.rrotate(cur)
+					tree.RotateCount++
+				}
+			} else { // 选择一个child的最大高度 + 1为 高度
+				cur.height = lefth + 1
 			}
 		}
 
