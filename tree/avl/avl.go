@@ -46,7 +46,6 @@ type Tree struct {
 	size              int
 	Compare           compare.Compare
 	HeightRotateLimit int8
-	RotateCount       int
 }
 
 func New(Compare compare.Compare) *Tree {
@@ -543,10 +542,10 @@ func (tree *Tree) fixPutHeight(cur *Node) {
 				r := cur.Children[1] // 根据左旋转的右边节点的子节点 左右高度选择旋转的方式
 				if getHeight(r.Children[0]) > getHeight(r.Children[1]) {
 					tree.lrrotate(cur)
-					tree.RotateCount += 2
+
 				} else {
 					tree.lrotate(cur)
-					tree.RotateCount++
+
 				}
 			} else { // 选择一个child的最大高度 + 1为 高度
 				cur.height = rigthh + 1
@@ -558,10 +557,10 @@ func (tree *Tree) fixPutHeight(cur *Node) {
 				if getHeight(l.Children[1]) > getHeight(l.Children[0]) {
 
 					tree.rlrotate(cur)
-					tree.RotateCount += 2
+
 				} else {
 					tree.rrotate(cur)
-					tree.RotateCount++
+
 				}
 			} else { // 选择一个child的最大高度 + 1为 高度
 				cur.height = lefth + 1

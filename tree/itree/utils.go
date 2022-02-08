@@ -57,12 +57,8 @@ func (tree *Tree) fixPut(cur *Node) {
 
 	var height int64 = 2
 	var lsize, rsize int64
-	var relations int = L
 	var parent *Node
 
-	if cur.Parent.Children[R] == cur {
-		relations = R
-	}
 	cur = cur.Parent
 
 	for cur != tree.root {
@@ -76,16 +72,16 @@ func (tree *Tree) fixPut(cur *Node) {
 
 			lsize, rsize = getChildrenSize(cur)
 			// 右就检测左边
-			if relations == R {
+			if rsize > lsize {
 				if rsize-lsize >= limitSize.bottomsize {
-					cur = tree.sizeRRotate(cur)
+					tree.sizeRRotate(cur)
 					tree.fixPutSize(parent)
 					return
 					// height--
 				}
 			} else {
 				if lsize-rsize >= limitSize.bottomsize {
-					cur = tree.sizeLRotate(cur)
+					tree.sizeLRotate(cur)
 					tree.fixPutSize(parent)
 					return
 					// height--
@@ -94,11 +90,6 @@ func (tree *Tree) fixPut(cur *Node) {
 		}
 
 		height++
-		if cur.Parent.Children[R] == cur {
-			relations = R
-		} else {
-			relations = L
-		}
 		cur = parent
 	}
 }

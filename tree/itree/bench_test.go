@@ -78,78 +78,53 @@ func BenchmarkPut(b *testing.B) {
 	rand.Seed(time.Now().Unix())
 	start := int(rand.Int63n(500000))
 
-	// b.Run("pre", func(b *testing.B) {
-	// 	tree := avl.New(compare.Int64)
-
-	// 	b.ResetTimer()
-	// 	for i := 0; i < b.N; i++ {
-	// 		v := data[i+start]
-	// 		tree.Put(v, v)
-	// 	}
-	// 	// b.Log(tree.Size())
-	// })
-
-	b.Run("gods.avl", func(b *testing.B) {
-		b.N = 2000000
-
-		tree := godsavl.NewWith(utils.Int64Comparator)
-		b.ResetTimer()
-		for i := 0; i < 2000000; i++ {
-			v := data[i+start]
-			tree.Put(v, v)
-		}
-
-		b.Log(getGodsAVLHeight(tree.Root), godsavl.RotateCount) // 需要修改gods 添加RotateCount全局参数 计算旋转次数
-	})
-
-	b.Run("gods.rb", func(b *testing.B) {
-		b.N = 2000000
-
-		tree := godsrb.NewWith(utils.Int64Comparator)
-		b.ResetTimer()
-		for i := 0; i < 2000000; i++ {
-			v := data[i+start]
-			tree.Put(v, v)
-		}
-
-		b.Log(getGodsRBHeight(tree.Root), godsrb.RotateCount)
-	})
-
-	// b.Run("indextree", func(b *testing.B) {
-	// b.N = 2000000
-	// 	tree := New(compare.Int64)
-
-	// 	b.ResetTimer()
-
-	// 	// b.N = 100
-	// 	for i := 0; i < 2000000; i++ {
-	// 		v := data[i+start]
-	// 		tree.Put(v, v)
-	// 	}
-
-	// })
-
-	b.Run("avl", func(b *testing.B) {
-		b.N = 2000000
-		tree := avl.New(compare.Int64)
-		b.ResetTimer()
-		for i := 0; i < 2000000; i++ {
-			v := data[i+start]
-			tree.Set(v, v)
-		}
-		b.Log(tree.Height(), tree.RotateCount)
-	})
-
 	b.Run("avl-hdiff2", func(b *testing.B) {
-		b.N = 2000000
+
 		tree := avl.New(compare.Int64)
 		tree.HeightRotateLimit = 2
 		b.ResetTimer()
-		for i := 0; i < 2000000; i++ {
+		for i := 0; i < b.N; i++ {
 			v := data[i+start]
 			tree.Set(v, v)
 		}
-		b.Log(tree.Height(), tree.RotateCount)
+		// b.Log(tree.Height(), tree.RotateCount)
+	})
+
+	b.Run("gods.rb", func(b *testing.B) {
+
+		tree := godsrb.NewWith(utils.Int64Comparator)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			v := data[i+start]
+			tree.Put(v, v)
+		}
+
+		// b.Log(getGodsRBHeight(tree.Root), godsrb.RotateCount)
+	})
+
+	b.Run("indextree", func(b *testing.B) {
+
+		tree := New(compare.Int64)
+
+		b.ResetTimer()
+
+		// b.N = 100
+		for i := 0; i < b.N; i++ {
+			v := data[i+start]
+			tree.Set(v, v)
+		}
+
+	})
+
+	b.Run("avl", func(b *testing.B) {
+
+		tree := avl.New(compare.Int64)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			v := data[i+start]
+			tree.Set(v, v)
+		}
+		// b.Log(tree.Height(), tree.RotateCount)
 	})
 
 }
