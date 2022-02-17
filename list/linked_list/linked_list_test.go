@@ -396,8 +396,8 @@ func TestCircularIterator(t *testing.T) {
 		}
 	}
 
-	if iter.cur != iter.pl.tail.prev {
-		t.Error("current point is not equal tail ", iter.pl.tail.prev)
+	if iter.cur != iter.ll.tail.prev {
+		t.Error("current point is not equal tail ", iter.ll.tail.prev)
 	}
 
 	if iter.Next() {
@@ -414,8 +414,8 @@ func TestCircularIterator(t *testing.T) {
 		}
 	}
 
-	if iter.cur != iter.pl.head.next {
-		t.Error("current point is not equal tail ", iter.pl.tail.prev)
+	if iter.cur != iter.ll.head.next {
+		t.Error("current point is not equal tail ", iter.ll.tail.prev)
 	}
 
 	if iter.Prev() {
@@ -582,42 +582,49 @@ func TestIteratorRemove(t *testing.T) {
 	}
 
 	iter := l.Iterator()
+	iter.Move(2)
+	iter.RemoveToNext()
 
-	l.Remove(0)
-	var result string
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2 1 0]" {
-		t.Error("should be [3 2 1 0] but result is", result)
+	// log.Println(l.String(), iter.Value()) // Head -> 4 -> 3(Remove) and Cur to 2  "[4 2 1 0]" 2
+	if l.String() != "[4 2 1 0]" || iter.Value() != 2 {
+		t.Error(l.String(), iter.Value())
 	}
 
-	l.Remove(3)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2 1]" {
-		t.Error("should be [3 2 1] but result is", result)
+	iter.Move(-1) // 4
+	// log.Println(l.String(), iter.Value())
+	iter.RemoveToPrev() // Head
+	iter.Move(3)        // 1
+
+	if l.String() != "[2 1 0]" || iter.Value() != 0 {
+		t.Error(l.String(), iter.Value())
 	}
 
-	l.Remove(2)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2]" {
-		t.Error("should be [3 2 1] but result is", result)
+	for iter.RemoveToNext() {
+
 	}
 
-	l.Remove(1)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3]" {
-		t.Error("should be [3 2 1] but result is", result)
+	if l.String() != "[2 1]" || iter.Value() != 0 {
+		t.Error(l.String(), iter.Value())
 	}
 
-	l.Remove(0)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[]" && l.Size() == 0 && len(l.Values()) == 0 {
-		t.Error("should be [] but result is", result, "Size is", l.Size())
+	for iter.RemoveToPrev() { // can not remove tail or head
+
 	}
 
-	if _, rvalue := l.Remove(3); rvalue != false {
-		t.Error("l is empty")
+	if l.String() != "[2 1]" || iter.Value() != 0 {
+		t.Error(l.String(), iter.Value())
 	}
 
+	iter.Move(-1)             // 1
+	for iter.RemoveToPrev() { // remove all
+
+	}
+
+	if l.String() != "[]" || iter.Value() != 0 { // default int == 0
+		t.Error(l.String(), iter.Value())
+	}
+
+	// log.Println(l.String(), l.Size())
 }
 
 // func BenchmarkPushBack(b *testing.B) {

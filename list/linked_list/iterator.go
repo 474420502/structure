@@ -76,6 +76,21 @@ func (iter *Iterator[T]) RemoveToNext() (ok bool) {
 	temp := iter.cur.next
 	remove(iter.cur)
 	iter.cur = temp
+	iter.ll.size--
+
+	return true
+}
+
+// RemoveToNext Remove self and to Prev. If iterator is removed. return true.
+func (iter *Iterator[T]) RemoveToPrev() (ok bool) {
+	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
+		return false
+	}
+
+	temp := iter.cur.prev
+	remove(iter.cur)
+	iter.cur = temp
+	iter.ll.size--
 
 	return true
 }
@@ -86,9 +101,22 @@ func (iter *Iterator[T]) Value() T {
 
 // Move move next(prev[if step < 0]) by step
 func (iter *Iterator[T]) Move(step int) (isEnd bool) {
-	for i := 0; i < step; i++ {
-		iter.cur = iter.cur.prev
+	if step > 0 {
+		for i := 0; i < step; i++ {
+			iter.cur = iter.cur.next
+			if iter.cur == iter.ll.tail {
+				return true
+			}
+		}
+	} else {
+		for i := 0; i < -step; i++ {
+			iter.cur = iter.cur.prev
+			if iter.cur == iter.ll.head {
+				return true
+			}
+		}
 	}
+
 	return false
 }
 
@@ -108,16 +136,18 @@ func (iter *Iterator[T]) Next() bool {
 	return iter.cur != iter.ll.tail
 }
 
+// ToHead
 func (iter *Iterator[T]) ToHead() {
 	iter.cur = iter.ll.head
 }
 
+// ToTail
 func (iter *Iterator[T]) ToTail() {
 	iter.cur = iter.ll.tail
 }
 
 type CircularIterator[T comparable] struct {
-	pl  *LinkedList[T]
+	ll  *LinkedList[T]
 	cur *Node[T]
 }
 
@@ -126,45 +156,79 @@ func (iter *CircularIterator[T]) Value() interface{} {
 }
 
 func (iter *CircularIterator[T]) Prev() bool {
-	if iter.pl.size == 0 {
+	if iter.ll.size == 0 {
 		return false
 	}
 
-	if iter.cur == iter.pl.head {
-		iter.cur = iter.pl.tail.prev
+	if iter.cur == iter.ll.head {
+		iter.cur = iter.ll.tail.prev
 		return true
 	}
 
 	iter.cur = iter.cur.prev
-	if iter.cur == iter.pl.head {
-		iter.cur = iter.pl.tail.prev
+	if iter.cur == iter.ll.head {
+		iter.cur = iter.ll.tail.prev
 	}
 
 	return true
 }
 
 func (iter *CircularIterator[T]) Next() bool {
-	if iter.pl.size == 0 {
+	if iter.ll.size == 0 {
 		return false
 	}
 
-	if iter.cur == iter.pl.tail {
-		iter.cur = iter.pl.head.next
+	if iter.cur == iter.ll.tail {
+		iter.cur = iter.ll.head.next
 		return true
 	}
 
 	iter.cur = iter.cur.next
-	if iter.cur == iter.pl.tail {
-		iter.cur = iter.pl.head.next
+	if iter.cur == iter.ll.tail {
+		iter.cur = iter.ll.head.next
 	}
 
 	return true
 }
 
 func (iter *CircularIterator[T]) ToHead() {
-	iter.cur = iter.pl.head
+	iter.cur = iter.ll.head
 }
 
 func (iter *CircularIterator[T]) ToTail() {
-	iter.cur = iter.pl.tail
+	iter.cur = iter.ll.tail
+}
+
+// Move move next(prev[if step < 0]) by step
+func (iter *CircularIterator[T]) Move(step int) {
+	if step > 0 {
+		for i := 0; i < step; i++ {
+
+			if iter.cur == iter.ll.tail {
+				iter.cur = iter.ll.head.next
+
+			}
+
+			iter.cur = iter.cur.next
+			if iter.cur == iter.ll.tail {
+				iter.cur = iter.ll.head.next
+			}
+
+		}
+	} else {
+		for i := 0; i < -step; i++ {
+
+			if iter.cur == iter.ll.head {
+				iter.cur = iter.ll.tail.prev
+			}
+
+			iter.cur = iter.cur.prev
+			if iter.cur == iter.ll.head {
+				iter.cur = iter.ll.tail.prev
+			}
+
+		}
+	}
+
+	return
 }
