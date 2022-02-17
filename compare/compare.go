@@ -4,12 +4,12 @@ import "time"
 
 type Compare[T any] func(k1, k2 T) int
 
-type BytesCompareType interface {
+type BytesType interface {
 	[]byte | string
 }
 
-// Bytes []byte compare
-func CompareBytesLen[T BytesCompareType](k1, k2 T) int {
+// BytesLenAny Bytes []byte compare
+func BytesLenAny[T BytesType](k1, k2 T) int {
 
 	switch {
 	case len(k1) > len(k2):
@@ -29,7 +29,8 @@ func CompareBytesLen[T BytesCompareType](k1, k2 T) int {
 	}
 }
 
-func CompareBytes[T BytesCompareType](k1, k2 T) int {
+// BytesAny compare bytes
+func BytesAny[T BytesType](k1, k2 T) int {
 	switch {
 	case len(k1) > len(k2):
 		for i := 0; i < len(k2); i++ {
@@ -65,11 +66,11 @@ func CompareBytes[T BytesCompareType](k1, k2 T) int {
 
 }
 
-type DefaultCompareType interface {
+type DefaultAny interface {
 	int | int64 | int32 | int8 | float32 | float64 | uint8 | uint | uint32 | uint64
 }
 
-func CompareAny[T DefaultCompareType](k1, k2 T) int {
+func Any[T DefaultAny](k1, k2 T) int {
 
 	switch {
 	case k1 > k2:
@@ -81,7 +82,7 @@ func CompareAny[T DefaultCompareType](k1, k2 T) int {
 	}
 }
 
-func CompareAnyDesc[T DefaultCompareType](k1, k2 T) int {
+func AnyDesc[T DefaultAny](k1, k2 T) int {
 
 	switch {
 	case k1 > k2:

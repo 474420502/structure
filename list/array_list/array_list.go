@@ -136,21 +136,23 @@ func (l *ArrayList[T]) PushBack(values ...T) {
 	l.size += psize
 }
 
-func (l *ArrayList[T]) Front() (result interface{}) {
+func (l *ArrayList[T]) Front() (result T, ok bool) {
 	if l.size != 0 {
-		return l.data[l.headidx+1]
+		return l.data[l.headidx+1], true
 	}
-	return nil
+	ok = false
+	return
 }
 
-func (l *ArrayList[T]) Back() (result interface{}) {
+func (l *ArrayList[T]) Back() (result T, ok bool) {
 	if l.size != 0 {
-		return l.data[l.tailidx-1]
+		return l.data[l.tailidx-1], true
 	}
-	return nil
+	ok = false
+	return
 }
 
-func (l *ArrayList[T]) PopFront() (result interface{}, found bool) {
+func (l *ArrayList[T]) PopFront() (result T, ok bool) {
 	if l.size != 0 {
 		l.size--
 		l.headidx++
@@ -158,10 +160,12 @@ func (l *ArrayList[T]) PopFront() (result interface{}, found bool) {
 		l.shrink()
 		return result, true
 	}
-	return nil, false
+	ok = false
+	return
 }
 
-func (l *ArrayList[T]) PopBack() (result interface{}, found bool) {
+// PopBack pop the back of the list
+func (l *ArrayList[T]) PopBack() (result T, ok bool) {
 	if l.size != 0 {
 		l.size--
 		l.tailidx--
@@ -169,31 +173,42 @@ func (l *ArrayList[T]) PopBack() (result interface{}, found bool) {
 		l.shrink()
 		return result, true
 	}
-	return nil, false
+	ok = false
+	return
 }
 
-func (l *ArrayList[T]) Index(idx int) (interface{}, bool) {
+// Index fast to index. the feature of array list
+func (l *ArrayList[T]) Index(idx int) (result T, ok bool) {
 	var uidx uint = (uint)(idx)
 	if uidx < l.size {
 		return l.data[uidx+l.headidx+1], true
 	}
-	return nil, false
+	ok = false
+	return
 }
 
-func (l *ArrayList[T]) Remove(idx int) (result interface{}, isfound bool) {
+// Set like slice[idx] = value. the feature of array list
+func (l *ArrayList[T]) Set(idx int, value T) {
+	l.data[uint(idx)+l.headidx+1] = value
+}
+
+// Remove
+func (l *ArrayList[T]) Remove(idx int) (result T, ok bool) {
 
 	if idx < 0 {
-		return nil, false
+		ok = false
+		return
 	}
 
 	var uidx = (uint)(idx)
 	if uidx >= l.size {
-		return nil, false
+		ok = false
+		return
 	}
 
 	offset := l.headidx + 1 + uidx
 
-	isfound = true
+	ok = true
 	result = l.data[offset]
 	// l.data[offset] = nil // cleanup reference
 
@@ -238,9 +253,9 @@ func (l *ArrayList[T]) String() string {
 	return fmt.Sprintf("%v", l.Values())
 }
 
-func (l *ArrayList[T]) Traverse(every func(interface{}) bool) {
+func (l *ArrayList[T]) Traverse(every func(idx uint, value T) bool) {
 	for i := uint(0); i < l.size; i++ {
-		if !every(l.data[i+l.headidx+1]) {
+		if !every(i, l.data[i+l.headidx+1]) {
 			break
 		}
 	}

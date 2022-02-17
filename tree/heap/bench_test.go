@@ -8,7 +8,7 @@ import (
 )
 
 func BenchmarkPut(b *testing.B) {
-	tree := New(compare.CompareAny[int64])
+	tree := New(compare.Any[int64])
 	for i := 0; i < b.N; i++ {
 		v := rand.Int63()
 		tree.Put(v)

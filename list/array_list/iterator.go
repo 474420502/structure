@@ -6,7 +6,7 @@ type Iterator[T comparable] struct {
 	isInit bool
 }
 
-func (iter *Iterator[T]) Value() interface{} {
+func (iter *Iterator[T]) Value() T {
 	v, _ := iter.al.Index((int)(iter.cur))
 	return v
 }
@@ -63,7 +63,7 @@ type CircularIterator[T comparable] struct {
 	isInit bool
 }
 
-func (iter *CircularIterator[T]) Value() interface{} {
+func (iter *CircularIterator[T]) Value() T {
 	v, _ := iter.al.Index((int)(iter.cur))
 	return v
 }

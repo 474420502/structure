@@ -70,13 +70,15 @@ func TestCasePushPop(t *testing.T) {
 
 		// log.Println(gl.Back().Value, l.Back())
 		if gl.Len() != 0 {
-			if gl.Back().Value != l.Back() {
+			v, _ := l.Back()
+			if gl.Back().Value != v {
 				t.Error("list back error")
 			}
 		}
 
 		if gl.Len() != 0 {
-			if gl.Front().Value != l.Front() {
+			v, _ := l.Front()
+			if gl.Front().Value != v {
 				t.Error("list front error")
 			}
 		}

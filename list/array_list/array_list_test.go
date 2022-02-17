@@ -16,7 +16,7 @@ func TestIterator(t *testing.T) {
 
 	var result []int
 	for iter.Next() {
-		result = append(result, iter.Value().(int))
+		result = append(result, iter.Value())
 	}
 
 	if fmt.Sprintf("%v", result) != "[0 1 2 3 4]" {
@@ -26,7 +26,7 @@ func TestIterator(t *testing.T) {
 	iter = l.Iterator()
 	result = nil
 	for iter.Prev() {
-		result = append(result, iter.Value().(int))
+		result = append(result, iter.Value())
 	}
 
 	if fmt.Sprintf("%v", result) != "[4 3 2 1 0]" {
@@ -37,7 +37,7 @@ func TestIterator(t *testing.T) {
 	result = nil
 	for i := 0; i < 11; i++ {
 		if citer.Next() {
-			result = append(result, citer.Value().(int))
+			result = append(result, citer.Value())
 		}
 	}
 
@@ -53,7 +53,7 @@ func TestIterator(t *testing.T) {
 	result = nil
 	for i := 0; i < 11; i++ {
 		if citer.Prev() {
-			result = append(result, citer.Value().(int))
+			result = append(result, citer.Value())
 		}
 	}
 
@@ -171,6 +171,7 @@ func TestRemove(t *testing.T) {
 	}
 
 	var result string
+	var ok bool
 
 	for _, selval := range []uint{4, 3} {
 		last, _ := l.Index((int)(selval))
@@ -198,8 +199,8 @@ func TestRemove(t *testing.T) {
 		t.Error(v)
 	}
 
-	v, _ = l.Remove(1)
-	if v != nil && l.Size() != 1 {
+	v, ok = l.Remove(1)
+	if ok && l.Size() != 1 {
 		t.Error(v)
 	}
 
@@ -216,9 +217,9 @@ func TestTraversal(t *testing.T) {
 		l.PushFront(uint(i))
 	}
 
-	var result []interface{}
+	var result []uint
 
-	l.Traverse(func(v interface{}) bool {
+	l.Traverse(func(i uint, v uint) bool {
 		result = append(result, v)
 		return true
 	})
@@ -229,7 +230,7 @@ func TestTraversal(t *testing.T) {
 
 	l.PushBack(7, 8)
 	result = nil
-	l.Traverse(func(v interface{}) bool {
+	l.Traverse(func(i uint, v uint) bool {
 		result = append(result, v)
 		return true
 	})

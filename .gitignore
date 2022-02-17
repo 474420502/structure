@@ -28,3 +28,4 @@
 
 *.log
 screenlog.*
+__debug_bin

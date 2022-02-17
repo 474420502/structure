@@ -108,138 +108,6 @@ func TestPopBack(t *testing.T) {
 
 }
 
-func TestInsert2(t *testing.T) {
-	l := New[int]()
-
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.PushFront(0, i)
-	}
-
-	// step1: [0 0] -> step2: [1 0 0 0] front
-	if l.String() != "[4 0 3 0 2 0 1 0 0 0]" {
-		t.Error(l.String())
-	}
-
-	if !l.Insert(l.Size(), 5) {
-		t.Error("should be true")
-	}
-
-	// step1: [0 0] -> step2: [4 0 3 0 2 0 1 0 0 0] front size is 10, but you can insert 11. equal to PushBack [4 0 3 0 2 0 1 0 0 0 5]
-	if l.String() != "[4 0 3 0 2 0 1 0 0 0 5]" {
-		t.Error(l.String())
-	}
-}
-
-func TestInsert1(t *testing.T) {
-	l1 := New[int]()
-	l2 := New[int]()
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l1.Insert(0, i)
-		l2.PushFront(i)
-	}
-
-	var result1, result2 string
-	result1 = fmt.Sprintf("%v", l1.Values())
-	result2 = fmt.Sprintf("%v", l2.Values())
-	if result1 != result2 {
-		t.Error(result1, result2)
-	}
-
-	for i := 0; i < 5; i++ {
-		l1.Insert(l1.Size(), i)
-		l2.PushBack(i)
-		// t.Error(l1.Values(), l2.Values())
-	}
-
-	result1 = fmt.Sprintf("%v", l1.Values())
-	result2 = fmt.Sprintf("%v", l2.Values())
-	if result1 != result2 {
-		t.Error(result1, result2)
-	}
-
-	if result1 != "[4 3 2 1 0 0 1 2 3 4]" {
-		t.Error("result should be [4 3 2 1 0 0 1 2 3 4]\n but result is", result1)
-	}
-
-	l1.Insert(1, 99)
-	result1 = fmt.Sprintf("%v", l1.Values())
-	if result1 != "[4 99 3 2 1 0 0 1 2 3 4]" {
-		t.Error("[4 3 2 1 0 0 1 2 3 4] insert with index 1, should be [4 99 3 2 1 0 0 1 2 3 4]\n but result is", result1)
-	}
-
-	l1.Insert(9, 99)
-	result1 = fmt.Sprintf("%v", l1.Values())
-	if result1 != "[4 99 3 2 1 0 0 1 2 99 3 4]" {
-		t.Error("[4 99 3 2 1 0 0 1 2 3 4] insert with index 9, should be [4 99 3 2 1 0 0 1 2 99 3 4]\n but result is", result1)
-	}
-
-	l1.Insert(12, 99)
-	result1 = fmt.Sprintf("%v", l1.Values())
-	if result1 != "[4 99 3 2 1 0 0 1 2 99 3 4 99]" {
-		t.Error("[4 99 3 2 1 0 0 1 2 99 3 4] insert with index 12, should be [4 99 3 2 1 0 0 1 2 99 3 4 99]\n but result is", result1)
-	}
-}
-
-func TestInsertIf(t *testing.T) {
-	l := New[int]()
-
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.Insert(0, i)
-	}
-
-	// "[4 3 2 1 0]" 插入两个11
-	for i := 0; i < 2; i++ {
-		l.InsertIf(func(idx uint, value int) InsertState {
-			if value == 3 {
-				return InsertFront
-			}
-			return UninsertAndContinue
-		}, 11)
-	}
-
-	var result string
-
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[4 3 11 11 2 1 0]" {
-		t.Error("result should be [4 3 11 11 2 1 0], reuslt is", result)
-	}
-
-	// "[4 3 2 1 0]"
-	for i := 0; i < 2; i++ {
-		l.InsertIf(func(idx uint, value int) InsertState {
-			if value == 0 {
-				return InsertBack
-			}
-			return UninsertAndContinue
-		}, 11)
-	}
-
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[4 3 11 11 2 1 11 11 0]" {
-		t.Error("result should be [4 3 11 11 2 1 11 11 0], reuslt is", result)
-	}
-
-	// "[4 3 2 1 0]"
-	for i := 0; i < 2; i++ {
-		l.InsertIf(func(idx uint, value int) InsertState {
-			if value == 0 {
-				return InsertFront
-			}
-			return UninsertAndContinue
-		}, 11)
-	}
-
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[4 3 11 11 2 1 11 11 0 11 11]" {
-		t.Error("result should be [4 3 11 11 2 1 11 11 0 11 11], reuslt is", result)
-	}
-
-	// t.Error(l.Values())
-}
-
 func TestIndex(t *testing.T) {
 	l := New[int]()
 	// "[4 3 2 1 0]"
@@ -611,7 +479,13 @@ func TestForce(t *testing.T) {
 			if rand.Bool() {
 				idx := uint(rand.Intn(int(l.Size())))
 				v := rand.Intn(1000)
-				l.Insert(idx, v)
+
+				iter := l.Iterator()
+				for i := 0; i <= int(idx); i++ {
+					iter.Next()
+				}
+				iter.InsertFront(v)
+
 				var i = uint(0)
 				l.Traverse(func(value int) bool {
 					if i == idx {
@@ -635,7 +509,7 @@ func TestForce(t *testing.T) {
 		l.Traverse(func(value int) bool {
 			if i == idx {
 				if value != v {
-					panic("")
+					panic(l.String())
 				}
 			}
 			i++
@@ -662,6 +536,88 @@ func TestForce(t *testing.T) {
 
 		l.Clear()
 	}
+}
+
+func TestIteratorInsert(t *testing.T) {
+
+	l := New[int]()
+	l.Push(1)
+
+	iter := l.Iterator()
+	iter.Next() // next to 1
+
+	iter.InsertFront(2, 3, 5)
+
+	// log.Println(l.String(), iter.Value()) // [2 3 5 1] 1
+	if l.String() != "[2 3 5 1]" && iter.Value() != 1 {
+		t.Error("InsertFront error")
+	}
+
+	iter.InsertBack(20, 30, 50)
+
+	// log.Println(l.String(), iter.Value()) // [2 3 5 1 20 30 50] 1
+	if l.String() != "[2 3 5 1 20 30 50]" && iter.Value() != 1 {
+		t.Error("InsertBack error")
+	}
+
+	iter.Next()
+	// log.Println(iter.Value())
+	if iter.Value() != 20 {
+		t.Error("")
+	}
+
+	iter.Prev()
+	iter.Prev()
+	if iter.Value() != 5 {
+		t.Error("")
+	}
+
+}
+
+func TestIteratorRemove(t *testing.T) {
+	l := New[int]()
+	// "[4 3 2 1 0]"
+	for i := 0; i < 5; i++ {
+		l.PushFront(i)
+	}
+
+	iter := l.Iterator()
+
+	l.Remove(0)
+	var result string
+	result = fmt.Sprintf("%v", l.Values())
+	if result != "[3 2 1 0]" {
+		t.Error("should be [3 2 1 0] but result is", result)
+	}
+
+	l.Remove(3)
+	result = fmt.Sprintf("%v", l.Values())
+	if result != "[3 2 1]" {
+		t.Error("should be [3 2 1] but result is", result)
+	}
+
+	l.Remove(2)
+	result = fmt.Sprintf("%v", l.Values())
+	if result != "[3 2]" {
+		t.Error("should be [3 2 1] but result is", result)
+	}
+
+	l.Remove(1)
+	result = fmt.Sprintf("%v", l.Values())
+	if result != "[3]" {
+		t.Error("should be [3 2 1] but result is", result)
+	}
+
+	l.Remove(0)
+	result = fmt.Sprintf("%v", l.Values())
+	if result != "[]" && l.Size() == 0 && len(l.Values()) == 0 {
+		t.Error("should be [] but result is", result, "Size is", l.Size())
+	}
+
+	if _, rvalue := l.Remove(3); rvalue != false {
+		t.Error("l is empty")
+	}
+
 }
 
 // func BenchmarkPushBack(b *testing.B) {

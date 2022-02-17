@@ -13,7 +13,7 @@ import (
 )
 
 func TestIteratorRange(t *testing.T) {
-	tree := New(compare.CompareBytes[[]byte])
+	tree := New(compare.BytesAny[[]byte])
 	for _, v := range testutils.TestedBytesSimlpe {
 		tree.Put(v, v)
 	}
@@ -87,7 +87,7 @@ func TestIteratorRangeForce(t *testing.T) {
 
 	for n := 0; n < 1000; n++ {
 
-		tree := New(compare.CompareBytes[[]byte])
+		tree := New(compare.BytesAny[[]byte])
 		var result [][]byte
 		var start, end []byte
 		for i := 0; i < 10; i++ {
@@ -303,7 +303,7 @@ func TestIteratorRangeForce2(t *testing.T) {
 
 	for n := 0; n < 1000; n++ {
 
-		tree := New(compare.CompareBytes[[]byte])
+		tree := New(compare.BytesAny[[]byte])
 		var result [][]byte
 		var start, end []byte
 		for i := 0; i < 10; i++ {
