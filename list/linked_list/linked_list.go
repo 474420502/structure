@@ -106,7 +106,7 @@ func (l *LinkedList[T]) PushBack(values ...T) {
 	}
 }
 
-func (l *LinkedList[T]) PopFront() (result interface{}, found bool) {
+func (l *LinkedList[T]) PopFront() (result T, found bool) {
 	if l.size != 0 {
 		l.size--
 
@@ -119,10 +119,11 @@ func (l *LinkedList[T]) PopFront() (result interface{}, found bool) {
 		found = true
 		return
 	}
-	return nil, false
+	found = false
+	return
 }
 
-func (l *LinkedList[T]) PopBack() (result interface{}, found bool) {
+func (l *LinkedList[T]) PopBack() (result T, found bool) {
 	if l.size != 0 {
 		l.size--
 
@@ -135,32 +136,37 @@ func (l *LinkedList[T]) PopBack() (result interface{}, found bool) {
 		found = true
 		return
 	}
-	return nil, false
+	found = false
+	return
 }
 
-func (l *LinkedList[T]) Front() (result interface{}, found bool) {
+func (l *LinkedList[T]) Front() (result T, found bool) {
 	if l.size != 0 {
 		return l.head.next.value, true
 	}
-	return nil, false
+	found = false
+	return
 }
 
-func (l *LinkedList[T]) Back() (result interface{}, found bool) {
+func (l *LinkedList[T]) Back() (result T, found bool) {
 	if l.size != 0 {
 		return l.tail.prev.value, true
 	}
-	return nil, false
+	found = false
+	return
 }
 
-func (l *LinkedList[T]) Index(idx int) (interface{}, bool) {
+func (l *LinkedList[T]) Index(idx int) (result T, ok bool) {
 
 	if idx < 0 {
-		return nil, false
+		ok = false
+		return
 	}
 	var uidx = (uint)(idx)
 
 	if uidx >= l.size || idx < 0 {
-		return nil, false
+		ok = false
+		return
 	}
 
 	if uidx > l.size/2 {
@@ -183,150 +189,8 @@ func (l *LinkedList[T]) Index(idx int) (interface{}, bool) {
 		}
 	}
 
-	return nil, false
-}
-
-func (l *LinkedList[T]) Insert(idx uint, values ...T) bool {
-	if idx > l.size { // 插入的方式 可能导致size的范围判断不一样
-		return false
-	}
-
-	if idx > l.size/2 {
-		idx = l.size - idx
-		// 尾部
-		for cur := l.tail.prev; cur != nil; cur = cur.prev {
-
-			if idx == 0 {
-
-				var start *Node[T]
-				var end *Node[T]
-
-				start = &Node[T]{value: values[0]}
-				end = start
-
-				for _, value := range values[1:] {
-					node := &Node[T]{value: value}
-					end.next = node
-					node.prev = end
-					end = node
-				}
-
-				cnext := cur.next
-
-				cur.next = start
-				start.prev = cur
-
-				end.next = cnext
-				cnext.prev = end
-
-				break
-			}
-
-			idx--
-		}
-
-	} else {
-		// 头部
-		for cur := l.head.next; cur != nil; cur = cur.next {
-			if idx == 0 {
-
-				var start *Node[T]
-				var end *Node[T]
-
-				start = &Node[T]{value: values[0]}
-				end = start
-
-				for _, value := range values[1:] {
-					node := &Node[T]{value: value}
-					end.next = node
-					node.prev = end
-					end = node
-				}
-
-				cprev := cur.prev
-
-				cprev.next = start
-				start.prev = cprev
-
-				end.next = cur
-				cur.prev = end
-
-				break
-			}
-
-			idx--
-		}
-	}
-
-	l.size += uint(len(values))
-	return true
-}
-
-// InsertState InsertIf的every函数的枚举  从左到右 1 为前 2 为后 insert here(2) ->cur-> insert here(1)
-// UninsertAndContinue 不插入并且继续
-// UninsertAndBreak 不插入并且停止
-// InsertBack cur后插入并且停止
-// InsertFront cur前插入并且停止
-type InsertState int
-
-const (
-	// UninsertAndContinue 不插入并且继续
-	UninsertAndContinue InsertState = 0
-	// UninsertAndBreak 不插入并且停止
-	UninsertAndBreak InsertState = -1
-	// InsertBack cur后插入并且停止
-	InsertBack InsertState = 2
-	// InsertFront cur前插入并且停止
-	InsertFront InsertState = 1
-)
-
-// InsertIf  every函数的枚举  从左到右遍历 1 为前 2 为后 insert here(2) ->cur-> insert here(1)
-func (l *LinkedList[T]) InsertIf(every func(idx uint, value T) InsertState, values ...T) {
-
-	idx := uint(0)
-	// 头部
-	for cur := l.head.next; cur != nil; cur = cur.next {
-		insertState := every(idx, cur.value)
-
-		if insertState == UninsertAndContinue {
-			continue
-		}
-
-		if insertState > 0 { // 1 为前 2 为后 insert here(2) ->cur-> insert here(1)
-			var start *Node[T]
-			var end *Node[T]
-
-			start = &Node[T]{value: values[0]}
-			end = start
-
-			for _, value := range values[1:] {
-				node := &Node[T]{value: value}
-				end.next = node
-				node.prev = end
-				end = node
-			}
-
-			if insertState == InsertBack {
-				cprev := cur.prev
-				cprev.next = start
-				start.prev = cprev
-				end.next = cur
-				cur.prev = end
-			} else { // InsertFront
-				cnext := cur.next
-				cnext.prev = end
-				start.prev = cur
-				cur.next = start
-				end.next = cnext
-			}
-
-			l.size += uint(len(values))
-			return
-		}
-
-		// 必然 等于 UninsertAndBreak
-		return
-	}
+	ok = false
+	return
 }
 
 func remove[T comparable](cur *Node[T]) {
@@ -338,16 +202,18 @@ func remove[T comparable](cur *Node[T]) {
 	cur.next = nil
 }
 
-func (l *LinkedList[T]) Remove(idx int) (interface{}, bool) {
+func (l *LinkedList[T]) Remove(idx int) (result T, ok bool) {
 
 	if idx < 0 {
-		return nil, false
+		ok = false
+		return
 	}
 
 	var uidx uint = (uint)(idx)
 	if l.size <= uidx {
 		// log.Printf("out of list range, size is %d, idx is %d\n", l.size, idx)
-		return nil, false
+		ok = false
+		return
 	}
 
 	l.size--
@@ -396,7 +262,7 @@ const (
 )
 
 // RemoveIf every的遍历函数操作remove过程 如果没删除result 返回nil, isRemoved = false
-func (l *LinkedList[T]) RemoveIf(every func(idx uint, value T) RemoveState) (result []interface{}, isRemoved bool) {
+func (l *LinkedList[T]) RemoveIf(every func(idx uint, value T) RemoveState) (result []T, isRemoved bool) {
 	// 头部
 	idx := uint(0)
 TOPFOR:
@@ -429,6 +295,7 @@ TOPFOR:
 	return
 }
 
+// Contains is the T  in list?
 func (l *LinkedList[T]) Contains(values ...T) bool {
 
 	for _, searchValue := range values {
@@ -447,7 +314,8 @@ func (l *LinkedList[T]) Contains(values ...T) bool {
 	return true
 }
 
-func (l *LinkedList[T]) Values() (result []interface{}) {
+// Values get the values of list
+func (l *LinkedList[T]) Values() (result []T) {
 	l.Traverse(func(value T) bool {
 		result = append(result, value)
 		return true
@@ -455,10 +323,12 @@ func (l *LinkedList[T]) Values() (result []interface{}) {
 	return
 }
 
+// String fmt.Sprintf("%v", l.Values())
 func (l *LinkedList[T]) String() string {
 	return fmt.Sprintf("%v", l.Values())
 }
 
+// Traverse from the list of head to the tail. iterator can do it also.
 func (l *LinkedList[T]) Traverse(every func(value T) bool) {
 	for cur := l.head.next; cur != l.tail; cur = cur.next {
 		if !every(cur.value) {

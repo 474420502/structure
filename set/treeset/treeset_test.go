@@ -27,7 +27,7 @@ func TestTreeSet_Add(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New(compare.CompareAny[int])
+			set := New(compare.Any[int])
 			set.Sets(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
@@ -52,7 +52,7 @@ func TestTreeSet_Add(t *testing.T) {
 	}
 	for _, tt := range tests2 {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New(compare.CompareBytes[string])
+			set := New(compare.BytesAny[string])
 			set.Sets(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
@@ -95,7 +95,7 @@ func TestTreeSet_Remove(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New(compare.CompareAny[int])
+			set := New(compare.Any[int])
 			set.Sets(tt.args.addItems...)
 			set.Remove(tt.args.removeItems...)
 
@@ -107,7 +107,7 @@ func TestTreeSet_Remove(t *testing.T) {
 }
 
 func TestTreeSet_Iterator(t *testing.T) {
-	set := New(compare.CompareAny[int])
+	set := New(compare.Any[int])
 	set.Sets(5, 4, 3, 5)
 
 	iter := set.Iterator()
@@ -169,7 +169,7 @@ func TestForce(t *testing.T) {
 	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
-		set := New(compare.CompareAny[int])
+		set := New(compare.Any[int])
 		var hashset map[int]bool = make(map[int]bool)
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)

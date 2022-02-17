@@ -33,7 +33,7 @@ func (s *dSlice[T]) SetValue(v interface{}) {
 
 func TestCase1(t *testing.T) {
 	rand := random.New(t.Name())
-	q := New(compare.CompareAny[int])
+	q := New(compare.Any[int])
 
 	for i := 0; i < 20; i++ {
 		v := rand.Intn(10)
@@ -49,7 +49,7 @@ func TestCase1(t *testing.T) {
 func TestExtractForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		queue := New(compare.CompareAny[int])
+		queue := New(compare.Any[int])
 		var priority []*dSlice[float64]
 		var offset = 0.00001
 		for i := 0; i < 200; i++ {
@@ -110,7 +110,7 @@ func TestExtractForce(t *testing.T) {
 func TestExtractIndexForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		queue := New(compare.CompareAny[int])
+		queue := New(compare.Any[int])
 		var priority []*dSlice[float64]
 		var offset = 0.00001
 		for i := 0; i < 200; i++ {
@@ -158,7 +158,7 @@ func TestExtractIndexForce(t *testing.T) {
 func TestRemoveForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		queue := New(compare.CompareAny[int])
+		queue := New(compare.Any[int])
 		var priority []*dSlice[float64]
 		var offset = 0.00001
 		for i := 0; i < 40; i++ {
@@ -245,7 +245,7 @@ func TestRemoveForce(t *testing.T) {
 func TestRemoveRangeForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		queue := New(compare.CompareAny[int])
+		queue := New(compare.Any[int])
 		var priority []*dSlice[float64]
 		var offset = 0.00001
 		for i := 0; i < 20; i++ {
@@ -307,7 +307,7 @@ func TestRemoveRangeForce(t *testing.T) {
 func TestRemoveRangeByIndexForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		queue := New(compare.CompareAny[int])
+		queue := New(compare.Any[int])
 		var priority []*dSlice[float64]
 		var offset = 0.00001
 		for i := 0; i < 20; i++ {
@@ -361,7 +361,7 @@ func TestRemoveRangeByIndexForce(t *testing.T) {
 func TestPutGetsRemoveIndexForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		queue := New(compare.CompareAny[int])
+		queue := New(compare.Any[int])
 		var priority []*dSlice[float64]
 		var offset = 0.00001
 		for i := 0; i < 40; i++ {
@@ -424,7 +424,7 @@ func TestPutGetsRemoveIndexForce(t *testing.T) {
 func TestHeadTailForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		queue := New(compare.CompareAny[int])
+		queue := New(compare.Any[int])
 		var priority []*dSlice[float64]
 		var offset = 0.00001
 		for i := 0; i < 40; i++ {
@@ -483,7 +483,7 @@ func TestHeadTailForce(t *testing.T) {
 func TestForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		queue := New(compare.CompareAny[int])
+		queue := New(compare.Any[int])
 		var priority []*dSlice[float64]
 		var offset = 0.00001
 

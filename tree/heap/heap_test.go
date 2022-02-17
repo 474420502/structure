@@ -17,7 +17,7 @@ func TestHeapGrowSlimming(t *testing.T) {
 
 	for ii := 0; ii < 2000; ii++ {
 
-		h := New(compare.CompareAny[int])
+		h := New(compare.Any[int])
 		var results []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
@@ -65,7 +65,7 @@ func TestHeapGrowSlimming(t *testing.T) {
 }
 
 func TestHeapPushTopPop(t *testing.T) {
-	h := New(compare.CompareAny[int])
+	h := New(compare.Any[int])
 	l := []int{9, 5, 15, 2, 3}
 	ol := []int{15, 9, 5, 3, 2}
 	for _, v := range l {
@@ -128,8 +128,8 @@ func TestCase(t *testing.T) {
 	}
 
 	for n := 0; n < 10; n++ {
-		min := New(compare.CompareAny[int])
-		max := New(compare.CompareAnyDesc[int])
+		min := New(compare.Any[int])
+		max := New(compare.AnyDesc[int])
 
 		rand.Shuffle(len(source), func(i, j int) {
 			source[i], source[j] = source[j], source[i]
