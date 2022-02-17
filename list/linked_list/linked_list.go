@@ -38,7 +38,7 @@ func (l *LinkedList[T]) Iterator() *Iterator[T] {
 }
 
 func (l *LinkedList[T]) CircularIterator() *CircularIterator[T] {
-	return &CircularIterator[T]{pl: l, cur: l.head}
+	return &CircularIterator[T]{ll: l, cur: l.head}
 }
 
 func (l *LinkedList[T]) Clear() {
