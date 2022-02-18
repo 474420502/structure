@@ -2,8 +2,44 @@ package arraylist
 
 import (
 	"fmt"
+	"sort"
 	"testing"
+
+	"github.com/474420502/random"
+	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/tree/avl"
 )
+
+func BenchmarkCase1(b *testing.B) {
+	var result = sort.IntSlice{}
+	r := random.New()
+
+	for i := 0; i < b.N; i++ {
+		v := r.Int()
+		result = append(result, v)
+
+		result.Sort()
+		result.Search(v)
+		result.Search(v)
+		result.Search(v)
+		result.Search(v)
+
+		if result.Len() == 32 {
+			result = sort.IntSlice{}
+		}
+	}
+}
+
+func BenchmarkCase2(b *testing.B) {
+	// var result = sort.IntSlice{}
+	r := random.New()
+	tree := avl.New(compare.Any[int])
+	for i := 0; i < b.N; i++ {
+		v := r.Int()
+
+		tree.Put(v, v)
+	}
+}
 
 func TestIterator(t *testing.T) {
 	l := New[int]()
@@ -244,7 +280,7 @@ func TestRemain(t *testing.T) {
 	l := New[int]()
 	for i := 0; i < 10; i++ {
 		l.Push(i)
-		if !l.Contains(i) {
+		if l.Contains(i) == 0 {
 			t.Error("Contains", i)
 		}
 	}
