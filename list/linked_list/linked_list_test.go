@@ -145,188 +145,6 @@ func TestIndex(t *testing.T) {
 
 }
 
-func TestRemove(t *testing.T) {
-	l := New[int]()
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.PushFront(i)
-	}
-
-	l.Remove(0)
-	var result string
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2 1 0]" {
-		t.Error("should be [3 2 1 0] but result is", result)
-	}
-
-	l.Remove(3)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2 1]" {
-		t.Error("should be [3 2 1] but result is", result)
-	}
-
-	l.Remove(2)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2]" {
-		t.Error("should be [3 2 1] but result is", result)
-	}
-
-	l.Remove(1)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3]" {
-		t.Error("should be [3 2 1] but result is", result)
-	}
-
-	l.Remove(0)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[]" && l.Size() == 0 && len(l.Values()) == 0 {
-		t.Error("should be [] but result is", result, "Size is", l.Size())
-	}
-
-	if _, rvalue := l.Remove(3); rvalue != false {
-		t.Error("l is empty")
-	}
-
-}
-
-func TestRemoveIf(t *testing.T) {
-	l := New[int]()
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.PushFront(i)
-	}
-
-	if result, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
-		if value == 0 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	}); ok {
-		if result[0] != 0 {
-			t.Error("result should is", 0)
-		}
-	} else {
-		t.Error("should be ok")
-	}
-
-	if result, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
-		if value == 4 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	}); ok {
-		if result[0] != 4 {
-			t.Error("result should is", 4)
-		}
-	} else {
-		t.Error("should be ok")
-	}
-
-	var result string
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2 1]" {
-		t.Error("should be [3 2 1] but result is", result)
-	}
-
-	if result, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
-		if value == 4 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	}); ok {
-		t.Error("should not be ok and result is nil")
-	} else {
-		if result != nil {
-			t.Error("should be nil")
-		}
-	}
-
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2 1]" {
-		t.Error("should be [3 2 1] but result is", result)
-	}
-
-	l.RemoveIf(func(idx uint, value int) RemoveState {
-		if value == 3 || value == 2 || value == 1 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	})
-
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[]" {
-		t.Error("result should be [], but now result is", result)
-	}
-
-	if results, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
-		if value == 3 || value == 2 || value == 1 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	}); ok {
-		t.Error("why  ok")
-	} else {
-		if results != nil {
-			t.Error(results)
-		}
-	}
-
-}
-
-func TestRemoveIf2(t *testing.T) {
-	l := New[int]()
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.PushFront(i)
-	}
-
-	for i := 0; i < 5; i++ {
-		l.PushFront(i)
-	}
-
-	// 只删除一个
-	if result, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
-		if value == 0 {
-			return RemoveAndBreak
-		}
-		return UnremoveAndContinue
-	}); ok {
-		if result[0] != 0 {
-			t.Error("result should is", 0)
-		}
-	} else {
-		t.Error("should be ok")
-	}
-
-	var resultstr string
-	resultstr = fmt.Sprintf("%v", l.Values())
-	if resultstr != "[4 3 2 1 4 3 2 1 0]" {
-		t.Error("result should is", resultstr)
-	}
-
-	// 只删除多个
-	if result, ok := l.RemoveIf(func(idx uint, value int) RemoveState {
-		if value == 4 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	}); ok {
-
-		resultstr = fmt.Sprintf("%v", result)
-		if resultstr != "[4 4]" {
-			t.Error("result should is", result)
-		}
-
-		resultstr = fmt.Sprintf("%v", l.Values())
-		if resultstr != "[3 2 1 3 2 1 0]" {
-			t.Error("result should is", resultstr)
-		}
-
-	} else {
-		t.Error("should be ok")
-	}
-}
-
 func TestTraversal(t *testing.T) {
 	l := New[uint]()
 	for i := 0; i < 5; i++ {
@@ -379,6 +197,24 @@ func TestIterator(t *testing.T) {
 			t.Error("iter.Prev() ", iter.Value(), "is not equal ", i)
 		}
 	}
+
+	iter.ToTail()
+	if iter.Next() == true {
+		t.Error(iter.Value())
+	}
+
+	if iter.ll.tail != iter.cur {
+		t.Error(iter.Value())
+	}
+
+	iter.ToHead()
+	if iter.Prev() == true {
+		t.Error(iter.Value())
+	}
+
+	if iter.ll.head != iter.cur {
+		t.Error(iter.Value())
+	}
 }
 
 func TestCircularIterator(t *testing.T) {
@@ -423,6 +259,18 @@ func TestCircularIterator(t *testing.T) {
 			t.Error("iter.Value() != ", iter.Value())
 		}
 	}
+
+	iter.ToTail()
+	iter.Next()
+	if iter.Value() != 9 {
+		t.Error()
+	}
+
+	iter.ToHead()
+	iter.Prev()
+	if iter.Value() != 0 {
+		t.Error()
+	}
 }
 
 func TestContains(t *testing.T) {
@@ -432,13 +280,13 @@ func TestContains(t *testing.T) {
 	}
 
 	for i := 0; i < 10; i++ {
-		if !ll.Contains(i) {
+		if ll.Contains(i) == 0 {
 			t.Error(i)
 		}
 	}
 
 	for i := 10; i < 20; i++ {
-		if ll.Contains(i) {
+		if ll.Contains(i) > 0 {
 			t.Error(i)
 		}
 	}
@@ -574,6 +422,42 @@ func TestIteratorInsert(t *testing.T) {
 
 }
 
+func TestCircularIteratorInsert(t *testing.T) {
+
+	l := New[int]()
+	l.Push(1)
+
+	iter := l.CircularIterator()
+	iter.Next() // next to 1
+
+	iter.InsertFront(2, 3, 5)
+
+	// log.Println(l.String(), iter.Value()) // [2 3 5 1] 1
+	if l.String() != "[2 3 5 1]" && iter.Value() != 1 {
+		t.Error("InsertFront error")
+	}
+
+	iter.InsertBack(20, 30, 50)
+
+	// log.Println(l.String(), iter.Value()) // [2 3 5 1 20 30 50] 1
+	if l.String() != "[2 3 5 1 20 30 50]" && iter.Value() != 1 {
+		t.Error("InsertBack error")
+	}
+
+	iter.Next()
+	// log.Println(iter.Value())
+	if iter.Value() != 20 {
+		t.Error("")
+	}
+
+	iter.Prev()
+	iter.Prev()
+	if iter.Value() != 5 {
+		t.Error("")
+	}
+
+}
+
 func TestIteratorRemove(t *testing.T) {
 	l := New[int]()
 	// "[4 3 2 1 0]"
@@ -622,6 +506,56 @@ func TestIteratorRemove(t *testing.T) {
 
 	if l.String() != "[]" || iter.Value() != 0 { // default int == 0
 		t.Error(l.String(), iter.Value())
+	}
+
+	// log.Println(l.String(), l.Size())
+}
+
+func TestCircularIteratorIteratorRemove(t *testing.T) {
+	l := New[int]()
+	// "[4 3 2 1 0]"
+	for i := 0; i < 5; i++ {
+		l.PushFront(i)
+	}
+
+	iter := l.CircularIterator()
+	iter.Move(2)
+	iter.RemoveToNext()
+
+	// log.Println(l.String(), iter.Value()) // Head -> 4 -> 3(Remove) and Cur to 2  "[4 2 1 0]" 2
+	if l.String() != "[4 2 1 0]" || iter.Value() != 2 {
+		t.Error(l.String(), iter.Value())
+	}
+
+	iter.Move(-1) // 4
+	// log.Println(l.String(), iter.Value())
+	iter.RemoveToPrev() // Head
+	iter.Move(3)        // 1
+
+	if l.String() != "[2 1 0]" || iter.Value() != 0 {
+		t.Error(l.String(), iter.Value())
+	}
+
+	var result []string = []string{"[2 1]", "[1]", "[]"}
+	for i := 0; iter.RemoveToNext(); i++ {
+
+		if l.String() != result[i] {
+			t.Error(l.String())
+		}
+	}
+
+	for i := 0; i < 5; i++ {
+		l.PushFront(i)
+	}
+
+	iter.Move(10) // "[4 3 2 1 0]" cur:0
+
+	result = []string{"[3 2 1 0]", "[3 2 1]", "[3 2]", "[3]", "[]"}
+	for i := 0; iter.RemoveToPrev(); i++ { // can not remove tail or head
+
+		if l.String() != result[i] {
+			t.Error(l.String())
+		}
 	}
 
 	// log.Println(l.String(), l.Size())

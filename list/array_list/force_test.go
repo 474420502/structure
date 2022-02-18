@@ -126,7 +126,7 @@ func TestCaseContains(t *testing.T) {
 			temp[v] = true
 		}
 		for v := range temp {
-			if !l.Contains(v) {
+			if l.Contains(v) == 0 {
 				t.Error("?")
 			}
 		}

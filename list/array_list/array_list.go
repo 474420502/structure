@@ -226,21 +226,17 @@ func (l *ArrayList[T]) Remove(idx int) (result T, ok bool) {
 	return
 }
 
-func (l *ArrayList[T]) Contains(values ...T) bool {
+func (l *ArrayList[T]) Contains(values ...T) (count int) {
 
-	for _, searchValue := range values {
-		found := false
-		for _, element := range l.data[l.headidx+1 : l.tailidx] {
+	for _, element := range l.data[l.headidx+1 : l.tailidx] {
+		for _, searchValue := range values {
 			if element == searchValue {
-				found = true
-				break
+				count++
 			}
 		}
-		if !found {
-			return false
-		}
 	}
-	return true
+
+	return
 }
 
 func (l *ArrayList[T]) Values() []T {

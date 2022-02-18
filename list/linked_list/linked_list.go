@@ -10,9 +10,9 @@ type Node[T comparable] struct {
 	value T
 }
 
-func (node *Node[T]) Value() T {
-	return node.value
-}
+// func (node *Node[T]) Value() T {
+// 	return node.value
+// }
 
 type LinkedList[T comparable] struct {
 	head *Node[T]
@@ -156,6 +156,7 @@ func (l *LinkedList[T]) Back() (result T, found bool) {
 	return
 }
 
+// Index slowly. is a list. need to move with idx step
 func (l *LinkedList[T]) Index(idx int) (result T, ok bool) {
 
 	if idx < 0 {
@@ -202,116 +203,17 @@ func remove[T comparable](cur *Node[T]) {
 	cur.next = nil
 }
 
-func (l *LinkedList[T]) Remove(idx int) (result T, ok bool) {
+// Contains is the []T  in list?
+func (l *LinkedList[T]) Contains(values ...T) (count int) {
 
-	if idx < 0 {
-		ok = false
-		return
-	}
-
-	var uidx uint = (uint)(idx)
-	if l.size <= uidx {
-		// log.Printf("out of list range, size is %d, idx is %d\n", l.size, idx)
-		ok = false
-		return
-	}
-
-	l.size--
-	if uidx > l.size/2 {
-		uidx = l.size - uidx // l.size - 1 - idx,  先减size
-		// 尾部
-		for cur := l.tail.prev; cur != l.head; cur = cur.prev {
-			if uidx == 0 {
-				remove(cur)
-				return cur.value, true
+	for cur := l.head.next; cur != l.tail; cur = cur.next {
+		for _, searchValue := range values {
+			if cur.value == searchValue {
+				count++
 			}
-			uidx--
 		}
-
-	} else {
-		// 头部
-		for cur := l.head.next; cur != l.tail; cur = cur.next {
-			if uidx == 0 {
-				remove(cur)
-				return cur.value, true
-
-			}
-			uidx--
-		}
-	}
-
-	panic(fmt.Errorf("unknown error"))
-}
-
-// RemoveState RemoveIf的every函数的枚举
-// RemoveAndContinue 删除并且继续
-// RemoveAndBreak 删除并且停止
-// UnremoveAndBreak 不删除并且停止遍历
-// UnremoveAndContinue 不删除并且继续遍历
-type RemoveState int
-
-const (
-	// RemoveAndContinue 删除并且继续
-	RemoveAndContinue RemoveState = iota
-	// RemoveAndBreak 删除并且停止
-	RemoveAndBreak
-	// UnremoveAndBreak 不删除并且停止遍历
-	UnremoveAndBreak
-	// UnremoveAndContinue 不删除并且继续遍历
-	UnremoveAndContinue
-)
-
-// RemoveIf every的遍历函数操作remove过程 如果没删除result 返回nil, isRemoved = false
-func (l *LinkedList[T]) RemoveIf(every func(idx uint, value T) RemoveState) (result []T, isRemoved bool) {
-	// 头部
-	idx := uint(0)
-TOPFOR:
-	for cur := l.head.next; cur != l.tail; idx++ {
-		removeState := every(idx, cur.value)
-		switch removeState {
-		case RemoveAndContinue:
-			result = append(result, cur.value)
-			isRemoved = true
-			temp := cur.next
-			remove(cur)
-			cur = temp
-			l.size--
-			continue TOPFOR
-		case RemoveAndBreak:
-			result = append(result, cur.value)
-			isRemoved = true
-			temp := cur.next
-			remove(cur)
-			cur = temp
-			l.size--
-			return
-		case UnremoveAndContinue:
-		case UnremoveAndBreak:
-			return
-		}
-
-		cur = cur.next
 	}
 	return
-}
-
-// Contains is the T  in list?
-func (l *LinkedList[T]) Contains(values ...T) bool {
-
-	for _, searchValue := range values {
-		found := false
-		for cur := l.head.next; cur != l.tail; cur = cur.next {
-			if cur.value == searchValue {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return false
-		}
-	}
-	return true
 }
 
 // Values get the values of list
