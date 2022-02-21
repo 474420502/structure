@@ -28,7 +28,7 @@ func TestCasePushRemove(t *testing.T) {
 
 		iter := l.Iterator()
 		var idx = 0
-		for iter.Next() {
+		for ; iter.Vaild(); iter.Next() {
 			if iter.Value() != carray[idx] {
 				log.Println(idx, carray, len(carray), l.String(), l.Size())
 				log.Panic("存在错误", iter.Value(), carray[idx])
@@ -154,7 +154,6 @@ func TestCaseCircularIterator(t *testing.T) {
 
 		gcur := gl.Front()
 		cur := l.CircularIterator()
-		cur.Next()
 		for gcur != nil {
 			if gcur.Value != cur.Value() {
 				t.Error("?")

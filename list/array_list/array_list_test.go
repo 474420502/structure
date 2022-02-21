@@ -51,7 +51,7 @@ func TestIterator(t *testing.T) {
 	iter := l.Iterator()
 
 	var result []int
-	for iter.Next() {
+	for ; iter.Vaild(); iter.Next() {
 		result = append(result, iter.Value())
 	}
 
@@ -61,7 +61,8 @@ func TestIterator(t *testing.T) {
 
 	iter = l.Iterator()
 	result = nil
-	for iter.Prev() {
+	iter.ToTail()
+	for ; iter.Vaild(); iter.Prev() {
 		result = append(result, iter.Value())
 	}
 
@@ -70,29 +71,26 @@ func TestIterator(t *testing.T) {
 	}
 
 	iter.ToTail()
-	for {
+	for ; iter.Vaild(); iter.Prev() {
 		iter.SetValue(iter.Value() + 1)
-		if !iter.Prev() {
-			break
-		}
 	}
 
-	for {
+	iter.ToHead()
+	for ; iter.Vaild(); iter.Next() {
 		iter.SetValue(iter.Value() - 1)
-		if !iter.Next() {
-			break
-		}
 	}
 
 	if fmt.Sprintf("%v", result) != "[4 3 2 1 0]" {
 		t.Error(result)
 	}
 
-	citer := l.CircularIterator()
+	citer := l.CircularIterator() // 4
+	// log.Println(l.String())
 	result = nil
 	for i := 0; i < 11; i++ {
-		if citer.Next() {
+		if citer.Vaild() {
 			result = append(result, citer.Value())
+			citer.Next()
 		}
 	}
 
@@ -107,8 +105,9 @@ func TestIterator(t *testing.T) {
 	citer = l.CircularIterator()
 	result = nil
 	for i := 0; i < 11; i++ {
-		if citer.Prev() {
+		if citer.Vaild() {
 			result = append(result, citer.Value())
+			citer.Prev()
 		}
 	}
 
@@ -116,7 +115,7 @@ func TestIterator(t *testing.T) {
 		t.Error("len(result) != 11, is ", len(result))
 	}
 
-	if fmt.Sprintf("%v", result) != "[4 3 2 1 0 4 3 2 1 0 4]" {
+	if fmt.Sprintf("%v", result) != "[0 4 3 2 1 0 4 3 2 1 0]" {
 		t.Error(result)
 	}
 }

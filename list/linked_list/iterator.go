@@ -5,12 +5,8 @@ type Iterator[T comparable] struct {
 	cur *Node[T]
 }
 
-// InsertFront insert T before the iterator.
+// InsertFront insert T before the iterator. must iter.Vaild() == true
 func (iter *Iterator[T]) InsertFront(values ...T) {
-
-	if iter.cur == iter.ll.head {
-		panic("iterator is over head")
-	}
 
 	var start *Node[T]
 	var end *Node[T]
@@ -36,12 +32,8 @@ func (iter *Iterator[T]) InsertFront(values ...T) {
 	iter.cur.prev = end
 }
 
-// InsertBack insert T after the iterator.
+// InsertBack insert T after the iterator.  must iter.Vaild() == true
 func (iter *Iterator[T]) InsertBack(values ...T) {
-
-	if iter.cur == iter.ll.tail {
-		panic("iterator is over tail")
-	}
 
 	var start *Node[T]
 	var end *Node[T]
@@ -67,99 +59,91 @@ func (iter *Iterator[T]) InsertBack(values ...T) {
 	cnext.prev = end
 }
 
-// RemoveToNext Remove self and to Next. If iterator is removed. return true.
-func (iter *Iterator[T]) RemoveToNext() (ok bool) {
-	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
-		return false
-	}
-
+// RemoveToNext Remove self and to Next. If iterator is removed. return true.  must iter.Vaild() == true
+func (iter *Iterator[T]) RemoveToNext() {
 	temp := iter.cur.next
 	remove(iter.cur)
 	iter.cur = temp
 	iter.ll.size--
-
-	return true
 }
 
-// RemoveToNext Remove self and to Prev. If iterator is removed. return true.
-func (iter *Iterator[T]) RemoveToPrev() (ok bool) {
-	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
-		return false
-	}
-
+// RemoveToNext Remove self and to Prev. If iterator is removed. return true.  must iter.Vaild() == true
+func (iter *Iterator[T]) RemoveToPrev() {
 	temp := iter.cur.prev
 	remove(iter.cur)
 	iter.cur = temp
 	iter.ll.size--
-
-	return true
 }
 
+// Swap  must iter.Vaild() == true
 func (iter *Iterator[T]) Swap(other *Iterator[T]) {
 	iter.cur.value, other.cur.value = other.cur.value, iter.cur.value
 }
 
+//SetValue  must iter.Vaild() == true
 func (iter *Iterator[T]) SetValue(v T) {
 	iter.cur.value = v
 }
 
+// Value must iter.Vaild() == true
 func (iter *Iterator[T]) Value() T {
 	return iter.cur.value
 }
 
-// Move move next(prev[if step < 0]) by step
-func (iter *Iterator[T]) Move(step int) (isEnd bool) {
+// Vaild current is Vaild ?
+func (iter *Iterator[T]) Vaild() bool {
+	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
+		return false
+	}
+	return true
+}
+
+// Move move next(prev[if step < 0]) by step. must iter.Vaild() == true
+func (iter *Iterator[T]) Move(step int) {
 
 	if step > 0 {
-
 		if iter.cur == iter.ll.tail {
-			return true
+			return
 		}
 
 		for i := 0; i < step; i++ {
 			iter.cur = iter.cur.next
 			if iter.cur == iter.ll.tail {
-				return true
+				return
 			}
 		}
 	} else {
 		if iter.cur == iter.ll.head {
-			return true
+			return
 		}
 
 		for i := 0; i < -step; i++ {
 			iter.cur = iter.cur.prev
 			if iter.cur == iter.ll.head {
-				return true
+				return
 			}
 		}
 	}
 
-	return false
+	return
 }
 
-func (iter *Iterator[T]) Prev() bool {
-	if iter.cur == iter.ll.head {
-		return false
-	}
+//Prev must iter.Vaild() == true
+func (iter *Iterator[T]) Prev() {
 	iter.cur = iter.cur.prev
-	return iter.cur != iter.ll.head
 }
 
-func (iter *Iterator[T]) Next() bool {
-	if iter.cur == iter.ll.tail {
-		return false
-	}
+//Next must iter.Vaild() == true
+func (iter *Iterator[T]) Next() {
 	iter.cur = iter.cur.next
-	return iter.cur != iter.ll.tail
 }
 
-// ToHead
+// ToHead. to head and must iter.Vaild() == true
 func (iter *Iterator[T]) ToHead() {
 	iter.cur = iter.ll.head.next
 }
 
-// ToTail
+// ToTail. to tail and must iter.Vaild() == true
 func (iter *Iterator[T]) ToTail() {
 	iter.cur = iter.ll.tail.prev
 }

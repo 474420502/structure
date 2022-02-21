@@ -9,22 +9,33 @@ func (iter *CircularIterator[T]) Swap(other *CircularIterator[T]) {
 	iter.cur.value, other.cur.value = other.cur.value, iter.cur.value
 }
 
+// SetValue set the value of current iter
 func (iter *CircularIterator[T]) SetValue(v T) {
 	iter.cur.value = v
 }
 
+// Value get the value of element. must iter.Vaild() == true
 func (iter *CircularIterator[T]) Value() interface{} {
 	return iter.cur.value
 }
 
-func (iter *CircularIterator[T]) Prev() bool {
-	if iter.ll.size == 0 {
+// Vaild current is Vaild ?
+func (iter *CircularIterator[T]) Vaild() bool {
+	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
 		return false
+	}
+	return true
+}
+
+// Prev the prev element
+func (iter *CircularIterator[T]) Prev() {
+	if iter.ll.size == 0 {
+		return
 	}
 
 	if iter.cur == iter.ll.head {
 		iter.cur = iter.ll.tail.prev
-		return true
+		return
 	}
 
 	iter.cur = iter.cur.prev
@@ -32,17 +43,18 @@ func (iter *CircularIterator[T]) Prev() bool {
 		iter.cur = iter.ll.tail.prev
 	}
 
-	return true
+	return
 }
 
-func (iter *CircularIterator[T]) Next() bool {
+// Next the next element
+func (iter *CircularIterator[T]) Next() {
 	if iter.ll.size == 0 {
-		return false
+		return
 	}
 
 	if iter.cur == iter.ll.tail {
 		iter.cur = iter.ll.head.next
-		return true
+		return
 	}
 
 	iter.cur = iter.cur.next
@@ -50,18 +62,20 @@ func (iter *CircularIterator[T]) Next() bool {
 		iter.cur = iter.ll.head.next
 	}
 
-	return true
+	return
 }
 
+// ToHead to list head element
 func (iter *CircularIterator[T]) ToHead() {
 	iter.cur = iter.ll.head.next
 }
 
+// ToTail to list tail element
 func (iter *CircularIterator[T]) ToTail() {
 	iter.cur = iter.ll.tail.prev
 }
 
-// Move move next(prev[if step < 0]) by step
+// Move move next(prev[if step < 0]) by step must iter.Vaild() == true
 func (iter *CircularIterator[T]) Move(step int) {
 	if iter.ll.size == 0 {
 		return
@@ -94,11 +108,8 @@ func (iter *CircularIterator[T]) Move(step int) {
 	return
 }
 
-// InsertFront insert T before the iterator.
+// InsertFront insert T before the iterator. must iter.Vaild() == true
 func (iter *CircularIterator[T]) InsertFront(values ...T) {
-	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
-		panic("iterator is nil. next move or next or prev to Value")
-	}
 
 	var start *Node[T]
 	var end *Node[T]
@@ -124,12 +135,8 @@ func (iter *CircularIterator[T]) InsertFront(values ...T) {
 	iter.cur.prev = end
 }
 
-// InsertBack insert T after the iterator.
+// InsertBack insert T after the iterator. must iter.Vaild() == true
 func (iter *CircularIterator[T]) InsertBack(values ...T) {
-
-	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
-		panic("iterator is nil. next move or next or prev to Value")
-	}
 
 	var start *Node[T]
 	var end *Node[T]
@@ -155,11 +162,8 @@ func (iter *CircularIterator[T]) InsertBack(values ...T) {
 	cnext.prev = end
 }
 
-// RemoveToNext Remove self and to Next. If iterator is removed. return true.
-func (iter *CircularIterator[T]) RemoveToNext() (ok bool) {
-	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
-		return false
-	}
+// RemoveToNext Remove self and to Next.
+func (iter *CircularIterator[T]) RemoveToNext() {
 
 	var temp = iter.cur.next
 	remove(iter.cur)
@@ -170,14 +174,10 @@ func (iter *CircularIterator[T]) RemoveToNext() (ok bool) {
 	}
 	iter.ll.size--
 
-	return true
 }
 
-// RemoveToNext Remove self and to Prev. If iterator is removed. return true.
-func (iter *CircularIterator[T]) RemoveToPrev() (ok bool) {
-	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
-		return false
-	}
+// RemoveToNext Remove self and to Prev.
+func (iter *CircularIterator[T]) RemoveToPrev() {
 
 	var temp = iter.cur.prev
 	remove(iter.cur)
@@ -188,5 +188,4 @@ func (iter *CircularIterator[T]) RemoveToPrev() (ok bool) {
 	}
 	iter.ll.size--
 
-	return true
 }

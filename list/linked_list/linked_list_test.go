@@ -2,6 +2,7 @@ package linkedlist
 
 import (
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/474420502/random"
@@ -182,39 +183,34 @@ func TestIterator(t *testing.T) {
 
 	iter := ll.Iterator()
 
-	for i := 0; iter.Next(); i++ {
+	for i := 0; iter.Vaild(); i++ {
 		if iter.Value() != 9-i {
 			t.Error("iter.Next() ", iter.Value(), "is not equal ", 9-i)
 		}
+		iter.Next()
 	}
 
 	if iter.cur != iter.ll.tail {
 		t.Error("current point is not equal tail ", iter.ll.tail)
 	}
 
-	for i := 0; iter.Prev(); i++ {
+	for i := 0; iter.Vaild(); i++ {
 		if iter.Value() != i {
 			t.Error("iter.Prev() ", iter.Value(), "is not equal ", i)
 		}
+		iter.Prev()
 	}
 
 	iter.ToTail()
-	if iter.Next() == true {
-		t.Error(iter.Value())
-	}
-
-	if iter.ll.tail != iter.cur {
+	if !iter.Vaild() {
 		t.Error(iter.Value())
 	}
 
 	iter.ToHead()
-	if iter.Prev() == true {
+	if !iter.Vaild() {
 		t.Error(iter.Value())
 	}
 
-	if iter.ll.head != iter.cur {
-		t.Error(iter.Value())
-	}
 }
 
 func TestCircularIterator(t *testing.T) {
@@ -226,18 +222,18 @@ func TestCircularIterator(t *testing.T) {
 	iter := ll.CircularIterator()
 
 	for i := 0; i != 10; i++ {
-		iter.Next()
 		if iter.Value() != 9-i {
 			t.Error("iter.Next() ", iter.Value(), "is not equal ", 9-i)
 		}
+		iter.Next()
 	}
 
-	if iter.cur != iter.ll.tail.prev {
-		t.Error("current point is not equal tail ", iter.ll.tail.prev)
+	if !iter.Vaild() {
+		t.Error("should be true", iter.Value(), iter.ll.String())
 	}
 
-	if iter.Next() {
-		if iter.Value() != 9 {
+	if iter.Next(); iter.Vaild() {
+		if iter.Value() != 8 {
 			t.Error("iter.Value() != ", iter.Value())
 		}
 	}
@@ -254,7 +250,7 @@ func TestCircularIterator(t *testing.T) {
 		t.Error("current point is not equal tail ", iter.ll.tail.prev)
 	}
 
-	if iter.Prev() {
+	if iter.Prev(); iter.Vaild() {
 		if iter.Value() != 0 {
 			t.Error("iter.Value() != ", iter.Value())
 		}
@@ -329,7 +325,7 @@ func TestForce(t *testing.T) {
 				v := rand.Intn(1000)
 
 				iter := l.Iterator()
-				for i := 0; i <= int(idx); i++ {
+				for i := 0; i < int(idx); i++ {
 					iter.Next()
 				}
 				iter.InsertFront(v)
@@ -338,7 +334,7 @@ func TestForce(t *testing.T) {
 				l.Traverse(func(value int) bool {
 					if i == idx {
 						if value != v {
-							panic("")
+							log.Panic(l.String())
 						}
 					}
 					i++
@@ -367,8 +363,8 @@ func TestForce(t *testing.T) {
 		var lsize = l.Size()
 		var result1 = make([]int, lsize)
 		var result2 = make([]int, lsize)
-		citer := l.CircularIterator()
-		for citer.Next() {
+
+		for citer := l.CircularIterator(); citer.Vaild(); citer.Next() {
 			if len(result1) != int(lsize) {
 				result1 = append(result1, citer.Value().(int))
 			} else if len(result2) != int(lsize) {
@@ -392,8 +388,11 @@ func TestIteratorInsert(t *testing.T) {
 	l.Push(1)
 
 	iter := l.Iterator()
-	iter.Next() // next to 1
+	// iter.Next() // next to 1
 
+	if !iter.Vaild() {
+		panic("")
+	}
 	iter.InsertFront(2, 3, 5)
 
 	// log.Println(l.String(), iter.Value()) // [2 3 5 1] 1
@@ -469,43 +468,65 @@ func TestIteratorRemove(t *testing.T) {
 	iter.Move(2)
 	iter.RemoveToNext()
 
-	// log.Println(l.String(), iter.Value()) // Head -> 4 -> 3(Remove) and Cur to 2  "[4 2 1 0]" 2
-	if l.String() != "[4 2 1 0]" || iter.Value() != 2 {
+	// log.Println(l.String(), iter.Value()) //   4 -> 2(Remove) and Cur to 1  "[4 3 1 0]" 1
+	if l.String() != "[4 3 1 0]" || iter.Value() != 1 {
 		t.Error(l.String(), iter.Value())
 	}
 
-	iter.Move(-1) // 4
-	// log.Println(l.String(), iter.Value())
-	iter.RemoveToPrev() // Head
-	iter.Move(3)        // 1
+	iter.Move(-1)       // 3
+	iter.RemoveToPrev() // 3(remove) -> 4
+	iter.Move(2)        // 0
 
-	if l.String() != "[2 1 0]" || iter.Value() != 0 {
+	if l.String() != "[4 1 0]" || iter.Value() != 0 {
 		t.Error(l.String(), iter.Value())
 	}
 
-	for iter.RemoveToNext() {
-
+	for iter.Vaild() {
+		iter.RemoveToNext()
 	}
 
-	if l.String() != "[2 1]" || iter.Value() != 0 {
+	if l.String() != "[4 1]" || iter.Value() != 0 {
 		t.Error(l.String(), iter.Value())
 	}
 
-	for iter.RemoveToPrev() { // can not remove tail or head
-
+	for iter.Vaild() { // can not remove tail or head
+		iter.RemoveToPrev()
 	}
 
-	if l.String() != "[2 1]" || iter.Value() != 0 {
+	if l.String() != "[4 1]" || iter.Value() != 0 {
 		t.Error(l.String(), iter.Value())
 	}
 
-	iter.Move(-1)             // 1
-	for iter.RemoveToPrev() { // remove all
-
+	iter.Move(-1)      // 1
+	for iter.Vaild() { // remove all
+		iter.RemoveToPrev()
 	}
 
 	if l.String() != "[]" || iter.Value() != 0 { // default int == 0
 		t.Error(l.String(), iter.Value())
+	}
+
+	l.Clear()
+	for i := 0; i < 5; i++ {
+		l.PushFront(i) // "[4 3 2 1 0]" cur:0
+	}
+
+	iter.ToHead() // 4
+	if iter.Value() != 4 {
+		t.Error(iter.Value())
+	}
+	iter.SetValue(1)
+	if l.String() != "[1 3 2 1 0]" {
+		t.Error(l.String())
+	}
+
+	other := l.Iterator()
+	other.ToTail()
+
+	iter.Swap(other)
+
+	if l.String() != "[0 3 2 1 1]" {
+		t.Error(l.String())
 	}
 
 	// log.Println(l.String(), l.Size())
@@ -522,23 +543,25 @@ func TestCircularIteratorIteratorRemove(t *testing.T) {
 	iter.Move(2)
 	iter.RemoveToNext()
 
-	// log.Println(l.String(), iter.Value()) // Head -> 4 -> 3(Remove) and Cur to 2  "[4 2 1 0]" 2
-	if l.String() != "[4 2 1 0]" || iter.Value() != 2 {
+	// log.Println(l.String(), iter.Value()) //   4 -> 2(Remove) and Cur to 1  "[4 3 1 0]" 1
+	if l.String() != "[4 3 1 0]" || iter.Value() != 1 {
 		t.Error(l.String(), iter.Value())
 	}
 
-	iter.Move(-1) // 4
+	iter.Move(-1) // 3
+
 	// log.Println(l.String(), iter.Value())
-	iter.RemoveToPrev() // Head
-	iter.Move(3)        // 1
+	iter.RemoveToPrev() // 4
 
-	if l.String() != "[2 1 0]" || iter.Value() != 0 {
+	iter.Move(3) // 4
+
+	if l.String() != "[4 1 0]" || iter.Value() != 4 {
 		t.Error(l.String(), iter.Value())
 	}
 
-	var result []string = []string{"[2 1]", "[1]", "[]"}
-	for i := 0; iter.RemoveToNext(); i++ {
-
+	var result []string = []string{"[1 0]", "[0]", "[]"}
+	for i := 0; iter.Vaild(); i++ {
+		iter.RemoveToNext()
 		if l.String() != result[i] {
 			t.Error(l.String())
 		}
@@ -551,11 +574,33 @@ func TestCircularIteratorIteratorRemove(t *testing.T) {
 	iter.Move(10) // "[4 3 2 1 0]" cur:0
 
 	result = []string{"[3 2 1 0]", "[3 2 1]", "[3 2]", "[3]", "[]"}
-	for i := 0; iter.RemoveToPrev(); i++ { // can not remove tail or head
-
+	for i := 0; iter.Vaild(); i++ { // can not remove tail or head
+		iter.RemoveToPrev()
 		if l.String() != result[i] {
 			t.Error(l.String())
 		}
+	}
+
+	for i := 0; i < 5; i++ {
+		l.PushFront(i) // "[4 3 2 1 0]" cur:0
+	}
+
+	iter.ToHead() // 4
+	if iter.Value() != 4 {
+		t.Error(iter.Value())
+	}
+	iter.SetValue(1)
+	if l.String() != "[1 3 2 1 0]" {
+		t.Error(l.String())
+	}
+
+	other := l.CircularIterator()
+	other.ToTail()
+
+	iter.Swap(other)
+
+	if l.String() != "[0 3 2 1 1]" {
+		t.Error(l.String())
 	}
 
 	// log.Println(l.String(), l.Size())
