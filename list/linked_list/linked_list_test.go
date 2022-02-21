@@ -243,11 +243,11 @@ func TestCircularIterator(t *testing.T) {
 	}
 
 	iter.ToTail()
-	for i := 0; i != 10; i++ {
-		iter.Prev()
+	for i := 0; i != 9; i++ {
 		if iter.Value() != i {
 			t.Error("iter.Prev() ", iter.Value(), "is not equal ", i)
 		}
+		iter.Prev()
 	}
 
 	if iter.cur != iter.ll.head.next {

@@ -156,10 +156,10 @@ func (iter *Iterator[T]) Next() bool {
 
 // ToHead
 func (iter *Iterator[T]) ToHead() {
-	iter.cur = iter.ll.head
+	iter.cur = iter.ll.head.next
 }
 
 // ToTail
 func (iter *Iterator[T]) ToTail() {
-	iter.cur = iter.ll.tail
+	iter.cur = iter.ll.tail.prev
 }

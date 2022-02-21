@@ -54,11 +54,11 @@ func (iter *CircularIterator[T]) Next() bool {
 }
 
 func (iter *CircularIterator[T]) ToHead() {
-	iter.cur = iter.ll.head
+	iter.cur = iter.ll.head.next
 }
 
 func (iter *CircularIterator[T]) ToTail() {
-	iter.cur = iter.ll.tail
+	iter.cur = iter.ll.tail.prev
 }
 
 // Move move next(prev[if step < 0]) by step

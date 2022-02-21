@@ -69,6 +69,25 @@ func TestIterator(t *testing.T) {
 		t.Error(result)
 	}
 
+	iter.ToTail()
+	for {
+		iter.SetValue(iter.Value() + 1)
+		if !iter.Prev() {
+			break
+		}
+	}
+
+	for {
+		iter.SetValue(iter.Value() - 1)
+		if !iter.Next() {
+			break
+		}
+	}
+
+	if fmt.Sprintf("%v", result) != "[4 3 2 1 0]" {
+		t.Error(result)
+	}
+
 	citer := l.CircularIterator()
 	result = nil
 	for i := 0; i < 11; i++ {
@@ -207,16 +226,12 @@ func TestRemove(t *testing.T) {
 	}
 
 	var result string
-	var ok bool
 
 	for _, selval := range []uint{4, 3} {
-		last, _ := l.Index((int)(selval))
-		if v, isfound := l.Remove((int)(selval)); isfound {
-			if v != last {
-				t.Error(v, " != ", last)
-			}
-		} else {
-			t.Error("should be found")
+		last := l.Index((selval))
+		v := l.Remove(selval)
+		if v != last {
+			t.Error(v, " != ", last)
 		}
 	}
 
@@ -225,22 +240,21 @@ func TestRemove(t *testing.T) {
 		t.Error("should be [4 3 2], value =", result)
 	}
 
-	v, _ := l.Remove(1)
+	v := l.Remove(1)
 	if v != uint(3) {
 		t.Error(v)
 	}
 
-	v, _ = l.Remove(1)
+	v = l.Remove(1)
 	if v != uint(2) {
 		t.Error(v)
 	}
 
-	v, ok = l.Remove(1)
-	if ok && l.Size() != 1 {
+	if l.Size() != 1 {
 		t.Error(v)
 	}
 
-	v, _ = l.Remove(0)
+	v = l.Remove(0)
 	if v != uint(4) && l.Size() != 0 {
 		t.Error(v, "size = ", l.Size())
 	}
