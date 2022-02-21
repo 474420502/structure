@@ -34,11 +34,11 @@ func New[T comparable]() *LinkedList[T] {
 }
 
 func (l *LinkedList[T]) Iterator() *Iterator[T] {
-	return &Iterator[T]{ll: l, cur: l.head}
+	return &Iterator[T]{ll: l, cur: l.head.next}
 }
 
 func (l *LinkedList[T]) CircularIterator() *CircularIterator[T] {
-	return &CircularIterator[T]{ll: l, cur: l.head}
+	return &CircularIterator[T]{ll: l, cur: l.head.next}
 }
 
 func (l *LinkedList[T]) Clear() {

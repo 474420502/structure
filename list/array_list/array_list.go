@@ -33,11 +33,11 @@ func New[T comparable]() *ArrayList[T] {
 }
 
 func (l *ArrayList[T]) Iterator() *Iterator[T] {
-	return &Iterator[T]{al: l, cur: 0, isInit: false}
+	return &Iterator[T]{al: l, cur: 0}
 }
 
 func (l *ArrayList[T]) CircularIterator() *CircularIterator[T] {
-	return &CircularIterator[T]{al: l, cur: 0, isInit: false}
+	return &CircularIterator[T]{al: l, cur: 0}
 }
 
 func (l *ArrayList[T]) Clear() {
