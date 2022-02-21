@@ -1,5 +1,7 @@
 package arraylist
 
+import "log"
+
 type CircularIterator[T comparable] struct {
 	al     *ArrayList[T]
 	cur    uint
@@ -18,12 +20,50 @@ func (iter *CircularIterator[T]) Swap(other *CircularIterator[T]) {
 
 // SetValue Iter Value
 func (iter *CircularIterator[T]) SetValue(value T) {
+	if !iter.isInit {
+		log.Panic("the index of iterator is unknownd, call Index(uint) or Prev() Next()  ToHead() ToTail()")
+	}
 	iter.al.data[iter.cur+iter.al.headidx+1] = value
 }
 
+// Index index to the data
+func (iter *CircularIterator[T]) Index(idx uint) {
+	if idx >= iter.al.size {
+		log.Panic("out of size")
+	}
+	iter.cur = idx
+	iter.isInit = true
+}
+
+// RemoveToNext Remove self and to Next. if iter is tail. isTail = true else false
+func (iter *CircularIterator[T]) RemoveToNext() (isTail bool) {
+	if !iter.isInit {
+		log.Panic("the index of iterator is unknownd, call Index(uint) or Prev() Next()  ToHead() ToTail()")
+	}
+	iter.al.Remove(iter.cur)
+	if iter.cur == iter.al.size {
+		iter.cur--
+		isTail = true
+	}
+	return
+}
+
+// RemoveToNext Remove self and to Prev.  if iter is head.  isHead = true else false
+func (iter *CircularIterator[T]) RemoveToPrev() (isHead bool) {
+	if !iter.isInit {
+		log.Panic("the index of iterator is unknownd, call Index(uint) or Prev() Next() ToHead() ToTail()")
+	}
+	iter.al.Remove(iter.cur)
+	if iter.cur == 0 {
+		isHead = true
+		return
+	}
+	iter.cur--
+	return
+}
+
 func (iter *CircularIterator[T]) Value() T {
-	v, _ := iter.al.Index((int)(iter.cur))
-	return v
+	return iter.al.Index(iter.cur)
 }
 
 func (iter *CircularIterator[T]) Prev() bool {

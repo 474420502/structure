@@ -39,7 +39,7 @@ func TestCasePushRemove(t *testing.T) {
 		for i := 0; i < count; i++ {
 			idx = rand.Intn(count - i)
 			carray = append(carray[0:idx], carray[idx+1:count-i]...)
-			l.Remove(idx)
+			l.Remove(uint(idx))
 
 			r1 := fmt.Sprintf("%v", carray)
 			r2 := l.String()

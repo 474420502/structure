@@ -178,39 +178,29 @@ func (l *ArrayList[T]) PopBack() (result T, ok bool) {
 }
 
 // Index fast to index. the feature of array list
-func (l *ArrayList[T]) Index(idx int) (result T, ok bool) {
-	var uidx uint = (uint)(idx)
-	if uidx < l.size {
-		return l.data[uidx+l.headidx+1], true
+func (l *ArrayList[T]) Index(idx uint) T {
+	if idx >= l.size {
+		log.Panic("out of size.", l.size)
 	}
-	ok = false
-	return
+	return l.data[idx+l.headidx+1]
 }
 
 // Set like slice[idx] = value. the feature of array list
 func (l *ArrayList[T]) Set(idx int, value T) {
+
 	l.data[uint(idx)+l.headidx+1] = value
 }
 
 // Remove
-func (l *ArrayList[T]) Remove(idx int) (result T, ok bool) {
+func (l *ArrayList[T]) Remove(idx uint) (result T) {
 
-	if idx < 0 {
-		ok = false
+	if idx >= l.size {
+		log.Panic("out of size:", idx)
 		return
 	}
 
-	var uidx = (uint)(idx)
-	if uidx >= l.size {
-		ok = false
-		return
-	}
-
-	offset := l.headidx + 1 + uidx
-
-	ok = true
+	offset := l.headidx + 1 + idx
 	result = l.data[offset]
-	// l.data[offset] = nil // cleanup reference
 
 	if uint(len(l.data))-l.tailidx > l.headidx {
 		copy(l.data[offset:], l.data[offset+1:l.tailidx]) // shift to the left by one (slow operation, need ways to optimize this)
@@ -222,7 +212,6 @@ func (l *ArrayList[T]) Remove(idx int) (result T, ok bool) {
 
 	l.size--
 	l.shrink()
-
 	return
 }
 
