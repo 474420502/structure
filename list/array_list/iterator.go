@@ -30,12 +30,17 @@ func (iter *Iterator[T]) SetValue(value T) {
 	iter.al.data[iter.cur+iter.al.headidx+1] = value
 }
 
-// Index index to the data
-func (iter *Iterator[T]) Index(idx uint) {
+// IndexTo index to the data
+func (iter *Iterator[T]) IndexTo(idx uint) {
 	if idx >= iter.al.size {
 		log.Panic("out of size")
 	}
 	iter.cur = idx
+}
+
+// IndexTo index to the data
+func (iter *Iterator[T]) Index() uint {
+	return iter.cur
 }
 
 // RemoveToNext Remove self and to Next. must iter.Vaild() == true

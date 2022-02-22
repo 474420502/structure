@@ -5,6 +5,11 @@ import (
 	"log"
 )
 
+// func assertImplementation() {
+// 	var _ ilist.IList[any] = (*ArrayList[any])(nil)
+// 	var _ ilist.IIterator[any] = (*Iterator[any])(nil)
+// }
+
 type ArrayList[T comparable] struct {
 	data    []T
 	headidx uint // [ nil(hdix) 1 nil(tidx) ]
