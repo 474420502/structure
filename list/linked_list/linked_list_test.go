@@ -1,6 +1,7 @@
 package linkedlist
 
 import (
+	"container/list"
 	"fmt"
 	"log"
 	"testing"
@@ -328,7 +329,7 @@ func TestForce(t *testing.T) {
 				for i := 0; i < int(idx); i++ {
 					iter.Next()
 				}
-				iter.InsertFront(v)
+				iter.InsertBefore(v)
 
 				var i = uint(0)
 				l.Traverse(func(value int) bool {
@@ -393,14 +394,14 @@ func TestIteratorInsert(t *testing.T) {
 	if !iter.Vaild() {
 		panic("")
 	}
-	iter.InsertFront(2, 3, 5)
+	iter.InsertBefore(2, 3, 5)
 
 	// log.Println(l.String(), iter.Value()) // [2 3 5 1] 1
 	if l.String() != "[2 3 5 1]" && iter.Value() != 1 {
 		t.Error("InsertFront error")
 	}
 
-	iter.InsertBack(20, 30, 50)
+	iter.InsertAfter(20, 30, 50)
 
 	// log.Println(l.String(), iter.Value()) // [2 3 5 1 20 30 50] 1
 	if l.String() != "[2 3 5 1 20 30 50]" && iter.Value() != 1 {
@@ -429,14 +430,14 @@ func TestCircularIteratorInsert(t *testing.T) {
 	iter := l.CircularIterator()
 	iter.Next() // next to 1
 
-	iter.InsertFront(2, 3, 5)
+	iter.InsertBefore(2, 3, 5)
 
 	// log.Println(l.String(), iter.Value()) // [2 3 5 1] 1
 	if l.String() != "[2 3 5 1]" && iter.Value() != 1 {
 		t.Error("InsertFront error")
 	}
 
-	iter.InsertBack(20, 30, 50)
+	iter.InsertAfter(20, 30, 50)
 
 	// log.Println(l.String(), iter.Value()) // [2 3 5 1 20 30 50] 1
 	if l.String() != "[2 3 5 1 20 30 50]" && iter.Value() != 1 {
@@ -604,6 +605,111 @@ func TestCircularIteratorIteratorRemove(t *testing.T) {
 	}
 
 	// log.Println(l.String(), l.Size())
+}
+
+func StringSrcList(l *list.List) string {
+	if l.Len() == 0 {
+		return "[]"
+	}
+	var content []byte
+	content = append(content, '[')
+	for e := l.Front(); e != nil; e = e.Next() {
+		content = append(content, []byte(fmt.Sprintf("%v ", e.Value))...)
+	}
+	content[len(content)-1] = ']'
+	return string(content)
+}
+
+func TestForceMoveBA(t *testing.T) {
+	r := random.New()
+
+	for N := 0; N < 100; N++ {
+
+		func() {
+
+			ll := New[int]()
+			l := list.New()
+
+			r.Execute(5, 20, func() {
+				v := r.Int()
+				ll.Push(v)
+				l.PushBack(v)
+			})
+
+			sel1 := r.Intn(int(l.Len()))
+			sel2 := r.Intn(int(l.Len()))
+
+			iter1 := ll.Iterator()
+			iter2 := l.Front()
+			for i := 0; i < sel1; i++ {
+				iter1.Next()
+				iter2 = iter2.Next()
+			}
+
+			mark1 := ll.Iterator()
+			mark2 := l.Front()
+			for i := 0; i < sel2; i++ {
+				mark1.Next()
+				mark2 = mark2.Next()
+			}
+
+			if r.Bool() {
+				iter1.MoveBefore(mark1)
+				l.MoveBefore(iter2, mark2)
+
+			} else {
+				iter1.MoveAfter(mark1)
+				l.MoveAfter(iter2, mark2)
+			}
+
+			if ll.String() != StringSrcList(l) {
+				t.Error(ll.String(), StringSrcList(l))
+			}
+		}()
+
+		func() {
+
+			ll := New[int]()
+			l := list.New()
+
+			r.Execute(5, 20, func() {
+				v := r.Int()
+				ll.Push(v)
+				l.PushBack(v)
+			})
+
+			sel1 := r.Intn(int(l.Len()))
+			sel2 := r.Intn(int(l.Len()))
+
+			iter1 := ll.CircularIterator()
+			iter2 := l.Front()
+			for i := 0; i < sel1; i++ {
+				iter1.Next()
+				iter2 = iter2.Next()
+			}
+
+			mark1 := ll.CircularIterator()
+			mark2 := l.Front()
+			for i := 0; i < sel2; i++ {
+				mark1.Next()
+				mark2 = mark2.Next()
+			}
+
+			if r.Bool() {
+				iter1.MoveBefore(mark1)
+				l.MoveBefore(iter2, mark2)
+
+			} else {
+				iter1.MoveAfter(mark1)
+				l.MoveAfter(iter2, mark2)
+			}
+
+			if ll.String() != StringSrcList(l) {
+				t.Error(ll.String(), StringSrcList(l))
+			}
+		}()
+	}
+
 }
 
 // func BenchmarkPushBack(b *testing.B) {

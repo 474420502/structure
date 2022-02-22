@@ -4,6 +4,11 @@ import (
 	"fmt"
 )
 
+// func assertImplementation() {
+// 	var _ ilist.IList[any] = (*LinkedList[any])(nil)
+// 	var _ ilist.IIterator[any] = (*Iterator[any])(nil)
+// }
+
 type Node[T comparable] struct {
 	prev  *Node[T]
 	next  *Node[T]

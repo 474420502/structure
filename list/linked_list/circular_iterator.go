@@ -108,8 +108,59 @@ func (iter *CircularIterator[T]) Move(step int) {
 	return
 }
 
-// InsertFront insert T before the iterator. must iter.Vaild() == true
-func (iter *CircularIterator[T]) InsertFront(values ...T) {
+// MoveBefore Move before the mark iterator.
+func (iter *CircularIterator[T]) MoveBefore(mark *CircularIterator[T]) {
+
+	if iter.cur == mark.cur {
+		return
+	}
+
+	mprev := mark.cur.prev
+	if mprev == iter.cur {
+		return
+	}
+
+	// remove iter cur
+	cprev := iter.cur.prev
+	cnext := iter.cur.next
+	cprev.next = cnext
+	cnext.prev = cprev
+
+	// insert before mark
+	mprev.next = iter.cur
+	iter.cur.prev = mprev
+	mark.cur.prev = iter.cur
+	iter.cur.next = mark.cur
+}
+
+// MoveAfter Move After the mark iterator.
+func (iter *CircularIterator[T]) MoveAfter(mark *CircularIterator[T]) {
+
+	if iter.cur == mark.cur {
+		return
+	}
+
+	mnext := mark.cur.next
+	if mnext == iter.cur {
+		return
+	}
+
+	// remove iter cur
+	cprev := iter.cur.prev
+	cnext := iter.cur.next
+	cprev.next = cnext
+	cnext.prev = cprev
+
+	// insert before mark
+	mnext.prev = iter.cur
+	iter.cur.next = mnext
+
+	mark.cur.next = iter.cur
+	iter.cur.prev = mark.cur
+}
+
+// InsertBefore insert T before the iterator. must iter.Vaild() == true
+func (iter *CircularIterator[T]) InsertBefore(values ...T) {
 
 	var start *Node[T]
 	var end *Node[T]
@@ -135,8 +186,8 @@ func (iter *CircularIterator[T]) InsertFront(values ...T) {
 	iter.cur.prev = end
 }
 
-// InsertBack insert T after the iterator. must iter.Vaild() == true
-func (iter *CircularIterator[T]) InsertBack(values ...T) {
+// InsertAfter insert T after the iterator. must iter.Vaild() == true
+func (iter *CircularIterator[T]) InsertAfter(values ...T) {
 
 	var start *Node[T]
 	var end *Node[T]

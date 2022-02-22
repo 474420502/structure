@@ -5,8 +5,8 @@ type Iterator[T comparable] struct {
 	cur *Node[T]
 }
 
-// InsertFront insert T before the iterator. must iter.Vaild() == true
-func (iter *Iterator[T]) InsertFront(values ...T) {
+// InsertBefore insert T before the iterator. must iter.Vaild() == true
+func (iter *Iterator[T]) InsertBefore(values ...T) {
 
 	var start *Node[T]
 	var end *Node[T]
@@ -32,8 +32,8 @@ func (iter *Iterator[T]) InsertFront(values ...T) {
 	iter.cur.prev = end
 }
 
-// InsertBack insert T after the iterator.  must iter.Vaild() == true
-func (iter *Iterator[T]) InsertBack(values ...T) {
+// InsertAfter insert T after the iterator.  must iter.Vaild() == true
+func (iter *Iterator[T]) InsertAfter(values ...T) {
 
 	var start *Node[T]
 	var end *Node[T]
@@ -57,6 +57,57 @@ func (iter *Iterator[T]) InsertBack(values ...T) {
 
 	end.next = cnext
 	cnext.prev = end
+}
+
+// MoveBefore Move before the mark iterator.
+func (iter *Iterator[T]) MoveBefore(mark *Iterator[T]) {
+
+	if iter.cur == mark.cur {
+		return
+	}
+
+	mprev := mark.cur.prev
+	if mprev == iter.cur {
+		return
+	}
+
+	// remove iter cur
+	cprev := iter.cur.prev
+	cnext := iter.cur.next
+	cprev.next = cnext
+	cnext.prev = cprev
+
+	// insert before mark
+	mprev.next = iter.cur
+	iter.cur.prev = mprev
+	mark.cur.prev = iter.cur
+	iter.cur.next = mark.cur
+}
+
+// MoveAfter Move After the mark iterator.
+func (iter *Iterator[T]) MoveAfter(mark *Iterator[T]) {
+
+	if iter.cur == mark.cur {
+		return
+	}
+
+	mnext := mark.cur.next
+	if mnext == iter.cur {
+		return
+	}
+
+	// remove iter cur
+	cprev := iter.cur.prev
+	cnext := iter.cur.next
+	cprev.next = cnext
+	cnext.prev = cprev
+
+	// insert before mark
+	mnext.prev = iter.cur
+	iter.cur.next = mnext
+
+	mark.cur.next = iter.cur
+	iter.cur.prev = mark.cur
 }
 
 // RemoveToNext Remove self and to Next. If iterator is removed. return true.  must iter.Vaild() == true
