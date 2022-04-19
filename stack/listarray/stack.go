@@ -31,7 +31,7 @@ func (as *Stack[T]) grow() bool {
 			} else {
 				growsize = 256 + as.size>>2
 			}
-			grownode = &Node[T]{elements: make([]T, growsize, growsize), cur: -1}
+			grownode = &Node[T]{elements: make([]T, growsize), cur: -1}
 		}
 
 		grownode.down = as.top
@@ -56,14 +56,14 @@ func (as *Stack[T]) cacheRemove() bool {
 func New[T any]() *Stack[T] {
 	s := &Stack[T]{}
 	s.size = 0
-	s.top = &Node[T]{elements: make([]T, 8, 8), cur: -1}
+	s.top = &Node[T]{elements: make([]T, 8), cur: -1}
 	return s
 }
 
 func NewWithCap[T any](cap int) *Stack[T] {
 	s := &Stack[T]{}
 	s.size = 0
-	s.top = &Node[T]{elements: make([]T, cap, cap), cur: -1}
+	s.top = &Node[T]{elements: make([]T, cap), cur: -1}
 	return s
 }
 
@@ -89,12 +89,12 @@ func (as *Stack[T]) String() string {
 }
 
 func (as *Stack[T]) Values() []T {
-	result := make([]T, as.size, as.size)
+	result := make([]T, as.size)
 
 	cur := as.top
 	n := as.size - 1
 	for ; cur != nil; cur = cur.down {
-		for i, _ := range cur.elements {
+		for i := range cur.elements {
 			if cur.cur >= i {
 				result[n] = cur.elements[cur.cur-i]
 				n--

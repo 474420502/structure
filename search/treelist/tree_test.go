@@ -37,7 +37,7 @@ func TestIndexForce(t *testing.T) {
 		for i, v := range arr {
 			vv := []byte(strconv.Itoa(v))
 			s := tree.Index(int64(i))
-			if compare.Bytes(s.Key, vv) != 0 {
+			if compare.ArrayAny(s.Key, vv) != 0 {
 				t.Error("error ", string(vv), string(s.Key))
 			}
 		}
@@ -53,7 +53,7 @@ func TestIndex(t *testing.T) {
 		tree.Put(v, v)
 
 		s := tree.Index(int64(i))
-		if compare.Bytes(s.Key, v) != 0 {
+		if compare.ArrayAny(s.Key, v) != 0 {
 			t.Error(s, v)
 		}
 		iter := tree.Iterator()
@@ -97,7 +97,7 @@ func TestRemove1(t *testing.T) {
 
 	for _, v := range tree.Slices() {
 		r := tree.Remove(v.Key)
-		if compare.Bytes(r.Key, v.Key) != 0 {
+		if compare.ArrayAny(r.Key, v.Key) != 0 {
 			log.Println("remove error check it", string(r.Key), string(v.Key))
 		}
 	}
@@ -242,7 +242,7 @@ func TestRange(t *testing.T) {
 		}
 		tree := New()
 		tree.compare = compareBytesLen
-		avltree := avl.New(compare.Int)
+		avltree := avl.New(compare.Any[int])
 
 		for i := 0; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
@@ -265,7 +265,7 @@ func TestRange(t *testing.T) {
 			return
 		}
 
-		avltree.Traverse(func(k, v interface{}) bool {
+		avltree.Traverse(func(k int, v interface{}) bool {
 			key := []byte(strconv.Itoa(v.(int)))
 			if _, ok := tree.Get(key); !ok {
 				t.Error("tree is error")
@@ -332,7 +332,7 @@ func TestRangeReturn(t *testing.T) {
 
 		tree := New()
 		tree.compare = compareBytesLen
-		avltree := avl.New(compare.Int)
+		avltree := avl.New(compare.Any[int])
 
 		for i := 100; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
@@ -378,11 +378,11 @@ func TestHeadTail(t *testing.T) {
 				max = i
 			}
 
-			if compare.BytesLen(tree.Head().Key, []byte(strconv.Itoa(min))) != 0 {
+			if compare.ArrayLenAny(tree.Head().Key, []byte(strconv.Itoa(min))) != 0 {
 				t.Error("test the seed")
 			}
 
-			if compare.BytesLen(tree.Tail().Key, []byte(strconv.Itoa(max))) != 0 {
+			if compare.ArrayLenAny(tree.Tail().Key, []byte(strconv.Itoa(max))) != 0 {
 				t.Error("test the seed")
 			}
 		}
@@ -415,12 +415,12 @@ func TestRemoveHeadTail(t *testing.T) {
 
 		tree.RemoveHead()
 		if s := tree.Size(); s > 0 {
-			if compare.BytesLen(tree.Head().Key, []byte(strconv.Itoa(min))) == 0 {
+			if compare.ArrayLenAny(tree.Head().Key, []byte(strconv.Itoa(min))) == 0 {
 				t.Error("test the seed")
 			}
 
 			if s == 1 {
-				if compare.BytesLen(tree.Head().Key, tree.Tail().Key) != 0 {
+				if compare.ArrayLenAny(tree.Head().Key, tree.Tail().Key) != 0 {
 					t.Error(n, "head is should be equal to tail")
 				}
 			}
@@ -433,12 +433,12 @@ func TestRemoveHeadTail(t *testing.T) {
 
 		tree.RemoveTail()
 		if s := tree.Size(); s > 0 {
-			if compare.BytesLen(tree.Tail().Key, []byte(strconv.Itoa(max))) == 0 {
+			if compare.ArrayLenAny(tree.Tail().Key, []byte(strconv.Itoa(max))) == 0 {
 				t.Error("test the seed")
 			}
 
 			if s == 1 {
-				if compare.BytesLen(tree.Head().Key, tree.Tail().Key) != 0 {
+				if compare.ArrayLenAny(tree.Head().Key, tree.Tail().Key) != 0 {
 					t.Error(n, "head is should be equal to tail")
 				}
 			}

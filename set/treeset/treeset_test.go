@@ -52,7 +52,7 @@ func TestTreeSet_Add(t *testing.T) {
 	}
 	for _, tt := range tests2 {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New(compare.BytesAny[string])
+			set := New(compare.ArrayAny[string])
 			set.Sets(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
