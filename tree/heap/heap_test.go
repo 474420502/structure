@@ -17,7 +17,7 @@ func TestHeapGrowSlimming(t *testing.T) {
 
 	for ii := 0; ii < 2000; ii++ {
 
-		h := New(compare.Any[int])
+		h := New(compare.AnyDesc[int])
 		var results []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
@@ -25,10 +25,7 @@ func TestHeapGrowSlimming(t *testing.T) {
 			h.Put(v)
 		}
 		sort.Slice(results, func(i, j int) bool {
-			if results[i] > results[j] {
-				return true
-			}
-			return false
+			return results[i] > results[j]
 		})
 
 		if h.Size() != 100 || h.Empty() {
@@ -50,12 +47,12 @@ func TestHeapGrowSlimming(t *testing.T) {
 		h.Put(5)
 		h.Put(2)
 
-		if h.Values()[0] != 5 {
+		if r, _ := h.Top(); r != 5 {
 			t.Error("top is not equal to 5")
 		}
 
 		h.Clear()
-		h.Reborn()
+		h.Reset()
 
 		if !h.Empty() {
 			t.Error("clear reborn is error")
@@ -65,7 +62,7 @@ func TestHeapGrowSlimming(t *testing.T) {
 }
 
 func TestHeapPushTopPop(t *testing.T) {
-	h := New(compare.Any[int])
+	h := New(compare.AnyDesc[int])
 	l := []int{9, 5, 15, 2, 3}
 	ol := []int{15, 9, 5, 3, 2}
 	for _, v := range l {
@@ -99,10 +96,7 @@ func TestHeapPushTopPop(t *testing.T) {
 	}
 
 	sort.Slice(l, func(i, j int) bool {
-		if l[i] > l[j] {
-			return true
-		}
-		return false
+		return l[i] > l[j]
 	})
 
 	for i := 0; !h.Empty(); i++ {
@@ -113,7 +107,9 @@ func TestHeapPushTopPop(t *testing.T) {
 	}
 }
 
+// 做新研究 没实际意义
 func TestCase(t *testing.T) {
+
 	rand := random.New(t.Name())
 
 	var buf = bytes.NewBuffer(nil)
@@ -128,8 +124,8 @@ func TestCase(t *testing.T) {
 	}
 
 	for n := 0; n < 10; n++ {
-		min := New(compare.Any[int])
-		max := New(compare.AnyDesc[int])
+		min := New(compare.AnyDesc[int])
+		max := New(compare.Any[int])
 
 		rand.Shuffle(len(source), func(i, j int) {
 			source[i], source[j] = source[j], source[i]
@@ -141,8 +137,8 @@ func TestCase(t *testing.T) {
 			max.Put(v)
 		}
 
-		minlist := min.Values()
-		maxlist := max.Values()
+		minlist := min.elements[0:min.size]
+		maxlist := max.elements[0:max.size]
 
 		log.Println(min.debugString())
 		log.Println(minlist)

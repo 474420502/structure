@@ -4,6 +4,8 @@
 
 * [AVL](./tree/avl/doc.md) is a self-balancing binary search tree (BST)
 
+* [Heap](./tree/heap/doc.md)  a heap is a specialized tree-based data structure which is essentially an almost complete tree that satisfies the heap property
+
 * PriorityQueue
 
 ```go
