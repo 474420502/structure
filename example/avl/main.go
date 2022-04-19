@@ -90,5 +90,6 @@ func main() {
 	log.Println(tree.Get(2)) // nil,false
 	tree.Set(0, 1)
 	log.Println(tree.Get(0)) // 1, true
-	tree.Clear()             // clear all the data of tree
+
+	tree.Clear() // clear all the data of tree
 }
