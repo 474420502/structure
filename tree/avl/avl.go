@@ -6,6 +6,7 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
+// Node the node of tree
 type Node[T any] struct {
 	Children [2]*Node[T]
 	Parent   *Node[T]
@@ -14,6 +15,7 @@ type Node[T any] struct {
 	Value    interface{}
 }
 
+// String show node by chars
 func (n *Node[T]) String() string {
 	if n == nil {
 		return "nil"
@@ -26,6 +28,7 @@ func (n *Node[T]) String() string {
 	return fmt.Sprintf("%v", n.Value) + "(" + p + "|" + fmt.Sprintf("%v", n.height) + ")"
 }
 
+// Tree the struct of avl
 type Tree[T any] struct {
 	Root       *Node[T]           // Tree Root
 	HeightDiff int                // Allowable height difference is 1(default). if heightdiff == 2, will fast rbtree.
@@ -33,10 +36,12 @@ type Tree[T any] struct {
 	Compare    compare.Compare[T] // The compare function of the key of node
 }
 
+// New create a object of tree
 func New[T any](Compare compare.Compare[T]) *Tree[T] {
 	return &Tree[T]{Compare: Compare, HeightDiff: 1}
 }
 
+// String show the view of tree by chars
 func (tree *Tree[T]) String() string {
 	if tree.size == 0 {
 		return ""
@@ -47,10 +52,12 @@ func (tree *Tree[T]) String() string {
 	return str
 }
 
+// Size get the size of tree
 func (tree *Tree[T]) Size() int64 {
 	return tree.size
 }
 
+// Height get the height  of tree
 func (tree *Tree[T]) Height() int {
 	if tree.Root == nil {
 		return 0
@@ -149,6 +156,7 @@ func (tree *Tree[T]) Values() []interface{} {
 	return result
 }
 
+// Get get value by key
 func (tree *Tree[T]) Get(key T) (interface{}, bool) {
 	n, ok := tree.getNode(key)
 	if ok {
@@ -174,7 +182,7 @@ func (tree *Tree[T]) getNode(key T) (*Node[T], bool) {
 	return nil, false
 }
 
-// Set Put And value Set Node.Value
+// Set set value by Key. if key exists, cover the value and return true. else return false and put value into tree
 func (tree *Tree[T]) Set(key T, value interface{}) bool {
 
 	if tree.size == 0 {
@@ -215,7 +223,7 @@ func (tree *Tree[T]) Set(key T, value interface{}) bool {
 	}
 }
 
-// Put Put into Tree . if key exists, not cover. and return false. else return true
+// Put put value into tree  by Key . if key exists,not cover the value and return false. else return true
 func (tree *Tree[T]) Put(key T, value interface{}) bool {
 
 	if tree.size == 0 {
@@ -273,7 +281,7 @@ func (tree *Tree[T]) Put(key T, value interface{}) bool {
 // 	RLD
 // )
 
-// Traverse 遍历的方法 默认是LDR 从小到大 Compare 为 l < r
+// Traverse the traversal method defaults to LDR. from smallest to largest.
 func (tree *Tree[T]) Traverse(every func(k T, v interface{}) bool) {
 	if tree.Root == nil {
 		return

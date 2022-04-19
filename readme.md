@@ -2,6 +2,8 @@
 
 ## Provide a powerful and easy-to-use data structure
 
+* [AVL](./tree/avl/doc.md) is a self-balancing binary search tree (BST)
+
 * PriorityQueue
 
 ```go
