@@ -23,10 +23,12 @@ type Iterator[T any] struct {
 	idx int8
 }
 
-func (iter *Iterator[T]) Key() interface{} {
+// Key return the key of current iterator
+func (iter *Iterator[T]) Key() T {
 	return iter.cur.Key
 }
 
+// Value return the value of current iterator
 func (iter *Iterator[T]) Value() interface{} {
 	return iter.cur.Value
 }
@@ -56,6 +58,7 @@ func (iter *Iterator[T]) SeekToLast() {
 	}
 }
 
+// SeekLE seek to the key that less than or equal to
 func (iter *Iterator[T]) SeekLE(key T) bool {
 
 	iter.idx = -1
@@ -91,6 +94,7 @@ func (iter *Iterator[T]) SeekLE(key T) bool {
 	}
 }
 
+// SeekLT seek to the key that less than
 func (iter *Iterator[T]) SeekLT(key T) bool {
 
 	iter.idx = -1
@@ -127,6 +131,7 @@ func (iter *Iterator[T]) SeekLT(key T) bool {
 	}
 }
 
+// SeekGE seek to the key that greater than or equal to
 func (iter *Iterator[T]) SeekGE(key T) bool {
 	iter.idx = -1
 	iter.cur = iter.tree.Root
@@ -160,6 +165,7 @@ func (iter *Iterator[T]) SeekGE(key T) bool {
 	}
 }
 
+// SeekGE seek to the key that greater than
 func (iter *Iterator[T]) SeekGT(key T) bool {
 	iter.idx = -1
 	iter.cur = iter.tree.Root
@@ -194,10 +200,12 @@ func (iter *Iterator[T]) SeekGT(key T) bool {
 	}
 }
 
+// Vaild if current value is not nil return true. else return false
 func (iter *Iterator[T]) Vaild() bool {
 	return iter.cur != nil
 }
 
+// Next the current iterator move to the next. before call it must call Vaild() and return true.
 func (iter *Iterator[T]) Next() {
 
 	if iter.cur == nil || iter.cur.Children[nR] == nil {
@@ -221,6 +229,7 @@ func (iter *Iterator[T]) Next() {
 	}
 }
 
+// Prev the current iterator move to the prev. before call it must call Vaild() and return true.
 func (iter *Iterator[T]) Prev() {
 
 	if iter.cur == nil || iter.cur.Children[nL] == nil {
@@ -288,7 +297,7 @@ func (iter *Iterator[T]) rpop() bool {
 	return false
 }
 
-// Clone 复制一个当前迭代的iterator. 用于复位
+// Clone Copy a current iterator
 func (iter *Iterator[T]) Clone() *Iterator[T] {
 	return &Iterator[T]{tree: iter.tree, cur: iter.cur, idx: iter.idx}
 }

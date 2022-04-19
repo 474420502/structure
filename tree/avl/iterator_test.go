@@ -347,7 +347,7 @@ func TestCompareSimilarForce(t *testing.T) {
 		}
 
 		for iter1.Valid() && iter2.Vaild() {
-			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+			if !bytes.Equal(iter1.Key(), iter2.Key()) {
 				t.Error("SeekGE")
 				panic(nil)
 			}
@@ -361,7 +361,7 @@ func TestCompareSimilarForce(t *testing.T) {
 		}
 
 		for iter1.Valid() && iter2.Vaild() {
-			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+			if !bytes.Equal(iter1.Key(), iter2.Key()) {
 				t.Error("SeekGE")
 				panic(nil)
 			}
@@ -375,7 +375,7 @@ func TestCompareSimilarForce(t *testing.T) {
 		}
 
 		for iter1.Valid() && iter2.Vaild() {
-			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+			if !bytes.Equal(iter1.Key(), iter2.Key()) {
 				t.Error("SeekLE")
 				panic(nil)
 			}
@@ -389,7 +389,7 @@ func TestCompareSimilarForce(t *testing.T) {
 		}
 
 		for iter1.Valid() && iter2.Vaild() {
-			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+			if !bytes.Equal(iter1.Key(), iter2.Key()) {
 				t.Error("SeekLE")
 				panic(nil)
 			}
