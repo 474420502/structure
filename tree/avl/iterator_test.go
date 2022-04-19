@@ -12,7 +12,7 @@ import (
 )
 
 func TestNextPrev(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for i := 0; i < 10; i++ {
 		tree.Set(i, i)
 	}
@@ -74,7 +74,7 @@ func TestNextPrev(t *testing.T) {
 }
 
 func TestSeekFor(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for i := 0; i < 20; i += 2 {
 		tree.Set(i, i)
 	}
@@ -136,7 +136,7 @@ func TestSeekFor(t *testing.T) {
 func TestIteratorForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Int)
+		tree := New(compare.Any[int])
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
@@ -227,7 +227,7 @@ func TestIteratorForce(t *testing.T) {
 func TestIteratorForce2(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Int)
+		tree := New(compare.Any[int])
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
@@ -318,7 +318,7 @@ func TestIteratorForce2(t *testing.T) {
 
 func TestCompareSimilarForce(t *testing.T) {
 	tree1 := treelist.New()
-	tree2 := New(compare.Bytes)
+	tree2 := New(compare.ArrayAny[[]byte])
 
 	rand := random.New()
 

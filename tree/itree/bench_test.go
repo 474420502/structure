@@ -114,7 +114,7 @@ func TestHeight(t *testing.T) {
 
 func BenchmarkPut2(b *testing.B) {
 
-	tree := New(compare.Bytes)
+	tree := New(compare.ArrayAny[[]byte])
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		v := []byte(strconv.Itoa(i))
@@ -141,7 +141,7 @@ func TestCase10(t *testing.T) {
 	// }
 	r := random.New()
 	for n := 0; n < 10000; n++ {
-		tree := New(compare.Int)
+		tree := New(compare.Any[int])
 		for i := 0; i < 1000; i++ {
 			v := r.Intn(100)
 			tree.Put(v, v)

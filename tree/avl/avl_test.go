@@ -4,6 +4,7 @@ import (
 	"log"
 	"sort"
 	"testing"
+	"time"
 
 	random "github.com/474420502/random"
 	"github.com/474420502/structure/compare"
@@ -11,7 +12,7 @@ import (
 )
 
 func TestPutGet(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for i := 0; i < 100; i++ {
 		tree.Set(i, i)
 	}
@@ -40,7 +41,7 @@ func TestPutGet(t *testing.T) {
 }
 
 func TestRemove2(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for _, i := range testutils.TestedBigArray {
 		if !tree.Set(i, i) {
 			log.Println("equal key", i)
@@ -52,7 +53,7 @@ func TestRemove2(t *testing.T) {
 	}
 
 	for _, v := range tree.Values() {
-		tree.Remove(v)
+		tree.Remove(v.(int))
 	}
 
 	if int(tree.Size()) != 0 {
@@ -61,7 +62,7 @@ func TestRemove2(t *testing.T) {
 }
 
 func TestRemove1(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for _, i := range testutils.TestedArray {
 		if !tree.Set(i, i) {
 			log.Println("equal key", i)
@@ -74,7 +75,7 @@ func TestRemove1(t *testing.T) {
 
 	// log.Println(tree.debugString())
 	for _, v := range tree.Values() {
-		tree.Remove(v)
+		tree.Remove(v.(int))
 		log.Println(tree.debugString())
 	}
 
@@ -86,7 +87,7 @@ func TestRemove1(t *testing.T) {
 func TestForce(t *testing.T) {
 	rand := random.New(t.Name())
 
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for n := 0; n < 2000; n++ {
 
 		var priority []int
@@ -132,7 +133,7 @@ func TestForce(t *testing.T) {
 		}
 
 		var i = 0
-		tree.Traverse(func(k, v interface{}) bool {
+		tree.Traverse(func(k int, v interface{}) bool {
 			if priority[i] != v {
 				panic("")
 			}
@@ -143,4 +144,8 @@ func TestForce(t *testing.T) {
 		tree.Clear()
 
 	}
+}
+
+func TestCaseX(t *testing.T) {
+	New(compare.TimeDesc[*time.Time])
 }
