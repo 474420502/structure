@@ -44,7 +44,7 @@ func TestRemove2(t *testing.T) {
 	tree := New(compare.Any[int])
 	for _, i := range testutils.TestedBigArray {
 		if !tree.Set(i, i) {
-			log.Println("equal key", i)
+			// log.Println("equal key", i)
 		}
 	}
 
@@ -65,7 +65,7 @@ func TestRemove1(t *testing.T) {
 	tree := New(compare.Any[int])
 	for _, i := range testutils.TestedArray {
 		if !tree.Set(i, i) {
-			log.Println("equal key", i)
+			// log.Println("equal key", i)
 		}
 	}
 

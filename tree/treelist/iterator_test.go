@@ -345,7 +345,7 @@ func TestFirstLast(t *testing.T) {
 	tree := New(compare.ArrayAny[[]byte])
 	for _, v := range testutils.TestedBytes {
 		tree.Put(v, v)
-		log.Println(string(tree.root.Direct[0].Key), string(tree.root.Direct[1].Key))
+		// log.Println(string(tree.root.Direct[0].Key), string(tree.root.Direct[1].Key))
 	}
 
 	iter := tree.Iterator()
