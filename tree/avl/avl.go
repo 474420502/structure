@@ -70,7 +70,7 @@ func (tree *Tree[T]) Iterator() *Iterator[T] {
 	return newIterator(tree)
 }
 
-// Remove remove key
+// Remove remove key and return value that be removed
 func (tree *Tree[T]) Remove(key T) (interface{}, bool) {
 
 	if n, ok := tree.getNode(key); ok {

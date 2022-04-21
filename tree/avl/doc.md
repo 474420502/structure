@@ -107,7 +107,7 @@ else return true
 func (tree *Tree[T]) Remove(key T) (interface{}, bool)
 ```
 
-Remove remove value by key
+Remove remove key and return value that be removed
 
 ### func \(\*Tree\[T\]\) [Set](#examples)
 

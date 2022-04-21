@@ -15,11 +15,11 @@ const (
 )
 
 type colorNode[T any] struct {
-	Node  *Node[T]
+	Node  *hNode[T]
 	Color string
 }
 
-func output[T any](node *Node[T], prefix string, isTail bool, str *string) {
+func output[T any](node *hNode[T], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -51,7 +51,7 @@ func output[T any](node *Node[T], prefix string, isTail bool, str *string) {
 
 }
 
-func outputfordebug[T any](node *Node[T], prefix string, isTail bool, str *string, deep int) {
+func outputfordebug[T any](node *hNode[T], prefix string, isTail bool, str *string, deep int) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -95,7 +95,7 @@ func outputfordebug[T any](node *Node[T], prefix string, isTail bool, str *strin
 	}
 }
 
-func outputfordebugNoSuffix[T any](node *Node[T], prefix string, isTail bool, str *string) {
+func outputfordebugNoSuffix[T any](node *hNode[T], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -145,7 +145,7 @@ func (tree *Tree[T]) debugString(isSuffix bool) string {
 	return str
 }
 
-func lookTree[T any](root *Node[T]) string {
+func lookTree[T any](root *hNode[T]) string {
 	str := "\n"
 	if root == nil {
 		return str + "nil"
