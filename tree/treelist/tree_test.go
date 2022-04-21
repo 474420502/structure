@@ -91,7 +91,7 @@ func TestRemove1(t *testing.T) {
 	for _, i := range testutils.TestedArray {
 		v := []byte(strconv.Itoa(i))
 		if !tree.Put(v, v) {
-			log.Println("equal key", i)
+			// log.Println("equal key", i)
 		}
 	}
 
@@ -112,7 +112,7 @@ func TestRemove2(t *testing.T) {
 	for _, i := range testutils.TestedBigArray {
 		v := []byte(strconv.Itoa(i))
 		if !tree.Put(v, v) {
-			log.Println("equal key", i)
+			// log.Println("equal key", i)
 		}
 	}
 

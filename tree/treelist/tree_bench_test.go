@@ -11,7 +11,7 @@ import (
 	utils "github.com/474420502/structure"
 	"github.com/474420502/structure/compare"
 	avl "github.com/474420502/structure/tree/avl"
-	indextree "github.com/474420502/structure/tree/itree"
+	indextree "github.com/474420502/structure/tree/indextree"
 
 	testutils "github.com/474420502/structure/tree/test_utils"
 )

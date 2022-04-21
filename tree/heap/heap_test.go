@@ -3,7 +3,6 @@ package heap
 import (
 	"bytes"
 	"encoding/binary"
-	"log"
 	"sort"
 	"testing"
 
@@ -140,15 +139,15 @@ func TestCase(t *testing.T) {
 		minlist := min.elements[0:min.size]
 		maxlist := max.elements[0:max.size]
 
-		log.Println(min.debugString())
-		log.Println(minlist)
-		log.Println(max.debugString())
-		log.Println(maxlist)
+		// log.Println(min.debugString())
+		// log.Println(minlist)
+		// log.Println(max.debugString())
+		// log.Println(maxlist)
 
 		var count = 0
-		for i, v := range minlist {
+		for i := range minlist {
 			if minlist[i] == maxlist[i] {
-				log.Println(i, v)
+				// log.Println(i, v)
 				count++
 			}
 

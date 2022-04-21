@@ -107,7 +107,7 @@ func TestHeight(t *testing.T) {
 
 		if h1, h2 := itree.hight(), avltree.Height(); math.Abs(float64(h1-h2)) >= 1 {
 			diffcount++
-			log.Println("height:", h1, h2, "diff:", diffcount, h1-h2)
+			// log.Println("height:", h1, h2, "diff:", diffcount, h1-h2)
 		}
 	}
 }
