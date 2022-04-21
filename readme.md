@@ -6,6 +6,8 @@
 
 * [Heap](./tree/heap/doc.md)  a heap is a specialized tree-based data structure which is essentially an almost complete tree that satisfies the heap property
 
+* [IndexTree](./tree/indextree/doc.md)  is a self-balancing binary search tree (BST). and have some special features
+
 * PriorityQueue
 
 ```go

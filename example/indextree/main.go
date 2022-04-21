@@ -68,7 +68,7 @@ func main1() {
 	// 	└── 4
 	// 		│   ┌── 3
 	// 		└── 1
-	log.Println("RemoveIndex")
+	log.Println("RemoveRange")
 	tree.RemoveRange(2, 5)     // remove 2-5 key
 	log.Println(tree.String()) // 1 6
 	// 	└── 6
