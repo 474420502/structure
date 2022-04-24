@@ -399,3 +399,25 @@ func TestCompareSimilarForce(t *testing.T) {
 
 	}
 }
+
+func TestIeratorCompare(t *testing.T) {
+	tree := New(compare.Any[int])
+	for i := 0; i < 10; i++ {
+		tree.Put(i, i)
+	}
+
+	for i := 0; i < 10; i++ {
+		iter := tree.Iterator()
+		iter.SeekGE(i)
+		if iter.Compare(i) != 0 {
+			t.Error()
+		}
+		if iter.Compare(i+1) > 0 {
+			t.Error()
+		}
+		if iter.Compare(i-1) < 0 {
+			t.Error()
+		}
+	}
+
+}

@@ -12,7 +12,7 @@ const (
 // IteratorRange the iterator for easy to range the data
 type IteratorRange[T any] struct {
 	tree         *Tree[T]
-	siter, eiter nodePoint[T]
+	siter, eiter hNode[T]
 	dir          RangeDirection
 }
 

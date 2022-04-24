@@ -170,6 +170,17 @@ func (iter *Iterator[T]) Clone() *Iterator[T]
 
 Clone Copy a current iterator
 
+### func \(\*Iterator\[T\]\) [Compare](#examples)
+
+```go
+func (iter *Iterator[T]) Compare(key T) int
+```
+
+Compare iterator the  current value comare to key. <br>
+if cur.key > key. return 1. <br>
+if cur.key == key return 0. <br>
+if cur.key < key return - 1.
+
 ### func \(\*Iterator\[T\]\) [Key](#examples)
 
 ```go
@@ -248,7 +259,7 @@ SeekToFirst seek to last item
 func (iter *Iterator[T]) Vaild() bool
 ```
 
-Vaild if current value is not nil return true\. else return false
+Vaild if current value is not nil return true\. else return false. for use with Seek
 
 ### func \(\*Iterator\[T\]\) [Value](#examples)
 

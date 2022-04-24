@@ -6,11 +6,13 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
+// Slice the KeyValue
 type Slice[T any] struct {
 	Key   T
 	Value interface{}
 }
 
+// String show the string of keyvalue
 func (s *Slice[T]) String() string {
 	return fmt.Sprintf("%v:%v", s.Key, s.Value)
 }
@@ -29,6 +31,7 @@ func (n *treeNode[T]) String() string {
 	return n.Slice.String()
 }
 
+// Tree the struct of treelist
 type Tree[T any] struct {
 	root    *treeNode[T]
 	compare compare.Compare[T]
@@ -36,6 +39,7 @@ type Tree[T any] struct {
 	// rcount int
 }
 
+// New create a object of tree
 func New[T any](comp compare.Compare[T]) *Tree[T] {
 	return &Tree[T]{compare: comp, root: &treeNode[T]{}}
 }
@@ -375,7 +379,7 @@ func (tree *Tree[T]) IndexOf(key T) int64 {
 
 }
 
-// Traverse 遍历的方法 默认是LDR 从小到大 Compare 为 l < r
+// Traverse the traversal method defaults to LDR. from smallest to largest.
 func (tree *Tree[T]) Traverse(every func(s *Slice[T]) bool) {
 	root := tree.getRoot()
 	if root == nil {
@@ -401,6 +405,7 @@ func (tree *Tree[T]) Traverse(every func(s *Slice[T]) bool) {
 	traverasl(root)
 }
 
+// Slices  return all slice. from smallest to largest.
 func (tree *Tree[T]) Slices() []Slice[T] {
 	var mszie int64
 	root := tree.getRoot()
@@ -415,6 +420,7 @@ func (tree *Tree[T]) Slices() []Slice[T] {
 	return result
 }
 
+// Remove remove key and return value that be removed
 func (tree *Tree[T]) Remove(key T) *Slice[T] {
 	if cur := tree.getNode(key); cur != nil {
 		return tree.removeNode(cur)
@@ -422,6 +428,7 @@ func (tree *Tree[T]) Remove(key T) *Slice[T] {
 	return nil
 }
 
+// RemoveIndex remove key value by index and return value that be removed
 func (tree *Tree[T]) RemoveIndex(index int64) *Slice[T] {
 	if cur := tree.index(index); cur != nil {
 		return tree.removeNode(cur)
@@ -429,6 +436,7 @@ func (tree *Tree[T]) RemoveIndex(index int64) *Slice[T] {
 	return nil
 }
 
+// Head returns the head of the ordered data of tree
 func (tree *Tree[T]) Head() *Slice[T] {
 	h := tree.root.Direct[0]
 	if h != nil {
@@ -437,6 +445,7 @@ func (tree *Tree[T]) Head() *Slice[T] {
 	return nil
 }
 
+// RemoveHead remove the head of the ordered data of tree. similar to the pop function of heap
 func (tree *Tree[T]) RemoveHead() *Slice[T] {
 	if tree.getRoot() != nil {
 		return tree.removeNode(tree.root.Direct[0])
@@ -444,6 +453,7 @@ func (tree *Tree[T]) RemoveHead() *Slice[T] {
 	return nil
 }
 
+// Tail returns the tail of the ordered data of tree
 func (tree *Tree[T]) Tail() *Slice[T] {
 	t := tree.root.Direct[1]
 	if t != nil {
@@ -452,6 +462,7 @@ func (tree *Tree[T]) Tail() *Slice[T] {
 	return nil
 }
 
+// RemoveTail remove the tail of the ordered data of tree.
 func (tree *Tree[T]) RemoveTail() *Slice[T] {
 	if tree.getRoot() != nil {
 		return tree.removeNode(tree.root.Direct[1])
@@ -459,7 +470,7 @@ func (tree *Tree[T]) RemoveTail() *Slice[T] {
 	return nil
 }
 
-// RemoveRange
+// RemoveRange remove  a range of the ordered data of tree.
 func (tree *Tree[T]) RemoveRange(low, hight T) bool {
 
 	const L = 0
@@ -734,7 +745,7 @@ func (tree *Tree[T]) Clear() {
 	tree.root.Direct[1] = nil
 }
 
-// Trim range [low:hight]
+// Trim retain the value of the range . [low high]
 func (tree *Tree[T]) Trim(low, hight T) {
 
 	if tree.compare(low, hight) > 0 {
@@ -820,7 +831,7 @@ func (tree *Tree[T]) Trim(low, hight T) {
 
 }
 
-// TrimByIndex range [low:hight]
+// TrimByIndex retain the value of the index range . [low high]
 func (tree *Tree[T]) TrimByIndex(low, hight int64) {
 
 	if low > hight {
@@ -925,9 +936,9 @@ func (tree *Tree[T]) TrimByIndex(low, hight int64) {
 	}
 }
 
-// Intersection 交集
+// Intersection  tree intersection with other. [1 2 3] [2 3 4] -> [2 3].
 func (tree *Tree[T]) Intersection(other *Tree[T]) *Tree[T] {
-
+	// This method is a bit stupid.  There is time to prepare for refactoring
 	const L = 0
 	const R = 1
 
@@ -959,8 +970,11 @@ func (tree *Tree[T]) Intersection(other *Tree[T]) *Tree[T] {
 	return result
 }
 
-// UnionSets 并集
+// UnionSets tree unionsets with other. [1 2 3] [2 3 4] -> [1 2 3 4].
 func (tree *Tree[T]) UnionSets(other *Tree[T]) *Tree[T] {
+
+	// There is time to prepare for refactoring
+
 	const L = 0
 	const R = 1
 
@@ -1004,7 +1018,7 @@ func (tree *Tree[T]) UnionSets(other *Tree[T]) *Tree[T] {
 	return result
 }
 
-// DifferenceSets 差集
+// DifferenceSets The set of elements after subtracting B from A
 func (tree *Tree[T]) DifferenceSets(other *Tree[T]) *Tree[T] {
 	const L = 0
 	const R = 1

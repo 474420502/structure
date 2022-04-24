@@ -200,7 +200,7 @@ func (iter *Iterator[T]) SeekGT(key T) bool {
 	}
 }
 
-// Vaild if current value is not nil return true. else return false
+// Vaild if current value is not nil return true. else return false. for use with Seek
 func (iter *Iterator[T]) Vaild() bool {
 	return iter.cur != nil
 }
@@ -251,6 +251,17 @@ func (iter *Iterator[T]) Prev() {
 		}
 		return
 	}
+}
+
+// Compare iterator the  current value comare to key.
+//
+// if cur.key > key. return 1.
+//
+// if cur.key == key return 0.
+//
+// if cur.key < key return - 1.
+func (iter *Iterator[T]) Compare(key T) int {
+	return iter.tree.Compare(iter.cur.Key, key)
 }
 
 func (iter *Iterator[T]) push() {

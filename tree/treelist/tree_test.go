@@ -709,6 +709,42 @@ func TestIntersectionSlice(t *testing.T) {
 	}
 }
 
+func TestIntersectionBase(t *testing.T) {
+	tree1 := New(compare.Any[int])
+	tree2 := New(compare.Any[int])
+
+	for i := 1; i < 5; i++ {
+		tree1.Put(i, i)
+	}
+
+	for i := 2; i < 6; i++ {
+		tree2.Put(i, i)
+	}
+
+	// [{2 2} {3 3} {4 4}]
+	var result string
+	result = fmt.Sprintf("%v", tree1.Intersection(tree2).Slices())
+	if result != "[{2 2} {3 3} {4 4}]" {
+		t.Error(result)
+	}
+
+	result = fmt.Sprintf("%v", tree1.UnionSets(tree2).Slices())
+	if fmt.Sprintf("%v", result) != "[{1 1} {2 2} {3 3} {4 4} {5 5}]" {
+		t.Error(result)
+	}
+
+	result = fmt.Sprintf("%v", tree1.DifferenceSets(tree2).Slices())
+	if fmt.Sprintf("%v", result) != "[{1 1}]" {
+		t.Error(result)
+	}
+
+	result = fmt.Sprintf("%v", tree2.DifferenceSets(tree1).Slices())
+	if fmt.Sprintf("%v", result) != "[{5 5}]" {
+		t.Error(result)
+	}
+
+}
+
 func TestIntersection(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
