@@ -191,6 +191,7 @@ TrimByIndex retain the value of the index range \. \[low high\]
 func (tree *Tree[T]) Values() []interface{}
 ```
 
+Values return all values. in order
 
 ## examples
 

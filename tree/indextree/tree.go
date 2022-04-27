@@ -235,6 +235,7 @@ func (tree *Tree[T]) Traverse(every func(k T, v interface{}) bool) {
 	traverasl(root)
 }
 
+// Values return all values. in order
 func (tree *Tree[T]) Values() []interface{} {
 	var mszie int64
 	root := tree.getRoot()

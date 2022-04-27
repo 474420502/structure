@@ -14,7 +14,7 @@ type Slice[T any] struct {
 
 // String show the string of keyvalue
 func (s *Slice[T]) String() string {
-	return fmt.Sprintf("%v:%v", s.Key, s.Value)
+	return fmt.Sprintf("{%v:%v}", s.Key, s.Value)
 }
 
 type treeNode[T any] struct {
@@ -470,7 +470,7 @@ func (tree *Tree[T]) RemoveTail() *Slice[T] {
 	return nil
 }
 
-// RemoveRange remove  a range of the ordered data of tree.
+// RemoveRange remove keys values by range. [low, high]
 func (tree *Tree[T]) RemoveRange(low, hight T) bool {
 
 	const L = 0
