@@ -8,32 +8,7 @@ import "github.com/474420502/structure/search/treelist"
 
 ## Index
 
-- [type Iterator](<#type-iterator>)
-  - [func (iter *Iterator) Clone() *Iterator](<#func-iterator-clone>)
-  - [func (iter *Iterator) Compare(key []byte) int](<#func-iterator-compare>)
-  - [func (iter *Iterator) Index() int64](<#func-iterator-index>)
-  - [func (iter *Iterator) Key() []byte](<#func-iterator-key>)
-  - [func (iter *Iterator) Next()](<#func-iterator-next>)
-  - [func (iter *Iterator) Prev()](<#func-iterator-prev>)
-  - [func (iter *Iterator) SeekByIndex(index int64)](<#func-iterator-seekbyindex>)
-  - [func (iter *Iterator) SeekGE(key []byte) bool](<#func-iterator-seekge>)
-  - [func (iter *Iterator) SeekGT(key []byte) bool](<#func-iterator-seekgt>)
-  - [func (iter *Iterator) SeekLE(key []byte) bool](<#func-iterator-seekle>)
-  - [func (iter *Iterator) SeekLT(key []byte) bool](<#func-iterator-seeklt>)
-  - [func (iter *Iterator) SeekToFirst()](<#func-iterator-seektofirst>)
-  - [func (iter *Iterator) SeekToLast()](<#func-iterator-seektolast>)
-  - [func (iter *Iterator) Slice() *Slice](<#func-iterator-slice>)
-  - [func (iter *Iterator) Valid() bool](<#func-iterator-valid>)
-  - [func (iter *Iterator) Value() interface{}](<#func-iterator-value>)
-- [type IteratorRange](<#type-iteratorrange>)
-  - [func (ir *IteratorRange) Direction() RangeDirection](<#func-iteratorrange-direction>)
-  - [func (ir *IteratorRange) GE2LE(start, end []byte)](<#func-iteratorrange-ge2le>)
-  - [func (ir *IteratorRange) GE2LT(start, end []byte)](<#func-iteratorrange-ge2lt>)
-  - [func (ir *IteratorRange) GT2LE(start, end []byte)](<#func-iteratorrange-gt2le>)
-  - [func (ir *IteratorRange) GT2LT(start, end []byte)](<#func-iteratorrange-gt2lt>)
-  - [func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool)](<#func-iteratorrange-range>)
-  - [func (ir *IteratorRange) SetDirection(dir RangeDirection)](<#func-iteratorrange-setdirection>)
-  - [func (ir *IteratorRange) Size() int64](<#func-iteratorrange-size>)
+
 - [type RangeDirection](<#type-rangedirection>)
 - [type Slice](<#type-slice>)
   - [func (s *Slice) String() string](<#func-slice-string>)
@@ -66,9 +41,35 @@ import "github.com/474420502/structure/search/treelist"
   - [func (tree *Tree) Trim(low, hight []byte)](<#func-tree-trim>)
   - [func (tree *Tree) TrimByIndex(low, hight int64)](<#func-tree-trimbyindex>)
   - [func (tree *Tree) UnionSets(other *Tree) *Tree](<#func-tree-unionsets>)
+- [type Iterator](<#type-iterator>)
+  - [func (iter *Iterator) Clone() *Iterator](<#func-iterator-clone>)
+  - [func (iter *Iterator) Compare(key []byte) int](<#func-iterator-compare>)
+  - [func (iter *Iterator) Index() int64](<#func-iterator-index>)
+  - [func (iter *Iterator) Key() []byte](<#func-iterator-key>)
+  - [func (iter *Iterator) Next()](<#func-iterator-next>)
+  - [func (iter *Iterator) Prev()](<#func-iterator-prev>)
+  - [func (iter *Iterator) SeekByIndex(index int64)](<#func-iterator-seekbyindex>)
+  - [func (iter *Iterator) SeekGE(key []byte) bool](<#func-iterator-seekge>)
+  - [func (iter *Iterator) SeekGT(key []byte) bool](<#func-iterator-seekgt>)
+  - [func (iter *Iterator) SeekLE(key []byte) bool](<#func-iterator-seekle>)
+  - [func (iter *Iterator) SeekLT(key []byte) bool](<#func-iterator-seeklt>)
+  - [func (iter *Iterator) SeekToFirst()](<#func-iterator-seektofirst>)
+  - [func (iter *Iterator) SeekToLast()](<#func-iterator-seektolast>)
+  - [func (iter *Iterator) Slice() *Slice](<#func-iterator-slice>)
+  - [func (iter *Iterator) Valid() bool](<#func-iterator-valid>)
+  - [func (iter *Iterator) Value() interface{}](<#func-iterator-value>)
+- [type IteratorRange](<#type-iteratorrange>)
+  - [func (ir *IteratorRange) Direction() RangeDirection](<#func-iteratorrange-direction>)
+  - [func (ir *IteratorRange) GE2LE(start, end []byte)](<#func-iteratorrange-ge2le>)
+  - [func (ir *IteratorRange) GE2LT(start, end []byte)](<#func-iteratorrange-ge2lt>)
+  - [func (ir *IteratorRange) GT2LE(start, end []byte)](<#func-iteratorrange-gt2le>)
+  - [func (ir *IteratorRange) GT2LT(start, end []byte)](<#func-iteratorrange-gt2lt>)
+  - [func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool)](<#func-iteratorrange-range>)
+  - [func (ir *IteratorRange) SetDirection(dir RangeDirection)](<#func-iteratorrange-setdirection>)
+  - [func (ir *IteratorRange) Size() int64](<#func-iteratorrange-size>)
+- [examples](<#examples>)
 
-
-## type [Iterator](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L8-L13>)
+## type [Iterator](<#examples>)
 
 ```go
 type Iterator struct {
@@ -76,17 +77,17 @@ type Iterator struct {
 }
 ```
 
-### func \(\*Iterator\) [Clone](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L161>)
+### func \(\*Iterator\) [Clone](<#examples>)
 
 ```go
 func (iter *Iterator) Clone() *Iterator
 ```
 
-Clone 复制一个当前迭代的iterator\. 用于复位
+Clone copy a iterator. eg: record iterator position
 
 copy a iterator\. eg: record iterator position
 
-### func \(\*Iterator\) [Compare](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L127>)
+### func \(\*Iterator\) [Compare](<#examples>)
 
 ```go
 func (iter *Iterator) Compare(key []byte) int
@@ -100,89 +101,88 @@ if cur\.key == key return 0\.
 
 if cur\.key \< key return \- 1\.
 
-### func \(\*Iterator\) [Index](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L144>)
+### func \(\*Iterator\) [Index](<#examples>)
 
 ```go
 func (iter *Iterator) Index() int64
 ```
 
-Index 当前item的index\. 有序的位置 与数组等义
+Index return the Index of the current iterator. Ordered position equivalent to the Index of an Priority Queue(Array)
 
-### func \(\*Iterator\) [Key](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L149>)
+### func \(\*Iterator\) [Key](<#examples>)
 
 ```go
 func (iter *Iterator) Key() []byte
 ```
 
-Key 当前item的key
+Key return the key of current
 
-### func \(\*Iterator\) [Next](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L132>)
+### func \(\*Iterator\) [Next](<#examples>)
 
 ```go
 func (iter *Iterator) Next()
 ```
 
-Next 位移至下一个
+Next Next the current iterator move to the next. before call it must call Vaild() and return true.
 
-### func \(\*Iterator\) [Prev](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L113>)
+### func \(\*Iterator\) [Prev](<#examples>)
 
 ```go
 func (iter *Iterator) Prev()
 ```
 
-Prev 位移至前一个
+Prev  the current iterator move to the prev. before call it must call Vaild() and return true.
 
-### func \(\*Iterator\) [SeekByIndex](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L50>)
+### func \(\*Iterator\) [SeekByIndex](<#examples>)
 
 ```go
 func (iter *Iterator) SeekByIndex(index int64)
 ```
 
-#### SeekByIndex 位移到 有序序列的第index个
+#### SeekByIndex  
 
-seek to  the key by index\. like index of array\. index is ordered
+seek to  the key by index. like index of array. index is ordered
 
-### func \(\*Iterator\) [SeekGE](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L19>)
+### func \(\*Iterator\) [SeekGE](<#examples>)
 
 ```go
 func (iter *Iterator) SeekGE(key []byte) bool
 ```
 
-SeekGE 搜索到 大于等于key 的前缀\. 如果存在等值的key 返回true\. 否则false
+SeekGE  
+seek to Greater Than or Equal the key.
+if equal is not exists, take the great key
 
-seek to Greater Than or Equal the key\. \[less equal greater\] \-\-\> if equal is not exists\, take the great
-
-### func \(\*Iterator\) [SeekGT](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L35>)
+### func \(\*Iterator\) [SeekGT](<#examples>)
 
 ```go
 func (iter *Iterator) SeekGT(key []byte) bool
 ```
 
-SeekGT 搜索到 大于key 的前缀\. 如果存在等值的key 返回true\. 否则false
+SeekGT
+seek to Greater Than the key.
+take the great key
 
-seek to Greater Than the key\. \[less equal greater\] \-\-\>  take the great
-
-### func \(\*Iterator\) [SeekLE](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L60>)
+### func \(\*Iterator\) [SeekLE](<#examples>)
 
 ```go
 func (iter *Iterator) SeekLE(key []byte) bool
 ```
 
-SeekLE 搜索到 小于等于key 的前缀\. 如果存在等值的key 返回true\. 否则false
+SeekLE
+seek to  less than or equal the key.
+if equal is not exists, take the less key
 
-seek to  less than or equal the key\. \[less equal greater\] \-\-\>  if equal is not exists\, take the less
-
-### func \(\*Iterator\) [SeekLT](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L76>)
+### func \(\*Iterator\) [SeekLT](<#examples>)
 
 ```go
 func (iter *Iterator) SeekLT(key []byte) bool
 ```
 
-SeekLE 搜索到 小于key 的前缀\. 如果存在等值的key 返回true\. 否则false
+SeekLT
+seek to  less than  the key.
 
-seek to  less than  the key\. \[less equal greater\] \-\-\> take the less
-
-### func \(\*Iterator\) [SeekToFirst](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L89>)
+### func \(\*Iterator\) [SeekToFirst](<#examples>)
 
 ```go
 func (iter *Iterator) SeekToFirst()
@@ -190,7 +190,7 @@ func (iter *Iterator) SeekToFirst()
 
 SeekToFirst to the first item of the ordered sequence
 
-### func \(\*Iterator\) [SeekToLast](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L99>)
+### func \(\*Iterator\) [SeekToLast](<#examples>)
 
 ```go
 func (iter *Iterator) SeekToLast()
@@ -198,31 +198,31 @@ func (iter *Iterator) SeekToLast()
 
 SeekToLast to the last item of the ordered sequence
 
-### func \(\*Iterator\) [Slice](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L139>)
+### func \(\*Iterator\) [Slice](<#examples>)
 
 ```go
 func (iter *Iterator) Slice() *Slice
 ```
 
-Slice 当前item的key value
+Slice return the KeyValue of current
 
-### func \(\*Iterator\) [Valid](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L108>)
+### func \(\*Iterator\) [Valid](<#examples>)
 
 ```go
 func (iter *Iterator) Valid() bool
 ```
 
-Valid 校验数据是否存在 配合Seek使用
+Valid  if current value is not nil return true. else return false. for use with Seek
 
-### func \(\*Iterator\) [Value](<https://github.com/474420502/structure/blob/master/search/treelist/iterator.go#L154>)
+### func \(\*Iterator\) [Value](<#examples>)
 
 ```go
 func (iter *Iterator) Value() interface{}
 ```
 
-Value 当前item的value
+Value return the value of current
 
-## type [IteratorRange](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L13-L17>)
+## type [IteratorRange](<#examples>)
 
 IteratorRange the iterator for easy to range the data
 
@@ -232,7 +232,7 @@ type IteratorRange struct {
 }
 ```
 
-### func \(\*IteratorRange\) [Direction](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L70>)
+### func \(\*IteratorRange\) [Direction](<#examples>)
 
 ```go
 func (ir *IteratorRange) Direction() RangeDirection
@@ -240,7 +240,7 @@ func (ir *IteratorRange) Direction() RangeDirection
 
 SetDirection set iterator range direction
 
-### func \(\*IteratorRange\) [GE2LE](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L86>)
+### func \(\*IteratorRange\) [GE2LE](<#examples>)
 
 ```go
 func (ir *IteratorRange) GE2LE(start, end []byte)
@@ -248,7 +248,7 @@ func (ir *IteratorRange) GE2LE(start, end []byte)
 
 GE2LE \[s\,e\] start with GE\, end with LE\. \(like Seek\*\*\)
 
-### func \(\*IteratorRange\) [GE2LT](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L138>)
+### func \(\*IteratorRange\) [GE2LT](<#examples>)
 
 ```go
 func (ir *IteratorRange) GE2LT(start, end []byte)
@@ -256,7 +256,7 @@ func (ir *IteratorRange) GE2LT(start, end []byte)
 
 GE2LT \[s\,e\) start with GE\, end with LT\. \(like Seek\*\*\)
 
-### func \(\*IteratorRange\) [GT2LE](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L112>)
+### func \(\*IteratorRange\) [GT2LE](<#examples>)
 
 ```go
 func (ir *IteratorRange) GT2LE(start, end []byte)
@@ -264,7 +264,7 @@ func (ir *IteratorRange) GT2LE(start, end []byte)
 
 GE2LE \(s\,e\] start with GT\, end with LE\. \(like Seek\*\*\)
 
-### func \(\*IteratorRange\) [GT2LT](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L164>)
+### func \(\*IteratorRange\) [GT2LT](<#examples>)
 
 ```go
 func (ir *IteratorRange) GT2LT(start, end []byte)
@@ -272,7 +272,7 @@ func (ir *IteratorRange) GT2LT(start, end []byte)
 
 GE2LT \(s\,e\) start with GT\, end with LT\. \(like Seek\*\*\)
 
-### func \(\*IteratorRange\) [Range](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L26>)
+### func \(\*IteratorRange\) [Range](<#examples>)
 
 ```go
 func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool)
@@ -280,7 +280,7 @@ func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool)
 
 SetDirection set iterator range direction\. default Forward\(start to end\)
 
-### func \(\*IteratorRange\) [SetDirection](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L65>)
+### func \(\*IteratorRange\) [SetDirection](<#examples>)
 
 ```go
 func (ir *IteratorRange) SetDirection(dir RangeDirection)
@@ -288,7 +288,7 @@ func (ir *IteratorRange) SetDirection(dir RangeDirection)
 
 SetDirection set iterator range direction\. default Forward\(start to end\)
 
-### func \(\*IteratorRange\) [Size](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L75>)
+### func \(\*IteratorRange\) [Size](<#examples>)
 
 ```go
 func (ir *IteratorRange) Size() int64
@@ -296,7 +296,7 @@ func (ir *IteratorRange) Size() int64
 
 Size get range size
 
-## type [RangeDirection](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L3>)
+## type [RangeDirection](<#examples>)
 
 ```go
 type RangeDirection int
@@ -311,7 +311,7 @@ const (
 )
 ```
 
-## type [Slice](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L13-L16>)
+## type [Slice](<#examples>)
 
 ```go
 type Slice struct {
@@ -320,7 +320,7 @@ type Slice struct {
 }
 ```
 
-### func \(\*Slice\) [String](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L25>)
+### func \(\*Slice\) [String](<#examples>)
 
 ```go
 func (s *Slice) String() string
@@ -328,7 +328,7 @@ func (s *Slice) String() string
 
 String show the string of keyvalue
 
-## type [SliceIndex](<https://github.com/474420502/structure/blob/master/search/treelist/iterator_range.go#L20-L23>)
+## type [SliceIndex](<#examples>)
 
 SliceIndex slice and  with index
 
@@ -339,7 +339,7 @@ type SliceIndex struct {
 }
 ```
 
-## type [Tree](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L44-L49>)
+## type [Tree](<#examples>)
 
 Tree the struct of treelist
 
@@ -349,7 +349,7 @@ type Tree struct {
 }
 ```
 
-### func [New](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L106>)
+### func [New](<#examples>)
 
 ```go
 func New() *Tree
@@ -357,7 +357,7 @@ func New() *Tree
 
 New create a object of tree
 
-### func \(\*Tree\) [Clear](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L806>)
+### func \(\*Tree\) [Clear](<#examples>)
 
 ```go
 func (tree *Tree) Clear()
@@ -365,7 +365,7 @@ func (tree *Tree) Clear()
 
 Clear\. Reset the treelist\.
 
-### func \(\*Tree\) [DifferenceSets](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L1083>)
+### func \(\*Tree\) [DifferenceSets](<#examples>)
 
 ```go
 func (tree *Tree) DifferenceSets(other *Tree) *Tree
@@ -373,7 +373,7 @@ func (tree *Tree) DifferenceSets(other *Tree) *Tree
 
 DifferenceSets The set of elements after subtracting B from A
 
-### func \(\*Tree\) [Get](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L135>)
+### func \(\*Tree\) [Get](<#examples>)
 
 ```go
 func (tree *Tree) Get(key []byte) (interface{}, bool)
@@ -381,7 +381,7 @@ func (tree *Tree) Get(key []byte) (interface{}, bool)
 
 Get Get Value from key\.
 
-### func \(\*Tree\) [Head](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L503>)
+### func \(\*Tree\) [Head](<#examples>)
 
 ```go
 func (tree *Tree) Head() *Slice
@@ -389,7 +389,7 @@ func (tree *Tree) Head() *Slice
 
 Head returns the head of the ordered data of tree
 
-### func \(\*Tree\) [Index](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L408>)
+### func \(\*Tree\) [Index](<#examples>)
 
 ```go
 func (tree *Tree) Index(i int64) *Slice
@@ -399,7 +399,7 @@ Index return the slice by index\.
 
 like the index of array\(order\)
 
-### func \(\*Tree\) [IndexOf](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L414>)
+### func \(\*Tree\) [IndexOf](<#examples>)
 
 ```go
 func (tree *Tree) IndexOf(key []byte) int64
@@ -407,7 +407,7 @@ func (tree *Tree) IndexOf(key []byte) int64
 
 IndexOf Get the Index of key in the Treelist\(Order\)
 
-### func \(\*Tree\) [Intersection](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L1004>)
+### func \(\*Tree\) [Intersection](<#examples>)
 
 ```go
 func (tree *Tree) Intersection(other *Tree) *Tree
@@ -415,7 +415,7 @@ func (tree *Tree) Intersection(other *Tree) *Tree
 
 Intersection  tree intersection with other\. \[1 2 3\] \[2 3 4\] \-\> \[2 3\]\.
 
-### func \(\*Tree\) [Iterator](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L115>)
+### func \(\*Tree\) [Iterator](<#examples>)
 
 ```go
 func (tree *Tree) Iterator() *Iterator
@@ -423,7 +423,7 @@ func (tree *Tree) Iterator() *Iterator
 
 Iterator Return the Iterator of tree\. similar to list or skiplist
 
-### func \(\*Tree\) [IteratorRange](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L122>)
+### func \(\*Tree\) [IteratorRange](<#examples>)
 
 ```go
 func (tree *Tree) IteratorRange() *IteratorRange
@@ -433,7 +433,7 @@ IteratorRange Return the Iterator of tree\. similar to list or skiplist\.
 
 the struct can set range\.
 
-### func \(\*Tree\) [Put](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L320>)
+### func \(\*Tree\) [Put](<#examples>)
 
 ```go
 func (tree *Tree) Put(key []byte, value interface{}) bool
@@ -441,7 +441,7 @@ func (tree *Tree) Put(key []byte, value interface{}) bool
 
 Put Insert the key In treelist\, if key exists\, ignore
 
-### func \(\*Tree\) [PutDuplicate](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L144>)
+### func \(\*Tree\) [PutDuplicate](<#examples>)
 
 ```go
 func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Slice)) bool
@@ -449,7 +449,7 @@ func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Sl
 
 PutDuplicate put\, when key duplicate with call do\. don\,t change the key of \`exists\`\, will break the tree of blance if duplicate\, will return true\.
 
-### func \(\*Tree\) [Remove](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L487>)
+### func \(\*Tree\) [Remove](<#examples>)
 
 ```go
 func (tree *Tree) Remove(key []byte) *Slice
@@ -457,7 +457,7 @@ func (tree *Tree) Remove(key []byte) *Slice
 
 Remove remove key and return value that be removed
 
-### func \(\*Tree\) [RemoveHead](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L512>)
+### func \(\*Tree\) [RemoveHead](<#examples>)
 
 ```go
 func (tree *Tree) RemoveHead() *Slice
@@ -465,7 +465,7 @@ func (tree *Tree) RemoveHead() *Slice
 
 RemoveHead remove the head of the ordered data of tree\. similar to the pop function of heap
 
-### func \(\*Tree\) [RemoveIndex](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L495>)
+### func \(\*Tree\) [RemoveIndex](<#examples>)
 
 ```go
 func (tree *Tree) RemoveIndex(index int64) *Slice
@@ -473,7 +473,7 @@ func (tree *Tree) RemoveIndex(index int64) *Slice
 
 RemoveIndex remove key value by index and return value that be removed
 
-### func \(\*Tree\) [RemoveRange](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L537>)
+### func \(\*Tree\) [RemoveRange](<#examples>)
 
 ```go
 func (tree *Tree) RemoveRange(low, hight []byte) bool
@@ -481,7 +481,7 @@ func (tree *Tree) RemoveRange(low, hight []byte) bool
 
 RemoveRange remove keys values by range\. \[low\, high\]
 
-### func \(\*Tree\) [RemoveRangeByIndex](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L660>)
+### func \(\*Tree\) [RemoveRangeByIndex](<#examples>)
 
 ```go
 func (tree *Tree) RemoveRangeByIndex(low, hight int64)
@@ -489,7 +489,7 @@ func (tree *Tree) RemoveRangeByIndex(low, hight int64)
 
 RemoveRangeByIndex 1\.remove range \[low:hight\] 2\.low and hight that the range must contain a value that exists\. eg: \[low: hight\+1\] \[low\-1: hight\]\.  \[low\-1: hight\+1\]\. error: \[low\-1:low\-2\] or \[hight\+1:hight\+2\]
 
-### func \(\*Tree\) [RemoveTail](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L529>)
+### func \(\*Tree\) [RemoveTail](<#examples>)
 
 ```go
 func (tree *Tree) RemoveTail() *Slice
@@ -497,7 +497,7 @@ func (tree *Tree) RemoveTail() *Slice
 
 RemoveTail remove the tail of the ordered data of tree\.
 
-### func \(\*Tree\) [Set](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L231>)
+### func \(\*Tree\) [Set](<#examples>)
 
 ```go
 func (tree *Tree) Set(key []byte, value interface{}) bool
@@ -505,13 +505,13 @@ func (tree *Tree) Set(key []byte, value interface{}) bool
 
 Set Insert the key In treelist\, if key exists\, cover
 
-### func \(\*Tree\) [SetCompare](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L110>)
+### func \(\*Tree\) [SetCompare](<#examples>)
 
 ```go
 func (tree *Tree) SetCompare(comp compare.Compare[[]byte])
 ```
 
-### func \(\*Tree\) [Size](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L127>)
+### func \(\*Tree\) [Size](<#examples>)
 
 ```go
 func (tree *Tree) Size() int64
@@ -519,7 +519,7 @@ func (tree *Tree) Size() int64
 
 Size return the size of treelist
 
-### func \(\*Tree\) [Slices](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L472>)
+### func \(\*Tree\) [Slices](<#examples>)
 
 ```go
 func (tree *Tree) Slices() []Slice
@@ -527,7 +527,7 @@ func (tree *Tree) Slices() []Slice
 
 Slices  return all slice\. from smallest to largest\.
 
-### func \(\*Tree\) [Tail](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L520>)
+### func \(\*Tree\) [Tail](<#examples>)
 
 ```go
 func (tree *Tree) Tail() *Slice
@@ -535,7 +535,7 @@ func (tree *Tree) Tail() *Slice
 
 Tail returns the tail of the ordered data of tree
 
-### func \(\*Tree\) [Traverse](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L446>)
+### func \(\*Tree\) [Traverse](<#examples>)
 
 ```go
 func (tree *Tree) Traverse(every func(s *Slice) bool)
@@ -543,7 +543,7 @@ func (tree *Tree) Traverse(every func(s *Slice) bool)
 
 Traverse the traversal method defaults to LDR\. from smallest to largest\.
 
-### func \(\*Tree\) [Trim](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L813>)
+### func \(\*Tree\) [Trim](<#examples>)
 
 ```go
 func (tree *Tree) Trim(low, hight []byte)
@@ -551,7 +551,7 @@ func (tree *Tree) Trim(low, hight []byte)
 
 Trim retain the value of the range \. \[low high\]
 
-### func \(\*Tree\) [TrimByIndex](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L899>)
+### func \(\*Tree\) [TrimByIndex](<#examples>)
 
 ```go
 func (tree *Tree) TrimByIndex(low, hight int64)
@@ -559,7 +559,7 @@ func (tree *Tree) TrimByIndex(low, hight int64)
 
 TrimByIndex retain the value of the index range \. \[low high\]
 
-### func \(\*Tree\) [UnionSets](<https://github.com/474420502/structure/blob/master/search/treelist/tree.go#L1038>)
+### func \(\*Tree\) [UnionSets](<#examples>)
 
 ```go
 func (tree *Tree) UnionSets(other *Tree) *Tree
@@ -568,5 +568,244 @@ func (tree *Tree) UnionSets(other *Tree) *Tree
 UnionSets tree unionsets with other\. \[1 2 3\] \[2 3 4\] \-\> \[1 2 3 4\]\.
 
 
+## examples
 
-Generated by [gomarkdoc](<https://github.com/princjef/gomarkdoc>)
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/474420502/structure/search/treelist"
+)
+
+func main() {
+
+	// API A similar to B
+	tree1 := treelist.New()
+
+	log.Println("Put Set")
+	tree1.Put([]byte("zero"), 0) // true
+	tree1.Put([]byte("apple"), 4)
+	tree1.Put([]byte("word1"), 1)
+	tree1.Put([]byte("word2"), 2)
+	tree1.Set([]byte("boy"), 4) // boy 4
+	tree1.Set([]byte("boy"), 3) // boy 3
+
+	log.Println("Slices")
+	var results []string
+	for _, slice := range tree1.Slices() {
+		results = append(results, Slice2String(&slice))
+	}
+	log.Println(results) //[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}]. values in order
+
+	log.Println("Get")
+	tree1.Get([]byte("apple"))  // 4, true
+	tree1.Get([]byte("apple1")) // nil, false
+
+	log.Println("Head Tail")
+	log.Println(tree1.Head()) // apple 4
+	log.Println(tree1.Tail()) // zero 0
+
+	log.Println("Index IndexOf Size")
+	log.Println(tree1.Index(0))                // apple
+	log.Println(tree1.IndexOf([]byte("boy")))  // 1
+	log.Println(tree1.Index(tree1.Size() - 1)) // 4
+
+	log.Println("Intersection UnionSets") //
+	tree2 := treelist.New()
+	// word1 1 word2 2 zero 0
+	tree2.Set([]byte("word1"), 1)
+	tree2.Set([]byte("word2"), 2)
+	tree2.Set([]byte("zero3"), 3)
+
+	tree3 := tree1.Intersection(tree2)            // Intersection
+	log.Println(Tree2String(tree3), tree3.Size()) // [{word1:1} {word2:2}] 2
+
+	tree3 = tree1.UnionSets(tree2)                // UnionSets
+	log.Println(Tree2String(tree3), tree3.Size()) // [{apple:4} {boy:3} {word1:1} {word2:2} {zero:0} {zero3:3}] 6
+
+	//[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}]
+	log.Println("Iterator: {Valid Next SeekGE}")
+	iter := tree1.Iterator()
+	if iter.SeekGE([]byte("word1")) { // similar to rocksdb pebble leveldb skiplist
+		for ; iter.Valid(); iter.Next() { // Vaiid Next
+			log.Println(string(iter.Key())) // log: word1 word2 zero
+			// you can limit by yourself
+		}
+	}
+
+	//[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}]
+	log.Println("Iterator: {Valid Next SeekGT}")
+	if iter.SeekGT([]byte("word1")) { //  key is "word2"
+		for ; iter.Valid(); iter.Next() { // Vaiid Next
+			log.Println(string(iter.Key())) // log: word2 zero
+			// you can limit by yourself
+		}
+	}
+
+	//[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}]
+	log.Println("Iterator: {Valid Prev SeekLE}")
+	if !iter.SeekLE([]byte("word")) { // return false . key is "boy"
+		for ; iter.Valid(); iter.Prev() { // Vaiid Next
+			log.Println(string(iter.Key())) // log: boy apple
+			// you can limit by yourself
+		}
+	}
+
+	//[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}]
+	log.Println("Iterator: {Valid Prev SeekLT}")
+	if iter.SeekLT([]byte("word1")) { // return tree key is "boy"
+		for ; iter.Valid(); iter.Prev() { // Vaiid Next
+			log.Println(string(iter.Key())) // log: boy apple
+			// you can limit by yourself
+		}
+	}
+
+	log.Println("Iterator: {SeekToFirst SeekToLast Index}")
+	iter.SeekToFirst()              // get first item
+	log.Println(string(iter.Key())) // apple
+
+	iter.SeekToLast()               // get last item
+	log.Println(string(iter.Key())) // zero
+
+	log.Println("Iterator: {Index}") // get index, the value is `size - 1`
+	log.Println(iter.Index())        // 4
+
+	log.Println("PutDuplicate")
+	tree1.PutDuplicate([]byte("boy"), 10, func(exists *treelist.Slice) {
+		exists.Value = 100 // if key is exists, set the value
+	})
+
+	//[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}]. values in order
+	log.Println("Trim TrimByIndex")             //
+	tree1.Trim([]byte("word1"), []byte("zero")) //
+	log.Println(Tree2String(tree1))             // [{word1:1} {word2:2} {zero:0}]
+
+	Resotre(tree1) // Resotre Tree1
+
+	tree1.TrimByIndex(1, 3)         //
+	log.Println(Tree2String(tree1)) // [{boy:3} {word1:1} {word2:2}]
+
+	log.Println("Traverse")
+	tree1.Traverse(func(s *treelist.Slice) bool {
+		log.Println(Slice2String(s))
+		return true
+	}) // {boy:3} {word1:1} {word2:2}
+
+	Resotre(tree1) // Resotre Tree1
+
+	log.Println("Remove RemoveHead RemoveTail RemoveIndex")
+	tree1.Remove([]byte("word1"))
+	log.Println(Slice2String(tree1.RemoveHead())) // be removed. return slice -> {apple:4}
+	log.Println(Slice2String(tree1.RemoveTail())) // be removed. return slice -> {zero:0}
+	log.Println(Tree2String(tree1))               //[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}] ->  [{boy:3} {word2:2}]
+	Resotre(tree1)                                // Resotre Tree1
+
+	// [{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}] ->  [{apple:4} {word1:1} {word2:2} {zero:0}]
+	log.Println(Slice2String(tree1.RemoveIndex(1))) //  be removed. return slice -> {boy:3}
+	//  [{apple:4} {word1:1} {word2:2} {zero:0}] -> [{apple:4} {word2:2} {zero:0}]
+	log.Println(Slice2String(tree1.RemoveIndex(1))) // be removed. return slice -> {word1:1}
+
+	log.Println("RemoveRange RemoveRangeByIndex")
+	Resotre(tree1) // Resotre Tree1
+	tree1.RemoveRange([]byte("boy"), []byte("word2"))
+	log.Println(Tree2String(tree1)) //[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}] ->  [{boy:3} {word2:2}]
+	Resotre(tree1)                  // Resotre Tree1
+	tree1.RemoveRangeByIndex(1, 3)  // Remove by index from 1 - 3
+	log.Println(Tree2String(tree1)) //[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}] ->  [{boy:3} {word2:2}]
+}
+
+// IteratorRange
+func main2() {
+	var TestedBytesSimlpe = [][]byte{[]byte("c1"), []byte("c4"), []byte("c6"), []byte("a1"), []byte("a3"), []byte("a5")}
+
+	tree := treelist.New()
+	for _, v := range TestedBytesSimlpe {
+		tree.Put(v, v)
+	}
+
+	//	│       ┌── c6
+	//	│   ┌── c4
+	//	└── c1
+	//		│   ┌── a5
+	//		└── a3
+	//			└── a1
+	// [a1 a3 a5 c1 c4 c6]
+
+	log.Println("IteratorRange: {GE2LT}")
+	func() {
+		var result []string
+		iter := tree.IteratorRange()
+		iter.GE2LT([]byte("a4"), []byte("c4")) // a4 <= key < c4
+		iter.Range(func(cur *treelist.SliceIndex) bool {
+			result = append(result, string(cur.Key))
+			return true
+		})
+		log.Println(result) // "[a5 c1]"
+	}()
+
+	// [a1 a3 a5 c1 c4 c6]
+	log.Println("IteratorRange: {GT2LT}")
+	func() {
+		var result []string
+		iter := tree.IteratorRange()
+		iter.GT2LT([]byte("a4"), []byte("c9")) // a4 < key < c9
+		iter.Range(func(cur *treelist.SliceIndex) bool {
+			result = append(result, string(cur.Key))
+			return true
+		})
+		log.Println(result) // "[a5 c1 c4 c6]"
+	}()
+
+	// [a1 a3 a5 c1 c4 c6]
+	log.Println("IteratorRange: {GE2LE}")
+	func() {
+		var result []string
+		iter := tree.IteratorRange()
+		iter.GE2LE([]byte("a0"), []byte("c9")) // a0 <= key <= c9
+		iter.Range(func(cur *treelist.SliceIndex) bool {
+			result = append(result, string(cur.Key))
+			return true
+		})
+		log.Println(result) // "[a1 a3 a5 c1 c4 c6]""
+	}()
+
+	log.Println("IteratorRange: {GT2LE SetDirection}")
+	func() {
+		var result []string
+		iter := tree.IteratorRange()
+		iter.SetDirection(treelist.Reverse)    // Reverse
+		iter.GT2LE([]byte("a0"), []byte("c9")) // a0 < Key <= c9
+		iter.Range(func(cur *treelist.SliceIndex) bool {
+			result = append(result, string(cur.Key))
+			return true
+		})
+		log.Println(result) // [c6 c4 c1 a5 a3 a1]
+	}()
+}
+
+func Resotre(tree1 *treelist.Tree) {
+	tree1.Clear()
+	tree1.Put([]byte("zero"), 0) // true
+	tree1.Put([]byte("apple"), 4)
+	tree1.Put([]byte("word1"), 1)
+	tree1.Put([]byte("word2"), 2)
+	tree1.Set([]byte("boy"), 4) // boy 4
+	tree1.Set([]byte("boy"), 3) // boy 3
+}
+
+func Slice2String(s *treelist.Slice) string {
+	return fmt.Sprintf("{%v:%v}", string(s.Key), s.Value)
+}
+
+func Tree2String(tree *treelist.Tree) []string {
+	var results []string
+	for _, s := range tree.Slices() {
+		results = append(results, Slice2String(&s))
+	}
+	return results
+}
+
+```
