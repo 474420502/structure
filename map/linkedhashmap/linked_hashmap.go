@@ -17,6 +17,7 @@ type LinkedHashmap struct {
 
 // New
 func New() *LinkedHashmap {
+
 	lhmap := &LinkedHashmap{hmap: make(map[interface{}]*Node)}
 	lhmap.head = &Node{}
 	lhmap.tail = &Node{}

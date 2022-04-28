@@ -7,7 +7,7 @@ import (
 )
 
 func BenchmarkPush(b *testing.B) {
-	s := New()
+	s := New[int64]()
 	for i := 0; i < b.N; i++ {
 		v := rand.Int63()
 		s.Push(v)
@@ -16,7 +16,7 @@ func BenchmarkPush(b *testing.B) {
 
 func BenchmarkPushPop(b *testing.B) {
 
-	s := New()
+	s := New[int64]()
 
 	b.StopTimer()
 
@@ -54,7 +54,7 @@ func BenchmarkPushPop(b *testing.B) {
 }
 
 func TestBenchmarkPop(b *testing.T) {
-	s := New()
+	s := New[int64]()
 
 	N := int64(1000000)
 

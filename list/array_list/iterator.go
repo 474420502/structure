@@ -1,125 +1,83 @@
 package arraylist
 
-type Iterator struct {
-	al     *ArrayList
-	cur    uint
-	isInit bool
+import "log"
+
+type Iterator[T comparable] struct {
+	al  *ArrayList[T]
+	cur uint
 }
 
-func (iter *Iterator) Value() interface{} {
-	v, _ := iter.al.Index((int)(iter.cur))
-	return v
+func (iter *Iterator[T]) Value() T {
+	return iter.al.Index(iter.cur)
 }
 
-func (iter *Iterator) Prev() bool {
+func (iter *Iterator[T]) Vaild() bool {
+	return iter.cur < iter.al.size
+}
 
-	if !iter.isInit {
-		if iter.al.size != 0 {
-			iter.isInit = true
-			iter.cur = iter.al.size - 1
-			return true
-		}
-		return false
+// Swap  Swap iter Value
+func (iter *Iterator[T]) Swap(other *Iterator[T]) {
+	cidx := iter.cur + iter.al.headidx + 1
+	oidx := other.cur + other.al.headidx + 1
+
+	temp := iter.al.data[cidx]
+	iter.al.data[cidx] = other.al.data[oidx]
+	other.al.data[oidx] = temp
+}
+
+// SetValue Iter Value
+func (iter *Iterator[T]) SetValue(value T) {
+	iter.al.data[iter.cur+iter.al.headidx+1] = value
+}
+
+// IndexTo index to the data
+func (iter *Iterator[T]) IndexTo(idx uint) {
+	if idx >= iter.al.size {
+		log.Panic("out of size")
 	}
-
-	if iter.cur <= 0 {
-		return false
-	}
-	iter.cur--
-	return true
+	iter.cur = idx
 }
 
-func (iter *Iterator) Next() bool {
-
-	if !iter.isInit {
-		if iter.al.size != 0 {
-			iter.isInit = true
-			iter.cur = 0
-			return true
-		}
-		return false
-	}
-
-	if iter.cur >= iter.al.size-1 {
-		return false
-	}
-	iter.cur++
-	return true
+// IndexTo index to the data
+func (iter *Iterator[T]) Index() uint {
+	return iter.cur
 }
 
-func (iter *Iterator) ToHead() {
-	iter.isInit = true
-	iter.cur = 0
-}
-
-func (iter *Iterator) ToTail() {
-	iter.isInit = true
-	iter.cur = iter.al.size - 1
-}
-
-type CircularIterator struct {
-	al     *ArrayList
-	cur    uint
-	isInit bool
-}
-
-func (iter *CircularIterator) Value() interface{} {
-	v, _ := iter.al.Index((int)(iter.cur))
-	return v
-}
-
-func (iter *CircularIterator) Prev() bool {
-
-	if !iter.isInit {
-		if iter.al.size != 0 {
-			iter.isInit = true
-			iter.cur = iter.al.size - 1
-			return true
-		}
-		return false
-	}
-
-	if iter.al.size == 0 {
-		return false
-	}
-
-	if iter.cur <= 0 {
-		iter.cur = iter.al.size - 1
-	} else {
+// RemoveToNext Remove self and to Next. must iter.Vaild() == true
+func (iter *Iterator[T]) RemoveToNext() {
+	iter.al.Remove(iter.cur)
+	if iter.cur == iter.al.size {
 		iter.cur--
 	}
-	return true
+	return
 }
 
-func (iter *CircularIterator) Next() bool {
-
-	if !iter.isInit {
-		if iter.al.size != 0 {
-			iter.isInit = true
-			iter.cur = 0
-			return true
-		}
-		return false
+// RemoveToNext Remove self and to Prev.  must iter.Vaild() == true
+func (iter *Iterator[T]) RemoveToPrev() {
+	iter.al.Remove(iter.cur)
+	if iter.cur == 0 {
+		return
 	}
-
-	if iter.al.size == 0 {
-		return false
-	}
-
-	if iter.cur >= iter.al.size-1 {
-		iter.cur = 0
-	} else {
-		iter.cur++
-	}
-	return true
+	iter.cur--
+	return
 }
 
-func (iter *CircularIterator) ToHead() {
-	iter.isInit = true
+// Prev to prev
+func (iter *Iterator[T]) Prev() {
+	iter.cur--
+}
+
+// Next to next
+func (iter *Iterator[T]) Next() {
+	iter.cur++
+}
+
+// ToHead to Head
+func (iter *Iterator[T]) ToHead() {
 	iter.cur = 0
 }
 
-func (iter *CircularIterator) ToTail() {
-	iter.isInit = true
+// ToTail to Tail
+func (iter *Iterator[T]) ToTail() {
 	iter.cur = iter.al.size - 1
 }

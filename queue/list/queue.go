@@ -1,34 +1,34 @@
 package listqueue
 
-type ListQueue struct {
-	head *Element
-	tail *Element
+type ListQueue[T any] struct {
+	head *Element[T]
+	tail *Element[T]
 
 	size int64
 }
 
-func New() *ListQueue {
-	return &ListQueue{
+func New[T any]() *ListQueue[T] {
+	return &ListQueue[T]{
 		head: nil,
 		tail: nil,
 		size: 0,
 	}
 }
 
-func (lq *ListQueue) Size() int64 {
+func (lq *ListQueue[T]) Size() int64 {
 	return lq.size
 }
 
-func (lq *ListQueue) Front() *Element {
+func (lq *ListQueue[T]) Front() *Element[T] {
 	return lq.head
 }
 
-func (lq *ListQueue) Back() *Element {
+func (lq *ListQueue[T]) Back() *Element[T] {
 	return lq.tail
 }
 
-func (lq *ListQueue) PushBack(value interface{}) {
-	e := &Element{value: value}
+func (lq *ListQueue[T]) PushBack(value T) {
+	e := &Element[T]{value: value}
 	lq.size++
 	if lq.size == 1 {
 		lq.head = e
@@ -41,9 +41,9 @@ func (lq *ListQueue) PushBack(value interface{}) {
 	lq.tail = e
 }
 
-func (lq *ListQueue) PushFront(value interface{}) {
+func (lq *ListQueue[T]) PushFront(value T) {
 
-	e := &Element{value: value}
+	e := &Element[T]{value: value}
 	lq.size++
 	if lq.size == 1 {
 		lq.head = e
@@ -57,7 +57,7 @@ func (lq *ListQueue) PushFront(value interface{}) {
 
 }
 
-func (lq *ListQueue) PopBack() interface{} {
+func (lq *ListQueue[T]) PopBack() interface{} {
 
 	if lq.size == 0 {
 		return nil
@@ -82,7 +82,7 @@ func (lq *ListQueue) PopBack() interface{} {
 	return p.value
 }
 
-func (lq *ListQueue) PopFront() interface{} {
+func (lq *ListQueue[T]) PopFront() interface{} {
 
 	if lq.size == 0 {
 		return nil

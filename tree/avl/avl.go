@@ -6,16 +6,17 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
-const HeightDiff = 1
-
-type Node struct {
-	Children   [2]*Node
-	Parent     *Node
-	height     int
-	Key, Value interface{}
+// Node the node of tree
+type Node[T any] struct {
+	Children [2]*Node[T]
+	Parent   *Node[T]
+	height   int
+	Key      T
+	Value    interface{}
 }
 
-func (n *Node) String() string {
+// String show node by chars
+func (n *Node[T]) String() string {
 	if n == nil {
 		return "nil"
 	}
@@ -27,17 +28,21 @@ func (n *Node) String() string {
 	return fmt.Sprintf("%v", n.Value) + "(" + p + "|" + fmt.Sprintf("%v", n.height) + ")"
 }
 
-type Tree struct {
-	Root    *Node
-	size    int
-	Compare compare.Compare
+// Tree the struct of avl
+type Tree[T any] struct {
+	Root       *Node[T]           // Tree Root
+	HeightDiff int                // Allowable height difference is 1(default). if heightdiff == 2, will fast rbtree.
+	size       int64              // The size of treenode
+	Compare    compare.Compare[T] // The compare function of the key of node
 }
 
-func New(Compare compare.Compare) *Tree {
-	return &Tree{Compare: Compare}
+// New create a object of tree
+func New[T any](Compare compare.Compare[T]) *Tree[T] {
+	return &Tree[T]{Compare: Compare, HeightDiff: 1}
 }
 
-func (tree *Tree) String() string {
+// String show the view of tree by chars
+func (tree *Tree[T]) String() string {
 	if tree.size == 0 {
 		return ""
 	}
@@ -47,11 +52,13 @@ func (tree *Tree) String() string {
 	return str
 }
 
-func (tree *Tree) Size() int {
+// Size get the size of tree
+func (tree *Tree[T]) Size() int64 {
 	return tree.size
 }
 
-func (tree *Tree) Height() int {
+// Height get the height  of tree
+func (tree *Tree[T]) Height() int {
 	if tree.Root == nil {
 		return 0
 	}
@@ -59,11 +66,12 @@ func (tree *Tree) Height() int {
 }
 
 // Iterator must call Seek*.
-func (tree *Tree) Iterator() *Iterator {
+func (tree *Tree[T]) Iterator() *Iterator[T] {
 	return newIterator(tree)
 }
 
-func (tree *Tree) Remove(key interface{}) (interface{}, bool) {
+// Remove remove key and return value that be removed
+func (tree *Tree[T]) Remove(key T) (interface{}, bool) {
 
 	if n, ok := tree.getNode(key); ok {
 
@@ -83,7 +91,7 @@ func (tree *Tree) Remove(key interface{}) (interface{}, bool) {
 			return n.Value, true
 		}
 
-		var cur *Node
+		var cur *Node[T]
 		if left > right {
 			cur = n.Children[0]
 			for cur.Children[1] != nil {
@@ -128,26 +136,28 @@ func (tree *Tree) Remove(key interface{}) (interface{}, bool) {
 	return nil, false
 }
 
-func (tree *Tree) Clear() {
+// Clear clear all nodes
+func (tree *Tree[T]) Clear() {
 	tree.size = 0
 	tree.Root = nil
 }
 
-// Values 返回先序遍历的值
-func (tree *Tree) Values() []interface{} {
-	mszie := 0
+// Values return all nodes. 返回先序遍历的值
+func (tree *Tree[T]) Values() []interface{} {
+	var mszie int64 = 0
 	if tree.Root != nil {
 		mszie = tree.size
 	}
 	result := make([]interface{}, 0, mszie)
-	tree.Traverse(func(k, v interface{}) bool {
+	tree.Traverse(func(k T, v interface{}) bool {
 		result = append(result, v)
 		return true
 	})
 	return result
 }
 
-func (tree *Tree) Get(key interface{}) (interface{}, bool) {
+// Get get value by key
+func (tree *Tree[T]) Get(key T) (interface{}, bool) {
 	n, ok := tree.getNode(key)
 	if ok {
 		return n.Value, true
@@ -155,7 +165,7 @@ func (tree *Tree) Get(key interface{}) (interface{}, bool) {
 	return n, false
 }
 
-func (tree *Tree) getNode(key interface{}) (*Node, bool) {
+func (tree *Tree[T]) getNode(key T) (*Node[T], bool) {
 
 	for n := tree.Root; n != nil; {
 		switch c := tree.Compare(key, n.Key); c {
@@ -172,12 +182,12 @@ func (tree *Tree) getNode(key interface{}) (*Node, bool) {
 	return nil, false
 }
 
-// Set Put And value Set Node.Value
-func (tree *Tree) Set(key, value interface{}) bool {
+// Set set value by Key. if key exists, cover the value and return true. else return false and put value into tree
+func (tree *Tree[T]) Set(key T, value interface{}) bool {
 
 	if tree.size == 0 {
 		tree.size++
-		tree.Root = &Node{Key: key, Value: value}
+		tree.Root = &Node[T]{Key: key, Value: value}
 		return false
 	}
 
@@ -186,7 +196,7 @@ func (tree *Tree) Set(key, value interface{}) bool {
 		if c == -1 {
 			if cur.Children[0] == nil {
 				tree.size++
-				cur.Children[0] = &Node{Key: key, Value: value}
+				cur.Children[0] = &Node[T]{Key: key, Value: value}
 				cur.Children[0].Parent = cur
 				if cur.height == 0 {
 					tree.fixPutHeight(cur)
@@ -197,7 +207,7 @@ func (tree *Tree) Set(key, value interface{}) bool {
 		} else if c == 1 {
 			if cur.Children[1] == nil {
 				tree.size++
-				cur.Children[1] = &Node{Key: key, Value: value}
+				cur.Children[1] = &Node[T]{Key: key, Value: value}
 				cur.Children[1].Parent = cur
 				if cur.height == 0 {
 					tree.fixPutHeight(cur)
@@ -213,12 +223,12 @@ func (tree *Tree) Set(key, value interface{}) bool {
 	}
 }
 
-// Put Put into Tree . if key exists, not cover. and return false. else return true
-func (tree *Tree) Put(key, value interface{}) bool {
+// Put put value into tree  by Key . if key exists,not cover the value and return false. else return true
+func (tree *Tree[T]) Put(key T, value interface{}) bool {
 
 	if tree.size == 0 {
 		tree.size++
-		tree.Root = &Node{Key: key, Value: value}
+		tree.Root = &Node[T]{Key: key, Value: value}
 		return true
 	}
 
@@ -227,7 +237,7 @@ func (tree *Tree) Put(key, value interface{}) bool {
 		if c == -1 {
 			if cur.Children[0] == nil {
 				tree.size++
-				cur.Children[0] = &Node{Key: key, Value: value}
+				cur.Children[0] = &Node[T]{Key: key, Value: value}
 				cur.Children[0].Parent = cur
 				if cur.height == 0 {
 					tree.fixPutHeight(cur)
@@ -238,7 +248,7 @@ func (tree *Tree) Put(key, value interface{}) bool {
 		} else if c == 1 {
 			if cur.Children[1] == nil {
 				tree.size++
-				cur.Children[1] = &Node{Key: key, Value: value}
+				cur.Children[1] = &Node[T]{Key: key, Value: value}
 				cur.Children[1].Parent = cur
 				if cur.height == 0 {
 					tree.fixPutHeight(cur)
@@ -271,14 +281,14 @@ func (tree *Tree) Put(key, value interface{}) bool {
 // 	RLD
 // )
 
-// Traverse 遍历的方法 默认是LDR 从小到大 Compare 为 l < r
-func (tree *Tree) Traverse(every func(k, v interface{}) bool) {
+// Traverse the traversal method defaults to LDR. from smallest to largest.
+func (tree *Tree[T]) Traverse(every func(k T, v interface{}) bool) {
 	if tree.Root == nil {
 		return
 	}
 
-	var traverasl func(cur *Node) bool
-	traverasl = func(cur *Node) bool {
+	var traverasl func(cur *Node[T]) bool
+	traverasl = func(cur *Node[T]) bool {
 		if cur == nil {
 			return true
 		}
@@ -296,7 +306,7 @@ func (tree *Tree) Traverse(every func(k, v interface{}) bool) {
 	traverasl(tree.Root)
 }
 
-func (tree *Tree) lrrotate(cur *Node) {
+func (tree *Tree[T]) lrrotate(cur *Node[T]) {
 
 	const l = 1
 	const r = 0
@@ -337,7 +347,7 @@ func (tree *Tree) lrrotate(cur *Node) {
 	cur.height = getMaxChildrenHeight(cur) + 1
 }
 
-func (tree *Tree) rlrotate(cur *Node) {
+func (tree *Tree[T]) rlrotate(cur *Node[T]) {
 
 	const l = 0
 	const r = 1
@@ -376,7 +386,7 @@ func (tree *Tree) rlrotate(cur *Node) {
 	cur.height = getMaxChildrenHeight(cur) + 1
 }
 
-func (tree *Tree) rrotate(cur *Node) {
+func (tree *Tree[T]) rrotate(cur *Node[T]) {
 
 	const l = 0
 	const r = 1
@@ -411,7 +421,7 @@ func (tree *Tree) rrotate(cur *Node) {
 	cur.height = getMaxChildrenHeight(cur) + 1
 }
 
-func (tree *Tree) lrotate(cur *Node) {
+func (tree *Tree[T]) lrotate(cur *Node[T]) {
 
 	const l = 1
 	const r = 0
@@ -444,7 +454,7 @@ func (tree *Tree) lrotate(cur *Node) {
 	cur.height = getMaxChildrenHeight(cur) + 1
 }
 
-func getMaxAndChildrenHeight(cur *Node) (h1, h2, maxh int) {
+func getMaxAndChildrenHeight[T any](cur *Node[T]) (h1, h2, maxh int) {
 	h1 = getHeight(cur.Children[0])
 	h2 = getHeight(cur.Children[1])
 	if h1 > h2 {
@@ -456,7 +466,7 @@ func getMaxAndChildrenHeight(cur *Node) (h1, h2, maxh int) {
 	return
 }
 
-func getMaxChildrenHeight(cur *Node) int {
+func getMaxChildrenHeight[T any](cur *Node[T]) int {
 	h1 := getHeight(cur.Children[0])
 	h2 := getHeight(cur.Children[1])
 	if h1 > h2 {
@@ -465,14 +475,14 @@ func getMaxChildrenHeight(cur *Node) int {
 	return h2
 }
 
-func getHeight(cur *Node) int {
+func getHeight[T any](cur *Node[T]) int {
 	if cur == nil {
 		return -1
 	}
 	return cur.height
 }
 
-func (tree *Tree) fixRemoveHeight(cur *Node) {
+func (tree *Tree[T]) fixRemoveHeight(cur *Node[T]) {
 	for {
 
 		lefth, rigthh, lrmax := getMaxAndChildrenHeight(cur)
@@ -483,14 +493,14 @@ func (tree *Tree) fixRemoveHeight(cur *Node) {
 
 		// 计算高度的差值 绝对值大于2的时候需要旋转
 		diff := lefth - rigthh
-		if diff < -HeightDiff {
+		if diff < -tree.HeightDiff {
 			r := cur.Children[1] // 根据左旋转的右边节点的子节点 左右高度选择旋转的方式
 			if getHeight(r.Children[0]) > getHeight(r.Children[1]) {
 				tree.lrrotate(cur)
 			} else {
 				tree.lrotate(cur)
 			}
-		} else if diff > HeightDiff {
+		} else if diff > tree.HeightDiff {
 			l := cur.Children[0]
 			if getHeight(l.Children[1]) > getHeight(l.Children[0]) {
 				tree.rlrotate(cur)
@@ -512,7 +522,7 @@ func (tree *Tree) fixRemoveHeight(cur *Node) {
 
 }
 
-func (tree *Tree) fixPutHeight(cur *Node) {
+func (tree *Tree[T]) fixPutHeight(cur *Node[T]) {
 
 	for {
 
@@ -521,14 +531,14 @@ func (tree *Tree) fixPutHeight(cur *Node) {
 
 		// 计算高度的差值 绝对值大于2的时候需要旋转
 		diff := lefth - rigthh
-		if diff < -HeightDiff {
+		if diff < -tree.HeightDiff {
 			r := cur.Children[1] // 根据左旋转的右边节点的子节点 左右高度选择旋转的方式
 			if getHeight(r.Children[0]) > getHeight(r.Children[1]) {
 				tree.lrrotate(cur)
 			} else {
 				tree.lrotate(cur)
 			}
-		} else if diff > HeightDiff {
+		} else if diff > tree.HeightDiff {
 			l := cur.Children[0]
 			if getHeight(l.Children[1]) > getHeight(l.Children[0]) {
 				tree.rlrotate(cur)
@@ -552,7 +562,7 @@ func (tree *Tree) fixPutHeight(cur *Node) {
 	}
 }
 
-func output(node *Node, prefix string, isTail bool, str *string) {
+func output[T any](node *Node[T], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -570,12 +580,7 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 		*str += "┌── "
 	}
 
-	switch k := node.Key.(type) {
-	case []byte:
-		*str += fmt.Sprintf("%v", string(k)) + "\n"
-	default:
-		*str += fmt.Sprintf("%v", k) + "\n"
-	}
+	*str += fmt.Sprintf("%v", node.Key) + "\n"
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -589,7 +594,7 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 
 }
 
-func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
+func outputfordebug[T any](node *Node[T], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -628,7 +633,7 @@ func outputfordebug(node *Node, prefix string, isTail bool, str *string) {
 	}
 }
 
-func (tree *Tree) debugString() string {
+func (tree *Tree[T]) debugString() string {
 	if tree.size == 0 {
 		return ""
 	}
@@ -637,7 +642,7 @@ func (tree *Tree) debugString() string {
 	return str
 }
 
-func getRelationship(cur *Node) int {
+func getRelationship[T any](cur *Node[T]) int {
 	if cur.Parent.Children[1] == cur {
 		return 1
 	}

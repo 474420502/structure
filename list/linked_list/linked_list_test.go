@@ -1,14 +1,16 @@
 package linkedlist
 
 import (
+	"container/list"
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/474420502/random"
 )
 
 func TestPush(t *testing.T) {
-	l := New()
+	l := New[int]()
 	for i := 0; i < 5; i++ {
 		l.Push(i)
 	}
@@ -26,7 +28,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestPushFront(t *testing.T) {
-	l := New()
+	l := New[int]()
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
 	}
@@ -44,7 +46,7 @@ func TestPushFront(t *testing.T) {
 }
 
 func TestPushBack(t *testing.T) {
-	l := New()
+	l := New[int]()
 	for i := 0; i < 5; i++ {
 		l.PushBack(i)
 	}
@@ -62,7 +64,7 @@ func TestPushBack(t *testing.T) {
 }
 
 func TestPopFront(t *testing.T) {
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -85,7 +87,7 @@ func TestPopFront(t *testing.T) {
 }
 
 func TestPopBack(t *testing.T) {
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -108,140 +110,8 @@ func TestPopBack(t *testing.T) {
 
 }
 
-func TestInsert2(t *testing.T) {
-	l := New()
-
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.PushFront(0, i)
-	}
-
-	// step1: [0 0] -> step2: [1 0 0 0] front
-	if l.String() != "[4 0 3 0 2 0 1 0 0 0]" {
-		t.Error(l.String())
-	}
-
-	if !l.Insert(l.Size(), 5) {
-		t.Error("should be true")
-	}
-
-	// step1: [0 0] -> step2: [4 0 3 0 2 0 1 0 0 0] front size is 10, but you can insert 11. equal to PushBack [4 0 3 0 2 0 1 0 0 0 5]
-	if l.String() != "[4 0 3 0 2 0 1 0 0 0 5]" {
-		t.Error(l.String())
-	}
-}
-
-func TestInsert1(t *testing.T) {
-	l1 := New()
-	l2 := New()
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l1.Insert(0, i)
-		l2.PushFront(i)
-	}
-
-	var result1, result2 string
-	result1 = fmt.Sprintf("%v", l1.Values())
-	result2 = fmt.Sprintf("%v", l2.Values())
-	if result1 != result2 {
-		t.Error(result1, result2)
-	}
-
-	for i := 0; i < 5; i++ {
-		l1.Insert(l1.Size(), i)
-		l2.PushBack(i)
-		// t.Error(l1.Values(), l2.Values())
-	}
-
-	result1 = fmt.Sprintf("%v", l1.Values())
-	result2 = fmt.Sprintf("%v", l2.Values())
-	if result1 != result2 {
-		t.Error(result1, result2)
-	}
-
-	if result1 != "[4 3 2 1 0 0 1 2 3 4]" {
-		t.Error("result should be [4 3 2 1 0 0 1 2 3 4]\n but result is", result1)
-	}
-
-	l1.Insert(1, 99)
-	result1 = fmt.Sprintf("%v", l1.Values())
-	if result1 != "[4 99 3 2 1 0 0 1 2 3 4]" {
-		t.Error("[4 3 2 1 0 0 1 2 3 4] insert with index 1, should be [4 99 3 2 1 0 0 1 2 3 4]\n but result is", result1)
-	}
-
-	l1.Insert(9, 99)
-	result1 = fmt.Sprintf("%v", l1.Values())
-	if result1 != "[4 99 3 2 1 0 0 1 2 99 3 4]" {
-		t.Error("[4 99 3 2 1 0 0 1 2 3 4] insert with index 9, should be [4 99 3 2 1 0 0 1 2 99 3 4]\n but result is", result1)
-	}
-
-	l1.Insert(12, 99)
-	result1 = fmt.Sprintf("%v", l1.Values())
-	if result1 != "[4 99 3 2 1 0 0 1 2 99 3 4 99]" {
-		t.Error("[4 99 3 2 1 0 0 1 2 99 3 4] insert with index 12, should be [4 99 3 2 1 0 0 1 2 99 3 4 99]\n but result is", result1)
-	}
-}
-
-func TestInsertIf(t *testing.T) {
-	l := New()
-
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.Insert(0, i)
-	}
-
-	// "[4 3 2 1 0]" 插入两个11
-	for i := 0; i < 2; i++ {
-		l.InsertIf(func(idx uint, value interface{}) InsertState {
-			if value == 3 {
-				return InsertFront
-			}
-			return UninsertAndContinue
-		}, 11)
-	}
-
-	var result string
-
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[4 3 11 11 2 1 0]" {
-		t.Error("result should be [4 3 11 11 2 1 0], reuslt is", result)
-	}
-
-	// "[4 3 2 1 0]"
-	for i := 0; i < 2; i++ {
-		l.InsertIf(func(idx uint, value interface{}) InsertState {
-			if value == 0 {
-				return InsertBack
-			}
-			return UninsertAndContinue
-		}, 11)
-	}
-
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[4 3 11 11 2 1 11 11 0]" {
-		t.Error("result should be [4 3 11 11 2 1 11 11 0], reuslt is", result)
-	}
-
-	// "[4 3 2 1 0]"
-	for i := 0; i < 2; i++ {
-		l.InsertIf(func(idx uint, value interface{}) InsertState {
-			if value == 0 {
-				return InsertFront
-			}
-			return UninsertAndContinue
-		}, 11)
-	}
-
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[4 3 11 11 2 1 11 11 0 11 11]" {
-		t.Error("result should be [4 3 11 11 2 1 11 11 0 11 11], reuslt is", result)
-	}
-
-	// t.Error(l.Values())
-}
-
 func TestIndex(t *testing.T) {
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -277,197 +147,15 @@ func TestIndex(t *testing.T) {
 
 }
 
-func TestRemove(t *testing.T) {
-	l := New()
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.PushFront(i)
-	}
-
-	l.Remove(0)
-	var result string
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2 1 0]" {
-		t.Error("should be [3 2 1 0] but result is", result)
-	}
-
-	l.Remove(3)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2 1]" {
-		t.Error("should be [3 2 1] but result is", result)
-	}
-
-	l.Remove(2)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2]" {
-		t.Error("should be [3 2 1] but result is", result)
-	}
-
-	l.Remove(1)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3]" {
-		t.Error("should be [3 2 1] but result is", result)
-	}
-
-	l.Remove(0)
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[]" && l.Size() == 0 && len(l.Values()) == 0 {
-		t.Error("should be [] but result is", result, "Size is", l.Size())
-	}
-
-	if _, rvalue := l.Remove(3); rvalue != false {
-		t.Error("l is empty")
-	}
-
-}
-
-func TestRemoveIf(t *testing.T) {
-	l := New()
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.PushFront(i)
-	}
-
-	if result, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
-		if value == 0 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	}); ok {
-		if result[0] != 0 {
-			t.Error("result should is", 0)
-		}
-	} else {
-		t.Error("should be ok")
-	}
-
-	if result, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
-		if value == 4 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	}); ok {
-		if result[0] != 4 {
-			t.Error("result should is", 4)
-		}
-	} else {
-		t.Error("should be ok")
-	}
-
-	var result string
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2 1]" {
-		t.Error("should be [3 2 1] but result is", result)
-	}
-
-	if result, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
-		if value == 4 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	}); ok {
-		t.Error("should not be ok and result is nil")
-	} else {
-		if result != nil {
-			t.Error("should be nil")
-		}
-	}
-
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[3 2 1]" {
-		t.Error("should be [3 2 1] but result is", result)
-	}
-
-	l.RemoveIf(func(idx uint, value interface{}) RemoveState {
-		if value == 3 || value == 2 || value == 1 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	})
-
-	result = fmt.Sprintf("%v", l.Values())
-	if result != "[]" {
-		t.Error("result should be [], but now result is", result)
-	}
-
-	if results, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
-		if value == 3 || value == 2 || value == 1 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	}); ok {
-		t.Error("why  ok")
-	} else {
-		if results != nil {
-			t.Error(results)
-		}
-	}
-
-}
-
-func TestRemoveIf2(t *testing.T) {
-	l := New()
-	// "[4 3 2 1 0]"
-	for i := 0; i < 5; i++ {
-		l.PushFront(i)
-	}
-
-	for i := 0; i < 5; i++ {
-		l.PushFront(i)
-	}
-
-	// 只删除一个
-	if result, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
-		if value == 0 {
-			return RemoveAndBreak
-		}
-		return UnremoveAndContinue
-	}); ok {
-		if result[0] != 0 {
-			t.Error("result should is", 0)
-		}
-	} else {
-		t.Error("should be ok")
-	}
-
-	var resultstr string
-	resultstr = fmt.Sprintf("%v", l.Values())
-	if resultstr != "[4 3 2 1 4 3 2 1 0]" {
-		t.Error("result should is", resultstr)
-	}
-
-	// 只删除多个
-	if result, ok := l.RemoveIf(func(idx uint, value interface{}) RemoveState {
-		if value == 4 {
-			return RemoveAndContinue
-		}
-		return UnremoveAndContinue
-	}); ok {
-
-		resultstr = fmt.Sprintf("%v", result)
-		if resultstr != "[4 4]" {
-			t.Error("result should is", result)
-		}
-
-		resultstr = fmt.Sprintf("%v", l.Values())
-		if resultstr != "[3 2 1 3 2 1 0]" {
-			t.Error("result should is", resultstr)
-		}
-
-	} else {
-		t.Error("should be ok")
-	}
-}
-
 func TestTraversal(t *testing.T) {
-	l := New()
+	l := New[uint]()
 	for i := 0; i < 5; i++ {
 		l.PushFront(uint(i))
 	}
 
 	var result []interface{}
 
-	l.Traverse(func(v interface{}) bool {
+	l.Traverse(func(v uint) bool {
 		result = append(result, v)
 		return true
 	})
@@ -478,7 +166,7 @@ func TestTraversal(t *testing.T) {
 
 	l.PushBack(7, 8)
 	result = nil
-	l.Traverse(func(v interface{}) bool {
+	l.Traverse(func(v uint) bool {
 		result = append(result, v)
 		return true
 	})
@@ -489,32 +177,45 @@ func TestTraversal(t *testing.T) {
 }
 
 func TestIterator(t *testing.T) {
-	ll := New()
+	ll := New[int]()
 	for i := 0; i < 10; i++ {
 		ll.PushFront(i)
 	}
 
 	iter := ll.Iterator()
 
-	for i := 0; iter.Next(); i++ {
+	for i := 0; iter.Vaild(); i++ {
 		if iter.Value() != 9-i {
 			t.Error("iter.Next() ", iter.Value(), "is not equal ", 9-i)
 		}
+		iter.Next()
 	}
 
 	if iter.cur != iter.ll.tail {
 		t.Error("current point is not equal tail ", iter.ll.tail)
 	}
 
-	for i := 0; iter.Prev(); i++ {
+	for i := 0; iter.Vaild(); i++ {
 		if iter.Value() != i {
 			t.Error("iter.Prev() ", iter.Value(), "is not equal ", i)
 		}
+		iter.Prev()
 	}
+
+	iter.ToTail()
+	if !iter.Vaild() {
+		t.Error(iter.Value())
+	}
+
+	iter.ToHead()
+	if !iter.Vaild() {
+		t.Error(iter.Value())
+	}
+
 }
 
 func TestCircularIterator(t *testing.T) {
-	ll := New()
+	ll := New[int]()
 	for i := 0; i < 10; i++ {
 		ll.PushFront(i)
 	}
@@ -522,55 +223,67 @@ func TestCircularIterator(t *testing.T) {
 	iter := ll.CircularIterator()
 
 	for i := 0; i != 10; i++ {
-		iter.Next()
 		if iter.Value() != 9-i {
 			t.Error("iter.Next() ", iter.Value(), "is not equal ", 9-i)
 		}
+		iter.Next()
 	}
 
-	if iter.cur != iter.pl.tail.prev {
-		t.Error("current point is not equal tail ", iter.pl.tail.prev)
+	if !iter.Vaild() {
+		t.Error("should be true", iter.Value(), iter.ll.String())
 	}
 
-	if iter.Next() {
-		if iter.Value() != 9 {
+	if iter.Next(); iter.Vaild() {
+		if iter.Value() != 8 {
 			t.Error("iter.Value() != ", iter.Value())
 		}
 	}
 
 	iter.ToTail()
-	for i := 0; i != 10; i++ {
-		iter.Prev()
+	for i := 0; i != 9; i++ {
 		if iter.Value() != i {
 			t.Error("iter.Prev() ", iter.Value(), "is not equal ", i)
 		}
+		iter.Prev()
 	}
 
-	if iter.cur != iter.pl.head.next {
-		t.Error("current point is not equal tail ", iter.pl.tail.prev)
+	if iter.cur != iter.ll.head.next {
+		t.Error("current point is not equal tail ", iter.ll.tail.prev)
 	}
 
-	if iter.Prev() {
+	if iter.Prev(); iter.Vaild() {
 		if iter.Value() != 0 {
 			t.Error("iter.Value() != ", iter.Value())
 		}
 	}
+
+	iter.ToTail()
+	iter.Next()
+	if iter.Value() != 9 {
+		t.Error()
+	}
+
+	iter.ToHead()
+	iter.Prev()
+	if iter.Value() != 0 {
+		t.Error()
+	}
 }
 
 func TestContains(t *testing.T) {
-	ll := New()
+	ll := New[int]()
 	for i := 0; i < 10; i++ {
 		ll.Push(i)
 	}
 
 	for i := 0; i < 10; i++ {
-		if !ll.Contains(i) {
+		if ll.Contains(i) == 0 {
 			t.Error(i)
 		}
 	}
 
 	for i := 10; i < 20; i++ {
-		if ll.Contains(i) {
+		if ll.Contains(i) > 0 {
 			t.Error(i)
 		}
 	}
@@ -596,7 +309,7 @@ func TestContains(t *testing.T) {
 func TestForce(t *testing.T) {
 
 	rand := random.New(t.Name())
-	l := New()
+	l := New[int]()
 	// "[4 3 2 1 0]"
 	for n := 0; n < 2000; n++ {
 
@@ -611,12 +324,18 @@ func TestForce(t *testing.T) {
 			if rand.Bool() {
 				idx := uint(rand.Intn(int(l.Size())))
 				v := rand.Intn(1000)
-				l.Insert(idx, v)
+
+				iter := l.Iterator()
+				for i := 0; i < int(idx); i++ {
+					iter.Next()
+				}
+				iter.InsertBefore(v)
+
 				var i = uint(0)
-				l.Traverse(func(value interface{}) bool {
+				l.Traverse(func(value int) bool {
 					if i == idx {
 						if value != v {
-							panic("")
+							log.Panic(l.String())
 						}
 					}
 					i++
@@ -632,10 +351,10 @@ func TestForce(t *testing.T) {
 		}
 
 		var i = 0
-		l.Traverse(func(value interface{}) bool {
+		l.Traverse(func(value int) bool {
 			if i == idx {
 				if value != v {
-					panic("")
+					panic(l.String())
 				}
 			}
 			i++
@@ -645,8 +364,8 @@ func TestForce(t *testing.T) {
 		var lsize = l.Size()
 		var result1 = make([]int, lsize)
 		var result2 = make([]int, lsize)
-		citer := l.CircularIterator()
-		for citer.Next() {
+
+		for citer := l.CircularIterator(); citer.Vaild(); citer.Next() {
 			if len(result1) != int(lsize) {
 				result1 = append(result1, citer.Value().(int))
 			} else if len(result2) != int(lsize) {
@@ -664,6 +383,335 @@ func TestForce(t *testing.T) {
 	}
 }
 
+func TestIteratorInsert(t *testing.T) {
+
+	l := New[int]()
+	l.Push(1)
+
+	iter := l.Iterator()
+	// iter.Next() // next to 1
+
+	if !iter.Vaild() {
+		panic("")
+	}
+	iter.InsertBefore(2, 3, 5)
+
+	// log.Println(l.String(), iter.Value()) // [2 3 5 1] 1
+	if l.String() != "[2 3 5 1]" && iter.Value() != 1 {
+		t.Error("InsertFront error")
+	}
+
+	iter.InsertAfter(20, 30, 50)
+
+	// log.Println(l.String(), iter.Value()) // [2 3 5 1 20 30 50] 1
+	if l.String() != "[2 3 5 1 20 30 50]" && iter.Value() != 1 {
+		t.Error("InsertBack error")
+	}
+
+	iter.Next()
+	// log.Println(iter.Value())
+	if iter.Value() != 20 {
+		t.Error("")
+	}
+
+	iter.Prev()
+	iter.Prev()
+	if iter.Value() != 5 {
+		t.Error("")
+	}
+
+}
+
+func TestCircularIteratorInsert(t *testing.T) {
+
+	l := New[int]()
+	l.Push(1)
+
+	iter := l.CircularIterator()
+	iter.Next() // next to 1
+
+	iter.InsertBefore(2, 3, 5)
+
+	// log.Println(l.String(), iter.Value()) // [2 3 5 1] 1
+	if l.String() != "[2 3 5 1]" && iter.Value() != 1 {
+		t.Error("InsertFront error")
+	}
+
+	iter.InsertAfter(20, 30, 50)
+
+	// log.Println(l.String(), iter.Value()) // [2 3 5 1 20 30 50] 1
+	if l.String() != "[2 3 5 1 20 30 50]" && iter.Value() != 1 {
+		t.Error("InsertBack error")
+	}
+
+	iter.Next()
+	// log.Println(iter.Value())
+	if iter.Value() != 20 {
+		t.Error("")
+	}
+
+	iter.Prev()
+	iter.Prev()
+	if iter.Value() != 5 {
+		t.Error("")
+	}
+
+}
+
+func TestIteratorRemove(t *testing.T) {
+	l := New[int]()
+	// "[4 3 2 1 0]"
+	for i := 0; i < 5; i++ {
+		l.PushFront(i)
+	}
+
+	iter := l.Iterator()
+	iter.Move(2)
+	iter.RemoveToNext()
+
+	// log.Println(l.String(), iter.Value()) //   4 -> 2(Remove) and Cur to 1  "[4 3 1 0]" 1
+	if l.String() != "[4 3 1 0]" || iter.Value() != 1 {
+		t.Error(l.String(), iter.Value())
+	}
+
+	iter.Move(-1)       // 3
+	iter.RemoveToPrev() // 3(remove) -> 4
+	iter.Move(2)        // 0
+
+	if l.String() != "[4 1 0]" || iter.Value() != 0 {
+		t.Error(l.String(), iter.Value())
+	}
+
+	for iter.Vaild() {
+		iter.RemoveToNext()
+	}
+
+	if l.String() != "[4 1]" || iter.Value() != 0 {
+		t.Error(l.String(), iter.Value())
+	}
+
+	for iter.Vaild() { // can not remove tail or head
+		iter.RemoveToPrev()
+	}
+
+	if l.String() != "[4 1]" || iter.Value() != 0 {
+		t.Error(l.String(), iter.Value())
+	}
+
+	iter.Move(-1)      // 1
+	for iter.Vaild() { // remove all
+		iter.RemoveToPrev()
+	}
+
+	if l.String() != "[]" || iter.Value() != 0 { // default int == 0
+		t.Error(l.String(), iter.Value())
+	}
+
+	l.Clear()
+	for i := 0; i < 5; i++ {
+		l.PushFront(i) // "[4 3 2 1 0]" cur:0
+	}
+
+	iter.ToHead() // 4
+	if iter.Value() != 4 {
+		t.Error(iter.Value())
+	}
+	iter.SetValue(1)
+	if l.String() != "[1 3 2 1 0]" {
+		t.Error(l.String())
+	}
+
+	other := l.Iterator()
+	other.ToTail()
+
+	iter.Swap(other)
+
+	if l.String() != "[0 3 2 1 1]" {
+		t.Error(l.String())
+	}
+
+	// log.Println(l.String(), l.Size())
+}
+
+func TestCircularIteratorIteratorRemove(t *testing.T) {
+	l := New[int]()
+	// "[4 3 2 1 0]"
+	for i := 0; i < 5; i++ {
+		l.PushFront(i)
+	}
+
+	iter := l.CircularIterator()
+	iter.Move(2)
+	iter.RemoveToNext()
+
+	// log.Println(l.String(), iter.Value()) //   4 -> 2(Remove) and Cur to 1  "[4 3 1 0]" 1
+	if l.String() != "[4 3 1 0]" || iter.Value() != 1 {
+		t.Error(l.String(), iter.Value())
+	}
+
+	iter.Move(-1) // 3
+
+	// log.Println(l.String(), iter.Value())
+	iter.RemoveToPrev() // 4
+
+	iter.Move(3) // 4
+
+	if l.String() != "[4 1 0]" || iter.Value() != 4 {
+		t.Error(l.String(), iter.Value())
+	}
+
+	var result []string = []string{"[1 0]", "[0]", "[]"}
+	for i := 0; iter.Vaild(); i++ {
+		iter.RemoveToNext()
+		if l.String() != result[i] {
+			t.Error(l.String())
+		}
+	}
+
+	for i := 0; i < 5; i++ {
+		l.PushFront(i)
+	}
+
+	iter.Move(10) // "[4 3 2 1 0]" cur:0
+
+	result = []string{"[3 2 1 0]", "[3 2 1]", "[3 2]", "[3]", "[]"}
+	for i := 0; iter.Vaild(); i++ { // can not remove tail or head
+		iter.RemoveToPrev()
+		if l.String() != result[i] {
+			t.Error(l.String())
+		}
+	}
+
+	for i := 0; i < 5; i++ {
+		l.PushFront(i) // "[4 3 2 1 0]" cur:0
+	}
+
+	iter.ToHead() // 4
+	if iter.Value() != 4 {
+		t.Error(iter.Value())
+	}
+	iter.SetValue(1)
+	if l.String() != "[1 3 2 1 0]" {
+		t.Error(l.String())
+	}
+
+	other := l.CircularIterator()
+	other.ToTail()
+
+	iter.Swap(other)
+
+	if l.String() != "[0 3 2 1 1]" {
+		t.Error(l.String())
+	}
+
+	// log.Println(l.String(), l.Size())
+}
+
+func StringSrcList(l *list.List) string {
+	if l.Len() == 0 {
+		return "[]"
+	}
+	var content []byte
+	content = append(content, '[')
+	for e := l.Front(); e != nil; e = e.Next() {
+		content = append(content, []byte(fmt.Sprintf("%v ", e.Value))...)
+	}
+	content[len(content)-1] = ']'
+	return string(content)
+}
+
+func TestForceMoveBA(t *testing.T) {
+	r := random.New()
+
+	for N := 0; N < 100; N++ {
+
+		func() {
+
+			ll := New[int]()
+			l := list.New()
+
+			r.Execute(5, 20, func() {
+				v := r.Int()
+				ll.Push(v)
+				l.PushBack(v)
+			})
+
+			sel1 := r.Intn(int(l.Len()))
+			sel2 := r.Intn(int(l.Len()))
+
+			iter1 := ll.Iterator()
+			iter2 := l.Front()
+			for i := 0; i < sel1; i++ {
+				iter1.Next()
+				iter2 = iter2.Next()
+			}
+
+			mark1 := ll.Iterator()
+			mark2 := l.Front()
+			for i := 0; i < sel2; i++ {
+				mark1.Next()
+				mark2 = mark2.Next()
+			}
+
+			if r.Bool() {
+				iter1.MoveBefore(mark1)
+				l.MoveBefore(iter2, mark2)
+
+			} else {
+				iter1.MoveAfter(mark1)
+				l.MoveAfter(iter2, mark2)
+			}
+
+			if ll.String() != StringSrcList(l) {
+				t.Error(ll.String(), StringSrcList(l))
+			}
+		}()
+
+		func() {
+
+			ll := New[int]()
+			l := list.New()
+
+			r.Execute(5, 20, func() {
+				v := r.Int()
+				ll.Push(v)
+				l.PushBack(v)
+			})
+
+			sel1 := r.Intn(int(l.Len()))
+			sel2 := r.Intn(int(l.Len()))
+
+			iter1 := ll.CircularIterator()
+			iter2 := l.Front()
+			for i := 0; i < sel1; i++ {
+				iter1.Next()
+				iter2 = iter2.Next()
+			}
+
+			mark1 := ll.CircularIterator()
+			mark2 := l.Front()
+			for i := 0; i < sel2; i++ {
+				mark1.Next()
+				mark2 = mark2.Next()
+			}
+
+			if r.Bool() {
+				iter1.MoveBefore(mark1)
+				l.MoveBefore(iter2, mark2)
+
+			} else {
+				iter1.MoveAfter(mark1)
+				l.MoveAfter(iter2, mark2)
+			}
+
+			if ll.String() != StringSrcList(l) {
+				t.Error(ll.String(), StringSrcList(l))
+			}
+		}()
+	}
+
+}
+
 // func BenchmarkPushBack(b *testing.B) {
 
 // 	ec := 5
@@ -671,7 +719,7 @@ func TestForce(t *testing.T) {
 // 	b.N = cs * ec
 
 // 	for c := 0; c < ec; c++ {
-// 		l := New()
+// 		l := New[int]()
 // 		for i := 0; i < cs; i++ {
 // 			l.PushBack(i)
 // 		}
@@ -685,7 +733,7 @@ func TestForce(t *testing.T) {
 // 	b.N = cs * ec
 
 // 	for c := 0; c < ec; c++ {
-// 		l := New()
+// 		l := New[int]()
 // 		for i := 0; i < cs; i++ {
 // 			l.PushFront(i)
 // 		}
@@ -700,7 +748,7 @@ func TestForce(t *testing.T) {
 // 	b.N = cs * ec
 
 // 	for c := 0; c < ec; c++ {
-// 		l := New()
+// 		l := New[int]()
 // 		for i := 0; i < cs; i++ {
 // 			ridx := randomdata.Number(0, int(l.Size())+1)
 // 			l.Insert(uint(ridx), i)

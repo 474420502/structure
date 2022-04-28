@@ -10,19 +10,19 @@ const (
 )
 
 // IteratorRange the iterator for easy to range the data
-type IteratorRange struct {
-	tree         *Tree
-	siter, eiter nodePoint
+type IteratorRange[T any] struct {
+	tree         *Tree[T]
+	siter, eiter hNode[T]
 	dir          RangeDirection
 }
 
-type SliceIndex struct {
-	*Slice
+type SliceIndex[T any] struct {
+	*Slice[T]
 	Index int64
 }
 
 // SetDirection set iterator range direction. default Forward(start to end)
-func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
+func (ir *IteratorRange[T]) Range(do func(cur *SliceIndex[T]) bool) {
 
 	if ir.siter.idx > ir.eiter.idx {
 		return
@@ -33,8 +33,8 @@ func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
 		R = 1
 	)
 
-	var cur *treeNode
-	var end *treeNode
+	var cur *treeNode[T]
+	var end *treeNode[T]
 	var dir int
 	var idx int64
 
@@ -51,7 +51,7 @@ func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
 	}
 
 	for {
-		if !do(&SliceIndex{Slice: &cur.Slice, Index: idx}) || cur == end {
+		if !do(&SliceIndex[T]{Slice: &cur.Slice, Index: idx}) || cur == end {
 			break
 		}
 		cur = cur.Direct[dir]
@@ -61,17 +61,17 @@ func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
 }
 
 // SetDirection set iterator range direction. default Forward(start to end)
-func (ir *IteratorRange) SetDirection(dir RangeDirection) {
+func (ir *IteratorRange[T]) SetDirection(dir RangeDirection) {
 	ir.dir = dir
 }
 
 // SetDirection set iterator range direction
-func (ir *IteratorRange) Direction() RangeDirection {
+func (ir *IteratorRange[T]) Direction() RangeDirection {
 	return ir.dir
 }
 
 // Size get range size
-func (ir *IteratorRange) Size() int64 {
+func (ir *IteratorRange[T]) Size() int64 {
 
 	if ir.siter.cur == nil || ir.eiter.cur == nil || ir.siter.idx > ir.eiter.idx {
 		return 0
@@ -82,7 +82,7 @@ func (ir *IteratorRange) Size() int64 {
 }
 
 // GE2LE [s,e] start with GE, end with LE. (like Seek**)
-func (ir *IteratorRange) GE2LE(start, end interface{}) {
+func (ir *IteratorRange[T]) GE2LE(start, end T) {
 
 	const (
 		L = 0
@@ -108,7 +108,7 @@ func (ir *IteratorRange) GE2LE(start, end interface{}) {
 }
 
 // GE2LE (s,e] start with GT, end with LE. (like Seek**)
-func (ir *IteratorRange) GT2LE(start, end interface{}) {
+func (ir *IteratorRange[T]) GT2LE(start, end T) {
 
 	const (
 		L = 0
@@ -134,7 +134,7 @@ func (ir *IteratorRange) GT2LE(start, end interface{}) {
 }
 
 // GE2LT [s,e) start with GE, end with LT. (like Seek**)
-func (ir *IteratorRange) GE2LT(start, end interface{}) {
+func (ir *IteratorRange[T]) GE2LT(start, end T) {
 
 	const (
 		L = 0
@@ -160,7 +160,7 @@ func (ir *IteratorRange) GE2LT(start, end interface{}) {
 }
 
 // GE2LT (s,e) start with GT, end with LT. (like Seek**)
-func (ir *IteratorRange) GT2LT(start, end interface{}) {
+func (ir *IteratorRange[T]) GT2LT(start, end T) {
 
 	const (
 		L = 0

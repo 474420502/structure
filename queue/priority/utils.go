@@ -7,14 +7,14 @@ import (
 var errOutOfIndex = "out of index"
 var errLowerGtHigh = "low is behind high"
 
-func (tree *Queue) fixPutSize(cur *qNode) {
+func (tree *Queue[T]) fixPutSize(cur *qNode[T]) {
 	for cur != tree.root {
 		cur.Size++
 		cur = cur.Parent
 	}
 }
 
-func (tree *Queue) fixRemoveSize(cur *qNode) {
+func (tree *Queue[T]) fixRemoveSize(cur *qNode[T]) {
 	for cur != tree.root {
 		cur.Size--
 		cur = cur.Parent
@@ -46,7 +46,7 @@ var rootSizeTable []*heightLimitSize = func() []*heightLimitSize {
 	return table
 }()
 
-func (tree *Queue) fixPut(cur *qNode) {
+func (tree *Queue[T]) fixPut(cur *qNode[T]) {
 
 	cur.Size++
 	if cur.Size == 3 {
@@ -60,7 +60,7 @@ func (tree *Queue) fixPut(cur *qNode) {
 	var height int64 = 2
 	var lsize, rsize int64
 	var relations int = L
-	var parent *qNode
+	var parent *qNode[T]
 
 	if cur.Parent.Children[R] == cur {
 		relations = R
@@ -103,7 +103,7 @@ func (tree *Queue) fixPut(cur *qNode) {
 	}
 }
 
-func (tree *Queue) sizeRrotate(cur *qNode) *qNode {
+func (tree *Queue[T]) sizeRrotate(cur *qNode[T]) *qNode[T] {
 
 	llsize, lrsize := getChildrenSize(cur.Children[1])
 	if llsize > lrsize {
@@ -112,7 +112,7 @@ func (tree *Queue) sizeRrotate(cur *qNode) *qNode {
 	return tree.lrotate(cur)
 }
 
-func (tree *Queue) sizeLrotate(cur *qNode) *qNode {
+func (tree *Queue[T]) sizeLrotate(cur *qNode[T]) *qNode[T] {
 
 	llsize, lrsize := getChildrenSize(cur.Children[0])
 	if llsize < lrsize {
@@ -121,7 +121,7 @@ func (tree *Queue) sizeLrotate(cur *qNode) *qNode {
 	return tree.rrotate(cur)
 }
 
-func (tree *Queue) lrotate(cur *qNode) *qNode {
+func (tree *Queue[T]) lrotate(cur *qNode[T]) *qNode[T] {
 
 	const L = 1
 	const R = 0
@@ -152,7 +152,7 @@ func (tree *Queue) lrotate(cur *qNode) *qNode {
 	return mov
 }
 
-func (tree *Queue) rrotate(cur *qNode) *qNode {
+func (tree *Queue[T]) rrotate(cur *qNode[T]) *qNode[T] {
 
 	const L = 0
 	const R = 1
@@ -183,29 +183,29 @@ func (tree *Queue) rrotate(cur *qNode) *qNode {
 	return mov
 }
 
-func getChildrenSumSize(cur *qNode) int64 {
+func getChildrenSumSize[T any](cur *qNode[T]) int64 {
 	return getSize(cur.Children[0]) + getSize(cur.Children[1])
 }
 
-func getChildrenSize(cur *qNode) (int64, int64) {
+func getChildrenSize[T any](cur *qNode[T]) (int64, int64) {
 	return getSize(cur.Children[0]), getSize(cur.Children[1])
 }
 
-func getSize(cur *qNode) int64 {
+func getSize[T any](cur *qNode[T]) int64 {
 	if cur == nil {
 		return 0
 	}
 	return cur.Size
 }
 
-func getRelationship(cur *qNode) int {
+func getRelationship[T any](cur *qNode[T]) int {
 	if cur.Parent.Children[1] == cur {
 		return 1
 	}
 	return 0
 }
 
-func (tree *Queue) getRangeRoot(low, hight interface{}) (root *qNode) {
+func (tree *Queue[T]) getRangeRoot(low, hight T) (root *qNode[T]) {
 	const L = 0
 	const R = 1
 
@@ -228,7 +228,7 @@ func (tree *Queue) getRangeRoot(low, hight interface{}) (root *qNode) {
 	return
 }
 
-func (tree *Queue) mergeGroups(root *qNode, group *qNode, childGroup *qNode, childSize int64, LR int) {
+func (tree *Queue[T]) mergeGroups(root *qNode[T], group *qNode[T], childGroup *qNode[T], childSize int64, LR int) {
 	rparent := root.Parent
 	hand := group
 	for hand.Children[LR] != nil {
@@ -260,7 +260,7 @@ func (tree *Queue) mergeGroups(root *qNode, group *qNode, childGroup *qNode, chi
 	}
 }
 
-func (tree *Queue) fixRemoveRange(cur *qNode) {
+func (tree *Queue[T]) fixRemoveRange(cur *qNode[T]) {
 	const L = 0
 	const R = 1
 
@@ -284,7 +284,7 @@ func (tree *Queue) fixRemoveRange(cur *qNode) {
 	}
 }
 
-func (tree *Queue) index(i int64) *qNode {
+func (tree *Queue[T]) index(i int64) *qNode[T] {
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -311,7 +311,7 @@ func (tree *Queue) index(i int64) *qNode {
 
 }
 
-func (tree *Queue) getNode(key interface{}) (result *qNode) {
+func (tree *Queue[T]) getNode(key T) (result *qNode[T]) {
 	const L = 0
 	const R = 1
 
@@ -334,12 +334,12 @@ func (tree *Queue) getNode(key interface{}) (result *qNode) {
 	return
 }
 
-func (tree *Queue) getNodes(key interface{}) (result []*qNode) {
+func (tree *Queue[T]) getNodes(key T) (result []*qNode[T]) {
 	const L = 0
 	const R = 1
 
-	var traverse func(cur *qNode)
-	traverse = func(cur *qNode) {
+	var traverse func(cur *qNode[T])
+	traverse = func(cur *qNode[T]) {
 		if cur == nil {
 			return
 		}
@@ -361,11 +361,11 @@ func (tree *Queue) getNodes(key interface{}) (result []*qNode) {
 	return
 }
 
-func (tree *Queue) getRoot() *qNode {
+func (tree *Queue[T]) getRoot() *qNode[T] {
 	return tree.root.Children[0]
 }
 
-func (tree *Queue) remove(cur *qNode) *Slice {
+func (tree *Queue[T]) remove(cur *qNode[T]) *Slice[T] {
 
 	const L = 0
 	const R = 1
@@ -433,7 +433,7 @@ func (tree *Queue) remove(cur *qNode) *Slice {
 	}
 }
 
-func (tree *Queue) check() {
+func (tree *Queue[T]) check() {
 	const L = 0
 	const R = 1
 
@@ -442,8 +442,8 @@ func (tree *Queue) check() {
 		panic("")
 	}
 
-	var tcheck func(root *qNode)
-	tcheck = func(root *qNode) {
+	var tcheck func(root *qNode[T])
+	tcheck = func(root *qNode[T]) {
 
 		if root == nil {
 			return

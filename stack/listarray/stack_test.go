@@ -11,7 +11,7 @@ import (
 func TestForce(t *testing.T) {
 
 	rand := random.New(t.Name())
-	s1 := New()
+	s1 := New[int]()
 	s2 := list.New()
 
 	for i := 0; i < 2000; i++ {
@@ -75,7 +75,7 @@ func TestForce(t *testing.T) {
 
 func TestString(t *testing.T) {
 	rand := random.New(t.Name())
-	s1 := New()
+	s1 := New[int]()
 
 	for i := 0; i < 10; i++ {
 		v := rand.Intn(100)
