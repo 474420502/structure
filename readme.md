@@ -11,7 +11,7 @@
 	- [IndexTree](./tree/indextree/doc.md)  is a self-balancing binary search tree (BST). and have some special features
 
 - [Search](https://github.com/474420502/structure/search)
-	- [TreeList](https://github.com/474420502/structure/search/treelist)
+	- [TreeList](https://github.com/474420502/structure/search/treelist/doc.md)
 
 * PriorityQueue
 
