@@ -2,7 +2,7 @@
 
 ## Provide a powerful and easy-to-use data structure
 
-- [Tree](https://github.com/474420502/structure/tree/master/tree)
+- [Tree](./tree)
 
 	- [AVL](./tree/avl/doc.md) is a self-balancing binary search tree (BST)
 
@@ -10,8 +10,8 @@
 
 	- [IndexTree](./tree/indextree/doc.md)  is a self-balancing binary search tree (BST). and have some special features
 
-- [Search](https://github.com/474420502/structure/search)
-	- [TreeList](https://github.com/474420502/structure/search/treelist/doc.md)
+- [Search](./search)
+	- [TreeList](./search/treelist/doc.md)
 
 * PriorityQueue
 
