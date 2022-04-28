@@ -12,7 +12,7 @@ import (
 func TestIteratorForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Int)
+		tree := New(compare.Any[int])
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
@@ -103,7 +103,7 @@ func TestIteratorForce(t *testing.T) {
 func TestIteratorForce2(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Int)
+		tree := New(compare.Any[int])
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)

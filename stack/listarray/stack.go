@@ -4,22 +4,22 @@ import (
 	"fmt"
 )
 
-type Node struct {
-	elements []interface{}
+type Node[T any] struct {
+	elements []T
 	cur      int
-	down     *Node
+	down     *Node[T]
 }
 
-type Stack struct {
-	top   *Node
-	cache *Node
+type Stack[T any] struct {
+	top   *Node[T]
+	cache *Node[T]
 	size  uint
 }
 
-func (as *Stack) grow() bool {
+func (as *Stack[T]) grow() bool {
 	if as.top.cur+1 == cap(as.top.elements) {
 
-		var grownode *Node
+		var grownode *Node[T]
 		if as.cache != nil {
 			grownode = as.cache
 			grownode.cur = -1
@@ -31,7 +31,7 @@ func (as *Stack) grow() bool {
 			} else {
 				growsize = 256 + as.size>>2
 			}
-			grownode = &Node{elements: make([]interface{}, growsize, growsize), cur: -1}
+			grownode = &Node[T]{elements: make([]T, growsize), cur: -1}
 		}
 
 		grownode.down = as.top
@@ -42,7 +42,7 @@ func (as *Stack) grow() bool {
 	return false
 }
 
-func (as *Stack) cacheRemove() bool {
+func (as *Stack[T]) cacheRemove() bool {
 	if as.top.cur == 0 && as.top.down != nil {
 		as.cache = as.top
 		as.top = as.top.down
@@ -53,48 +53,48 @@ func (as *Stack) cacheRemove() bool {
 	return false
 }
 
-func New() *Stack {
-	s := &Stack{}
+func New[T any]() *Stack[T] {
+	s := &Stack[T]{}
 	s.size = 0
-	s.top = &Node{elements: make([]interface{}, 8, 8), cur: -1}
+	s.top = &Node[T]{elements: make([]T, 8), cur: -1}
 	return s
 }
 
-func NewWithCap(cap int) *Stack {
-	s := &Stack{}
+func NewWithCap[T any](cap int) *Stack[T] {
+	s := &Stack[T]{}
 	s.size = 0
-	s.top = &Node{elements: make([]interface{}, cap, cap), cur: -1}
+	s.top = &Node[T]{elements: make([]T, cap), cur: -1}
 	return s
 }
 
-func (as *Stack) Clear() {
+func (as *Stack[T]) Clear() {
 	as.size = 0
 
 	as.top.down = nil
 	as.top.cur = -1
 }
 
-func (as *Stack) Empty() bool {
+func (as *Stack[T]) Empty() bool {
 	return as.size == 0
 }
 
-func (as *Stack) Size() uint {
+func (as *Stack[T]) Size() uint {
 	return as.size
 }
 
 // String 左为Top
-func (as *Stack) String() string {
+func (as *Stack[T]) String() string {
 
 	return fmt.Sprintf("%v", as.Values())
 }
 
-func (as *Stack) Values() []interface{} {
-	result := make([]interface{}, as.size, as.size)
+func (as *Stack[T]) Values() []T {
+	result := make([]T, as.size)
 
 	cur := as.top
 	n := as.size - 1
 	for ; cur != nil; cur = cur.down {
-		for i, _ := range cur.elements {
+		for i := range cur.elements {
 			if cur.cur >= i {
 				result[n] = cur.elements[cur.cur-i]
 				n--
@@ -105,7 +105,7 @@ func (as *Stack) Values() []interface{} {
 	return result
 }
 
-// func (as *Stack) Index(idx int) (interface{}, bool) {
+// func (as *Stack[T]) Index(idx int) (interface{}, bool) {
 // 	if idx < 0 {
 // 		return nil, false
 // 	}
@@ -123,14 +123,14 @@ func (as *Stack) Values() []interface{} {
 // 	return cur.elements[cur.cur-idx], true
 // }
 
-func (as *Stack) Push(v interface{}) {
+func (as *Stack[T]) Push(v T) {
 	as.grow()
 	as.top.cur++
 	as.top.elements[as.top.cur] = v
 	as.size++
 }
 
-func (as *Stack) Pop() (interface{}, bool) {
+func (as *Stack[T]) Pop() (interface{}, bool) {
 	if as.size <= 0 {
 		return nil, false
 	}
@@ -145,7 +145,7 @@ func (as *Stack) Pop() (interface{}, bool) {
 	return epop, true
 }
 
-func (as *Stack) Peek() (interface{}, bool) {
+func (as *Stack[T]) Peek() (interface{}, bool) {
 	if as.size <= 0 {
 		return nil, false
 	}

@@ -9,7 +9,6 @@ import (
 
 	"github.com/474420502/random"
 	utils "github.com/474420502/structure"
-	"github.com/474420502/structure/compare"
 )
 
 const Level0 = 100000
@@ -40,7 +39,7 @@ func BenchmarkPut2(b *testing.B) {
 	tree := New()
 
 	var data [][]byte
-	for i := 0; i < Level0; i++ {
+	for i := 0; i < Level1; i++ {
 		data = append(data, utils.Rangdom(8, 32))
 	}
 
@@ -86,7 +85,7 @@ func TestRemoveRange(t *testing.T) {
 	for i := 0; i < level; i++ {
 
 		tree := New()
-		tree.compare = compare.BytesLen
+		tree.compare = compareBytesLen
 		for i := 0; i < level; i += rand.Intn(10) + 10 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
@@ -119,9 +118,9 @@ func TestRemoveRange(t *testing.T) {
 // 	for i := 0; i < level; i++ {
 
 // 		// tree := New()
-// 		// tree.compare = compare.BytesLen
+// 		// tree.compare = compareBytesLen
 // 		treeEx := New()
-// 		treeEx.compare = compare.BytesLen
+// 		treeEx.compare = compareBytesLen
 // 		for i := 0; i < level; i += rand.Intn(10) + 1 {
 // 			v := []byte(strconv.Itoa(i))
 // 			// tree.Put(v, v)
@@ -159,9 +158,9 @@ func TestTrimBench(t *testing.T) {
 	for i := 0; i < level; i++ {
 
 		tree := New()
-		tree.compare = compare.BytesLen
+		tree.compare = compareBytesLen
 		treeEx := New()
-		treeEx.compare = compare.BytesLen
+		treeEx.compare = compareBytesLen
 		for i := 0; i < level; i += rand.Intn(10) + 1 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
@@ -210,9 +209,9 @@ func estIntersectionP(t *testing.T) {
 		var table2 map[string]bool = make(map[string]bool)
 
 		tree1 := New()
-		tree1.compare = compare.BytesLen
+		tree1.compare = compareBytesLen
 		tree2 := New()
-		tree2.compare = compare.BytesLen
+		tree2.compare = compareBytesLen
 
 		for i := 0; i < 100000; i += rand.Intn(1000) + 1 {
 			v := []byte(strconv.Itoa(i))

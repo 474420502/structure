@@ -11,7 +11,7 @@ func (tree *Tree) hashString() string {
 	w := zlib.NewWriter(buf)
 
 	tree.Traverse(func(s *Slice) bool {
-		w.Write(s.Key.([]byte))
+		w.Write(s.Key)
 		return true
 	})
 
@@ -28,7 +28,7 @@ func (tree *Tree) getRoot() *treeNode {
 }
 
 // getRangeNodes 获取范围节点的左团和又团
-func (tree *Tree) getRangeRoot(low, hight interface{}) (root *treeNode) {
+func (tree *Tree) getRangeRoot(low, hight []byte) (root *treeNode) {
 	const L = 0
 	const R = 1
 
@@ -123,13 +123,13 @@ func (tree *Tree) fixPut(cur *treeNode) {
 			// 右就检测左边
 			if relations == R {
 				if rsize-lsize >= limitsize.bottomsize {
-					cur = tree.sizeRrotate(cur)
+					tree.sizeRrotate(cur)
 					tree.fixPutSize(parent)
 					return
 				}
 			} else {
 				if lsize-rsize >= limitsize.bottomsize {
-					cur = tree.sizeLrotate(cur)
+					tree.sizeLrotate(cur)
 					tree.fixPutSize(parent)
 					return
 				}
@@ -436,7 +436,7 @@ func (tree *Tree) index(i int64) *treeNode {
 
 }
 
-func (tree *Tree) getNode(key interface{}) *treeNode {
+func (tree *Tree) getNode(key []byte) *treeNode {
 	const L = 0
 	const R = 1
 

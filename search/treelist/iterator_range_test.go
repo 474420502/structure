@@ -30,7 +30,7 @@ func TestIteratorRange(t *testing.T) {
 		iter := tree.IteratorRange()
 		iter.GE2LT([]byte("a4"), []byte("c4")) // a4 <= key < c4
 		iter.Range(func(cur *SliceIndex) bool {
-			result = append(result, string(cur.Key.([]byte)))
+			result = append(result, string(cur.Key))
 			return true
 		})
 		if fmt.Sprintf("%v", result) != "[a5 c1]" {
@@ -43,7 +43,7 @@ func TestIteratorRange(t *testing.T) {
 		iter := tree.IteratorRange()
 		iter.GT2LT([]byte("a4"), []byte("c9"))
 		iter.Range(func(cur *SliceIndex) bool {
-			result = append(result, string(cur.Key.([]byte)))
+			result = append(result, string(cur.Key))
 			return true
 		})
 		if fmt.Sprintf("%v", result) != "[a5 c1 c4 c6]" {
@@ -56,7 +56,7 @@ func TestIteratorRange(t *testing.T) {
 		iter := tree.IteratorRange()
 		iter.GE2LE([]byte("a0"), []byte("c9"))
 		iter.Range(func(cur *SliceIndex) bool {
-			result = append(result, string(cur.Key.([]byte)))
+			result = append(result, string(cur.Key))
 			return true
 		})
 		if fmt.Sprintf("%v", result) != "[a1 a3 a5 c1 c4 c6]" {
@@ -70,7 +70,7 @@ func TestIteratorRange(t *testing.T) {
 		iter.SetDirection(Reverse)
 		iter.GT2LE([]byte("a0"), []byte("c9"))
 		iter.Range(func(cur *SliceIndex) bool {
-			result = append(result, string(cur.Key.([]byte)))
+			result = append(result, string(cur.Key))
 			return true
 		})
 		if fmt.Sprintf("%v", result) != "[c6 c4 c1 a5 a3 a1]" {
@@ -107,8 +107,8 @@ func TestIteratorRangeForce(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.GE2LT(start, end) // a4 <= key < c4
 			iter.Range(func(cur *SliceIndex) bool {
-				// log.Println("iter1:", string(cur.Key.([]byte)), cur.Index)
-				result = append(result, string(cur.Key.([]byte)))
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
 				return true
 			})
 
@@ -129,7 +129,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			}
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("start:", string(start), "end:", string(end))
-				log.Println("siter:", string(iter.siter.cur.Key.([]byte)), "eiter:", string(iter.eiter.cur.Key.([]byte)), iter.siter.idx, iter.eiter.idx)
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
 				log.Println("range size:", iter.Size(), "result len:", len(result))
 				log.Println(result)
 				log.Println()
@@ -142,8 +142,8 @@ func TestIteratorRangeForce(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.GT2LT(start, end) // a4 <= key < c4
 			iter.Range(func(cur *SliceIndex) bool {
-				// log.Println("iter1:", string(cur.Key.([]byte)), cur.Index)
-				result = append(result, string(cur.Key.([]byte)))
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
 				return true
 			})
 
@@ -165,7 +165,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("range size:", iter.Size(), "result len:", len(result))
 				log.Println("start:", string(start), "end:", string(end))
-				log.Println("siter:", string(iter.siter.cur.Key.([]byte)), "eiter:", string(iter.eiter.cur.Key.([]byte)), iter.siter.idx, iter.eiter.idx)
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
 				log.Println(result)
 				log.Println()
 			}
@@ -176,8 +176,8 @@ func TestIteratorRangeForce(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.GE2LE(start, end) // a4 <= key < c4
 			iter.Range(func(cur *SliceIndex) bool {
-				// log.Println("iter1:", string(cur.Key.([]byte)), cur.Index)
-				result = append(result, string(cur.Key.([]byte)))
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
 				return true
 			})
 
@@ -198,7 +198,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			}
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("start:", string(start), "end:", string(end))
-				log.Println("siter:", string(iter.siter.cur.Key.([]byte)), "eiter:", string(iter.eiter.cur.Key.([]byte)), iter.siter.idx, iter.eiter.idx)
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
 				log.Println("range size:", iter.Size(), "result len:", len(result))
 				log.Println(result)
 				log.Println()
@@ -210,8 +210,8 @@ func TestIteratorRangeForce(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.GT2LE(start, end) // a4 <= key < c4
 			iter.Range(func(cur *SliceIndex) bool {
-				// log.Println("iter1:", string(cur.Key.([]byte)), cur.Index)
-				result = append(result, string(cur.Key.([]byte)))
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
 				return true
 			})
 
@@ -232,7 +232,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			}
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("start:", string(start), "end:", string(end))
-				log.Println("siter:", string(iter.siter.cur.Key.([]byte)), "eiter:", string(iter.eiter.cur.Key.([]byte)), iter.siter.idx, iter.eiter.idx)
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
 				log.Println("range size:", iter.Size(), "result len:", len(result))
 				log.Println(result)
 				log.Println()
@@ -246,7 +246,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.GE2LT([]byte("a4"), []byte("c4")) // a4 <= key < c4
 			iter.Range(func(cur *SliceIndex) bool {
-				result = append(result, string(cur.Key.([]byte)))
+				result = append(result, string(cur.Key))
 				return true
 			})
 			// if fmt.Sprintf("%v", result) != "[a5 c1]" {
@@ -259,7 +259,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.GT2LT([]byte("a4"), []byte("c9"))
 			iter.Range(func(cur *SliceIndex) bool {
-				result = append(result, string(cur.Key.([]byte)))
+				result = append(result, string(cur.Key))
 				return true
 			})
 			// if fmt.Sprintf("%v", result) != "[a5 c1 c4 c6]" {
@@ -272,7 +272,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.GE2LE([]byte("a0"), []byte("c9"))
 			iter.Range(func(cur *SliceIndex) bool {
-				result = append(result, string(cur.Key.([]byte)))
+				result = append(result, string(cur.Key))
 				return true
 			})
 			// if fmt.Sprintf("%v", result) != "[a1 a3 a5 c1 c4 c6]" {
@@ -286,7 +286,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			iter.SetDirection(Reverse)
 			iter.GT2LE([]byte("a0"), []byte("c9"))
 			iter.Range(func(cur *SliceIndex) bool {
-				result = append(result, string(cur.Key.([]byte)))
+				result = append(result, string(cur.Key))
 				return true
 			})
 			// if fmt.Sprintf("%v", result) != "[c6 c4 c1 a5 a3 a1]" {
@@ -324,8 +324,8 @@ func TestIteratorRangeForce2(t *testing.T) {
 			iter.SetDirection(Reverse)
 			iter.GE2LT(start, end) // a4 <= key < c4
 			iter.Range(func(cur *SliceIndex) bool {
-				// log.Println("iter1:", string(cur.Key.([]byte)), cur.Index)
-				result = append(result, string(cur.Key.([]byte)))
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
 				return true
 			})
 
@@ -348,7 +348,7 @@ func TestIteratorRangeForce2(t *testing.T) {
 
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("start:", string(start), "end:", string(end))
-				log.Println("siter:", string(iter.siter.cur.Key.([]byte)), "eiter:", string(iter.eiter.cur.Key.([]byte)), iter.siter.idx, iter.eiter.idx)
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
 				log.Println("range size:", iter.Size(), "result len:", len(result))
 				log.Println(result)
 				log.Println()
@@ -362,8 +362,8 @@ func TestIteratorRangeForce2(t *testing.T) {
 			iter.SetDirection(Reverse)
 			iter.GT2LT(start, end) // a4 <= key < c4
 			iter.Range(func(cur *SliceIndex) bool {
-				// log.Println("iter1:", string(cur.Key.([]byte)), cur.Index)
-				result = append(result, string(cur.Key.([]byte)))
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
 				return true
 			})
 
@@ -387,7 +387,7 @@ func TestIteratorRangeForce2(t *testing.T) {
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("range size:", iter.Size(), "result len:", len(result))
 				log.Println("start:", string(start), "end:", string(end))
-				log.Println("siter:", string(iter.siter.cur.Key.([]byte)), "eiter:", string(iter.eiter.cur.Key.([]byte)), iter.siter.idx, iter.eiter.idx)
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
 				log.Println(result)
 				log.Println()
 			}
@@ -399,8 +399,8 @@ func TestIteratorRangeForce2(t *testing.T) {
 			iter.SetDirection(Reverse)
 			iter.GE2LE(start, end) // a4 <= key < c4
 			iter.Range(func(cur *SliceIndex) bool {
-				// log.Println("iter1:", string(cur.Key.([]byte)), cur.Index)
-				result = append(result, string(cur.Key.([]byte)))
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
 				return true
 			})
 
@@ -423,7 +423,7 @@ func TestIteratorRangeForce2(t *testing.T) {
 
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("start:", string(start), "end:", string(end))
-				log.Println("siter:", string(iter.siter.cur.Key.([]byte)), "eiter:", string(iter.eiter.cur.Key.([]byte)), iter.siter.idx, iter.eiter.idx)
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
 				log.Println("range size:", iter.Size(), "result len:", len(result))
 				log.Println(result)
 				log.Println()
@@ -436,8 +436,8 @@ func TestIteratorRangeForce2(t *testing.T) {
 			iter.SetDirection(Reverse)
 			iter.GT2LE(start, end) // a4 <= key < c4
 			iter.Range(func(cur *SliceIndex) bool {
-				// log.Println("iter1:", string(cur.Key.([]byte)), cur.Index)
-				result = append(result, string(cur.Key.([]byte)))
+				// log.Println("iter1:", string(cur.Key), cur.Index)
+				result = append(result, string(cur.Key))
 				return true
 			})
 
@@ -460,7 +460,7 @@ func TestIteratorRangeForce2(t *testing.T) {
 
 			if iter.Size() != int64(len(result)) || iter.Size() != int64(len(result2)) {
 				log.Println("start:", string(start), "end:", string(end))
-				log.Println("siter:", string(iter.siter.cur.Key.([]byte)), "eiter:", string(iter.eiter.cur.Key.([]byte)), iter.siter.idx, iter.eiter.idx)
+				log.Println("siter:", string(iter.siter.cur.Key), "eiter:", string(iter.eiter.cur.Key), iter.siter.idx, iter.eiter.idx)
 				log.Println("range size:", iter.Size(), "result len:", len(result))
 				log.Println(result)
 				log.Println()
