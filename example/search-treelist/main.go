@@ -56,7 +56,7 @@ func main() {
 	//[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}]
 	log.Println("Iterator: {Valid Next SeekGE}")
 	iter := tree1.Iterator()
-	if iter.SeekGE([]byte("word1")) { // similar to rocksdb pebble leveldb skiplist
+	if iter.SeekGE([]byte("word1")) { // key >= "word1"  similar to rocksdb pebble leveldb skiplist
 		for ; iter.Valid(); iter.Next() { // Vaiid Next
 			log.Println(string(iter.Key())) // log: word1 word2 zero
 			// you can limit by yourself
@@ -65,7 +65,7 @@ func main() {
 
 	//[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}]
 	log.Println("Iterator: {Valid Next SeekGT}")
-	if iter.SeekGT([]byte("word1")) { //  key is "word2"
+	if iter.SeekGT([]byte("word1")) { //  key > "word1". to word2
 		for ; iter.Valid(); iter.Next() { // Vaiid Next
 			log.Println(string(iter.Key())) // log: word2 zero
 			// you can limit by yourself
@@ -74,7 +74,7 @@ func main() {
 
 	//[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}]
 	log.Println("Iterator: {Valid Prev SeekLE}")
-	if !iter.SeekLE([]byte("word")) { // return false . key is "boy"
+	if !iter.SeekLE([]byte("word")) { // key <= "word". return false . key is "boy"
 		for ; iter.Valid(); iter.Prev() { // Vaiid Next
 			log.Println(string(iter.Key())) // log: boy apple
 			// you can limit by yourself
@@ -83,7 +83,7 @@ func main() {
 
 	//[{apple:4} {boy:3} {word1:1} {word2:2} {zero:0}]
 	log.Println("Iterator: {Valid Prev SeekLT}")
-	if iter.SeekLT([]byte("word1")) { // return tree key is "boy"
+	if iter.SeekLT([]byte("word1")) { // key < "word1". return tree key is "boy"
 		for ; iter.Valid(); iter.Prev() { // Vaiid Next
 			log.Println(string(iter.Key())) // log: boy apple
 			// you can limit by yourself

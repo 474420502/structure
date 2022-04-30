@@ -420,7 +420,7 @@ func (tree *Tree[T]) Slices() []Slice[T] {
 	return result
 }
 
-// Remove remove key and return value that be removed
+// Remove remove key and return value that be removed. if not exists, return nil
 func (tree *Tree[T]) Remove(key T) *Slice[T] {
 	if cur := tree.getNode(key); cur != nil {
 		return tree.removeNode(cur)
