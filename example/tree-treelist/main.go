@@ -218,7 +218,6 @@ func Resotre[T int](tree1 *treelist.Tree[T]) {
 	tree1.Put(4, 4)
 	tree1.Put(1, 1)
 	// tree1.Put(2, 2)
-	tree1.Set(4, 4) //   4
 	tree1.Set(3, 3) //   3 insert
 	tree1.Set(7, 7) //   7
 }

@@ -3,6 +3,8 @@ package arraylist
 import (
 	"fmt"
 	"log"
+
+	"github.com/474420502/structure/compare"
 )
 
 // func assertImplementation() {
@@ -10,7 +12,8 @@ import (
 // 	var _ ilist.IIterator[any] = (*Iterator[any])(nil)
 // }
 
-type ArrayList[T comparable] struct {
+// ArrayList a list base on array
+type ArrayList[T any] struct {
 	data    []T
 	headidx uint // [ nil(hdix) 1 nil(tidx) ]
 	tailidx uint
@@ -18,44 +21,54 @@ type ArrayList[T comparable] struct {
 
 	growthSize uint
 	shrinkSize uint
+	comp       compare.Compare[T]
 }
 
 const (
-	listMaxLimit = uint(1) << 63
-	listMinLimit = uint(8)
+	listMaxLimit = uint(1) << 63 // the max size of list
+	listMinLimit = uint(8)       // the min size of list
 	initCap      = uint(8)
 	//growthFactor = float32(2.0)  // growth by 100%
 	//shrinkFactor = float32(0.25) // shrink when size is 25% of capacity (0 means never shrink)
 )
 
-func New[T comparable]() *ArrayList[T] {
+// New create a object of list
+func New[T any](comp compare.Compare[T]) *ArrayList[T] {
 	l := &ArrayList[T]{}
-	l.data = make([]T, initCap, initCap)
+	l.data = make([]T, initCap)
 	l.tailidx = initCap / 2
 	l.headidx = l.tailidx - 1
 	// l.shrinkSize = listMinLimit
+	l.comp = comp
 	return l
 }
 
+// Iterator  an iterator is an object that enables a programmer to traverse a container, particularly lists
 func (l *ArrayList[T]) Iterator() *Iterator[T] {
 	return &Iterator[T]{al: l, cur: 0}
 }
 
+// Iterator
+// an iterator is an object that enables a programmer to traverse a container
+// and can circulate
 func (l *ArrayList[T]) CircularIterator() *CircularIterator[T] {
 	return &CircularIterator[T]{al: l, cur: 0}
 }
 
+// Clear clear the list
 func (l *ArrayList[T]) Clear() {
-	l.data = make([]T, 8, 8)
+	l.data = make([]T, 8)
 	l.tailidx = initCap / 2
 	l.headidx = l.tailidx - 1
 	l.size = 0
 }
 
+// Empty   if the list is empty, return true. else return false
 func (l *ArrayList[T]) Empty() bool {
 	return l.size == 0
 }
 
+// Size return the size of list
 func (l *ArrayList[T]) Size() uint {
 	return l.size
 }
@@ -69,7 +82,7 @@ func (l *ArrayList[T]) shrink() {
 	if l.size <= l.shrinkSize {
 		lcap := uint(len(l.data))
 		nSize := lcap - lcap>>2
-		temp := make([]T, nSize, nSize)
+		temp := make([]T, nSize)
 
 		ghidx := l.size >> 2
 		gtidx := ghidx + l.size + 1
@@ -93,7 +106,7 @@ func (l *ArrayList[T]) growth() {
 
 	lcap := uint(len(l.data))
 	nSize := lcap << 1
-	temp := make([]T, nSize, nSize)
+	temp := make([]T, nSize)
 
 	ghidx := lcap / 2
 	gtidx := ghidx + l.size + 1
@@ -105,6 +118,7 @@ func (l *ArrayList[T]) growth() {
 	l.shrinkSize = l.size - l.size>>2
 }
 
+// Push Push a value to the tail of the list
 func (l *ArrayList[T]) Push(value T) {
 	for l.tailidx+1 > uint(len(l.data)) {
 		l.growth()
@@ -114,6 +128,7 @@ func (l *ArrayList[T]) Push(value T) {
 	l.size += 1
 }
 
+// PushFront Push values to the head of the list
 func (l *ArrayList[T]) PushFront(values ...T) {
 	psize := uint(len(values))
 	for l.headidx+1-psize > listMaxLimit {
@@ -128,6 +143,7 @@ func (l *ArrayList[T]) PushFront(values ...T) {
 	l.size += psize
 }
 
+// PushBack Push  values to the tail of the list
 func (l *ArrayList[T]) PushBack(values ...T) {
 	psize := uint(len(values))
 	for l.tailidx+psize > uint(len(l.data)) { // [0 1 2 3 4 5 6]
@@ -141,6 +157,7 @@ func (l *ArrayList[T]) PushBack(values ...T) {
 	l.size += psize
 }
 
+// Front return the head of list
 func (l *ArrayList[T]) Front() (result T, ok bool) {
 	if l.size != 0 {
 		return l.data[l.headidx+1], true
@@ -149,6 +166,7 @@ func (l *ArrayList[T]) Front() (result T, ok bool) {
 	return
 }
 
+// Back return the head of list
 func (l *ArrayList[T]) Back() (result T, ok bool) {
 	if l.size != 0 {
 		return l.data[l.tailidx-1], true
@@ -157,6 +175,7 @@ func (l *ArrayList[T]) Back() (result T, ok bool) {
 	return
 }
 
+// PopFront pop the head of the list
 func (l *ArrayList[T]) PopFront() (result T, ok bool) {
 	if l.size != 0 {
 		l.size--
@@ -190,13 +209,13 @@ func (l *ArrayList[T]) Index(idx uint) T {
 	return l.data[idx+l.headidx+1]
 }
 
-// Set like slice[idx] = value. the feature of array list
+// Set similar to slice[idx] = value. the feature of array list
 func (l *ArrayList[T]) Set(idx int, value T) {
 
 	l.data[uint(idx)+l.headidx+1] = value
 }
 
-// Remove
+// Remove remove the value by index
 func (l *ArrayList[T]) Remove(idx uint) (result T) {
 
 	if idx >= l.size {
@@ -220,11 +239,12 @@ func (l *ArrayList[T]) Remove(idx uint) (result T) {
 	return
 }
 
+// Contains determining whether a list contains values. return the count of values.
 func (l *ArrayList[T]) Contains(values ...T) (count int) {
 
 	for _, element := range l.data[l.headidx+1 : l.tailidx] {
 		for _, searchValue := range values {
-			if element == searchValue {
+			if l.comp(element, searchValue) == 0 {
 				count++
 			}
 		}
@@ -233,16 +253,19 @@ func (l *ArrayList[T]) Contains(values ...T) (count int) {
 	return
 }
 
+// Values return all values of list
 func (l *ArrayList[T]) Values() []T {
-	newElements := make([]T, l.size, l.size)
+	newElements := make([]T, l.size)
 	copy(newElements, l.data[l.headidx+1:l.tailidx])
 	return newElements
 }
 
+// String print the string of list
 func (l *ArrayList[T]) String() string {
 	return fmt.Sprintf("%v", l.Values())
 }
 
+// Traverse Traversing containers
 func (l *ArrayList[T]) Traverse(every func(idx uint, value T) bool) {
 	for i := uint(0); i < l.size; i++ {
 		if !every(i, l.data[i+l.headidx+1]) {
