@@ -2,20 +2,23 @@ package arraylist
 
 import "log"
 
-type Iterator[T comparable] struct {
+// Iterator an iterator is an object that enables a programmer to traverse a container
+type Iterator[T any] struct {
 	al  *ArrayList[T]
 	cur uint
 }
 
+// Value return current value iterator
 func (iter *Iterator[T]) Value() T {
 	return iter.al.Index(iter.cur)
 }
 
+// Vaild if current value is not nil return true. else return false. for use with Seek
 func (iter *Iterator[T]) Vaild() bool {
 	return iter.cur < iter.al.size
 }
 
-// Swap  Swap iter Value
+// Swap  Swap the Value of iterator with other iterator
 func (iter *Iterator[T]) Swap(other *Iterator[T]) {
 	cidx := iter.cur + iter.al.headidx + 1
 	oidx := other.cur + other.al.headidx + 1
@@ -25,7 +28,7 @@ func (iter *Iterator[T]) Swap(other *Iterator[T]) {
 	other.al.data[oidx] = temp
 }
 
-// SetValue Iter Value
+// SetValue Set  the Value of iterator
 func (iter *Iterator[T]) SetValue(value T) {
 	iter.al.data[iter.cur+iter.al.headidx+1] = value
 }
@@ -49,7 +52,6 @@ func (iter *Iterator[T]) RemoveToNext() {
 	if iter.cur == iter.al.size {
 		iter.cur--
 	}
-	return
 }
 
 // RemoveToNext Remove self and to Prev.  must iter.Vaild() == true
@@ -59,7 +61,6 @@ func (iter *Iterator[T]) RemoveToPrev() {
 		return
 	}
 	iter.cur--
-	return
 }
 
 // Prev to prev

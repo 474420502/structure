@@ -2,7 +2,8 @@ package arraylist
 
 import "log"
 
-type CircularIterator[T comparable] struct {
+// CircularIterator an iterator is an object that enables a programmer to traverse a container
+type CircularIterator[T any] struct {
 	al  *ArrayList[T]
 	cur uint
 }
@@ -45,17 +46,19 @@ func (iter *CircularIterator[T]) RemoveToNext() {
 func (iter *CircularIterator[T]) RemoveToPrev() {
 	iter.al.Remove(iter.cur)
 	iter.cur--
-	return
 }
 
+// Value return current value iterator
 func (iter *CircularIterator[T]) Value() T {
 	return iter.al.Index(iter.cur)
 }
 
+// Vaild if current value is not nil return true. else return false. for use with Seek
 func (iter *CircularIterator[T]) Vaild() bool {
 	return iter.cur < iter.al.size
 }
 
+// Prev to prev
 func (iter *CircularIterator[T]) Prev() {
 
 	if iter.al.size == 0 {
@@ -70,6 +73,7 @@ func (iter *CircularIterator[T]) Prev() {
 	return
 }
 
+// Next to next
 func (iter *CircularIterator[T]) Next() {
 	if iter.al.size == 0 {
 		return
@@ -83,10 +87,12 @@ func (iter *CircularIterator[T]) Next() {
 	return
 }
 
+// ToHead to Head
 func (iter *CircularIterator[T]) ToHead() {
 	iter.cur = 0
 }
 
+// ToTail to Tail
 func (iter *CircularIterator[T]) ToTail() {
 	iter.cur = iter.al.size - 1
 }
