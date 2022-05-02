@@ -7,10 +7,11 @@ import (
 	"testing"
 
 	"github.com/474420502/random"
+	"github.com/474420502/structure/compare"
 )
 
 func TestPush(t *testing.T) {
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	for i := 0; i < 5; i++ {
 		l.Push(i)
 	}
@@ -28,7 +29,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestPushFront(t *testing.T) {
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
 	}
@@ -46,7 +47,7 @@ func TestPushFront(t *testing.T) {
 }
 
 func TestPushBack(t *testing.T) {
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	for i := 0; i < 5; i++ {
 		l.PushBack(i)
 	}
@@ -64,7 +65,7 @@ func TestPushBack(t *testing.T) {
 }
 
 func TestPopFront(t *testing.T) {
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -87,7 +88,7 @@ func TestPopFront(t *testing.T) {
 }
 
 func TestPopBack(t *testing.T) {
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -111,7 +112,7 @@ func TestPopBack(t *testing.T) {
 }
 
 func TestIndex(t *testing.T) {
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -148,7 +149,7 @@ func TestIndex(t *testing.T) {
 }
 
 func TestTraversal(t *testing.T) {
-	l := New[uint]()
+	l := New[uint](compare.Any[uint])
 	for i := 0; i < 5; i++ {
 		l.PushFront(uint(i))
 	}
@@ -177,7 +178,7 @@ func TestTraversal(t *testing.T) {
 }
 
 func TestIterator(t *testing.T) {
-	ll := New[int]()
+	ll := New[int](compare.Any[int])
 	for i := 0; i < 10; i++ {
 		ll.PushFront(i)
 	}
@@ -215,7 +216,7 @@ func TestIterator(t *testing.T) {
 }
 
 func TestCircularIterator(t *testing.T) {
-	ll := New[int]()
+	ll := New[int](compare.Any[int])
 	for i := 0; i < 10; i++ {
 		ll.PushFront(i)
 	}
@@ -271,7 +272,7 @@ func TestCircularIterator(t *testing.T) {
 }
 
 func TestContains(t *testing.T) {
-	ll := New[int]()
+	ll := New[int](compare.Any[int])
 	for i := 0; i < 10; i++ {
 		ll.Push(i)
 	}
@@ -309,7 +310,7 @@ func TestContains(t *testing.T) {
 func TestForce(t *testing.T) {
 
 	rand := random.New(t.Name())
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	// "[4 3 2 1 0]"
 	for n := 0; n < 2000; n++ {
 
@@ -367,9 +368,9 @@ func TestForce(t *testing.T) {
 
 		for citer := l.CircularIterator(); citer.Vaild(); citer.Next() {
 			if len(result1) != int(lsize) {
-				result1 = append(result1, citer.Value().(int))
+				result1 = append(result1, citer.Value())
 			} else if len(result2) != int(lsize) {
-				result2 = append(result2, citer.Value().(int))
+				result2 = append(result2, citer.Value())
 			} else {
 				break
 			}
@@ -385,7 +386,7 @@ func TestForce(t *testing.T) {
 
 func TestIteratorInsert(t *testing.T) {
 
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	l.Push(1)
 
 	iter := l.Iterator()
@@ -424,7 +425,7 @@ func TestIteratorInsert(t *testing.T) {
 
 func TestCircularIteratorInsert(t *testing.T) {
 
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	l.Push(1)
 
 	iter := l.CircularIterator()
@@ -459,7 +460,7 @@ func TestCircularIteratorInsert(t *testing.T) {
 }
 
 func TestIteratorRemove(t *testing.T) {
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -534,7 +535,7 @@ func TestIteratorRemove(t *testing.T) {
 }
 
 func TestCircularIteratorIteratorRemove(t *testing.T) {
-	l := New[int]()
+	l := New[int](compare.Any[int])
 	// "[4 3 2 1 0]"
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
@@ -627,7 +628,7 @@ func TestForceMoveBA(t *testing.T) {
 
 		func() {
 
-			ll := New[int]()
+			ll := New[int](compare.Any[int])
 			l := list.New()
 
 			r.Execute(5, 20, func() {
@@ -669,7 +670,7 @@ func TestForceMoveBA(t *testing.T) {
 
 		func() {
 
-			ll := New[int]()
+			ll := New[int](compare.Any[int])
 			l := list.New()
 
 			r.Execute(5, 20, func() {
@@ -719,7 +720,7 @@ func TestForceMoveBA(t *testing.T) {
 // 	b.N = cs * ec
 
 // 	for c := 0; c < ec; c++ {
-// 		l := New[int]()
+// 		l := New[int](compare.Any[int])
 // 		for i := 0; i < cs; i++ {
 // 			l.PushBack(i)
 // 		}
@@ -733,7 +734,7 @@ func TestForceMoveBA(t *testing.T) {
 // 	b.N = cs * ec
 
 // 	for c := 0; c < ec; c++ {
-// 		l := New[int]()
+// 		l := New[int](compare.Any[int])
 // 		for i := 0; i < cs; i++ {
 // 			l.PushFront(i)
 // 		}
@@ -748,7 +749,7 @@ func TestForceMoveBA(t *testing.T) {
 // 	b.N = cs * ec
 
 // 	for c := 0; c < ec; c++ {
-// 		l := New[int]()
+// 		l := New[int](compare.Any[int])
 // 		for i := 0; i < cs; i++ {
 // 			ridx := randomdata.Number(0, int(l.Size())+1)
 // 			l.Insert(uint(ridx), i)

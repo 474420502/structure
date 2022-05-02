@@ -1,8 +1,8 @@
 package linkedlist
 
-type CircularIterator[T comparable] struct {
+type CircularIterator[T any] struct {
 	ll  *LinkedList[T]
-	cur *Node[T]
+	cur *hNode[T]
 }
 
 func (iter *CircularIterator[T]) Swap(other *CircularIterator[T]) {
@@ -15,7 +15,7 @@ func (iter *CircularIterator[T]) SetValue(v T) {
 }
 
 // Value get the value of element. must iter.Vaild() == true
-func (iter *CircularIterator[T]) Value() interface{} {
+func (iter *CircularIterator[T]) Value() T {
 	return iter.cur.value
 }
 
@@ -162,16 +162,16 @@ func (iter *CircularIterator[T]) MoveAfter(mark *CircularIterator[T]) {
 // InsertBefore insert T before the iterator. must iter.Vaild() == true
 func (iter *CircularIterator[T]) InsertBefore(values ...T) {
 
-	var start *Node[T]
-	var end *Node[T]
+	var start *hNode[T]
+	var end *hNode[T]
 
 	iter.ll.size += uint(len(values))
 
-	start = &Node[T]{value: values[0]}
+	start = &hNode[T]{value: values[0]}
 	end = start
 
 	for _, value := range values[1:] {
-		node := &Node[T]{value: value}
+		node := &hNode[T]{value: value}
 		end.next = node
 		node.prev = end
 		end = node
@@ -189,16 +189,16 @@ func (iter *CircularIterator[T]) InsertBefore(values ...T) {
 // InsertAfter insert T after the iterator. must iter.Vaild() == true
 func (iter *CircularIterator[T]) InsertAfter(values ...T) {
 
-	var start *Node[T]
-	var end *Node[T]
+	var start *hNode[T]
+	var end *hNode[T]
 
 	iter.ll.size += uint(len(values))
 
-	start = &Node[T]{value: values[0]}
+	start = &hNode[T]{value: values[0]}
 	end = start
 
 	for _, value := range values[1:] {
-		node := &Node[T]{value: value}
+		node := &hNode[T]{value: value}
 		end.next = node
 		node.prev = end
 		end = node
