@@ -54,7 +54,120 @@ func main2() {
 	for i := 0; i < 10; i += 2 {
 		l.Push(i)
 	}
-	log.Println("Iterator")
+	log.Println("Iterator{Index IndexTo ToHead ToTail Value}")
+	iter := l.Iterator()
+	iter.ToHead()                           // to head
+	log.Println(iter.Value(), iter.Index()) // value:0 index:0
+	iter.ToTail()                           // to tail
+	log.Println(iter.Value(), iter.Index()) // value:8 index:4
+
+	iter.IndexTo(1)           //
+	log.Println(iter.Value()) // 2
+
+	log.Println("Iterator{Prev Next Vaild}")
+	iter = l.Iterator()
+	iter.ToHead()
+	for iter.Vaild() {
+		log.Println(iter.Value()) // 0 2 4 6 8
+		iter.Next()
+	}
+
+	iter.ToTail()
+	for iter.Vaild() {
+		log.Println(iter.Value()) // 8 6 4 2 0
+		iter.Prev()
+	}
+
+	log.Println("Iterator{SetValue Swap}")
+	iter1 := l.Iterator()
+	iter1.ToHead()
+	iter1.SetValue(8)
+	iter2 := l.Iterator()
+	iter2.ToTail()
+	iter2.SetValue(0)
+	log.Println(ShowList(l)) // [0 2 4 6 8] -> [8 2 4 6 0]
+	iter1.Swap(iter2)
+	log.Println(ShowList(l)) // [8 2 4 6 0] -> [0 2 4 6 8]
+
+	log.Println("Iterator{RemoveToNext RemoveToPrev}")
+	iter = l.Iterator()
+	iter.IndexTo(2)           // cur: 4
+	iter.RemoveToNext()       // cur:6
+	log.Println(iter.Value()) // 6  [0 2 6 8]
+	iter.RemoveToPrev()       // cur: 2
+	log.Println(iter.Value()) // 2  [0 2 8]
+	log.Println(ShowList(l))  // [0 2 8]
+}
+
+func main3() {
+	l := arraylist.New(compare.Any[int])
+	for i := 0; i < 10; i += 2 {
+		l.Push(i)
+	}
+	log.Println("Iterator{Index IndexTo ToHead ToTail Value}")
+	iter := l.CircularIterator()
+	iter.ToHead()                           // to head
+	log.Println(iter.Value(), iter.Index()) // value:0 index:0
+	iter.ToTail()                           // to tail
+	log.Println(iter.Value(), iter.Index()) // value:8 index:4
+
+	iter.IndexTo(1)           //
+	log.Println(iter.Value()) // 2
+
+	log.Println("Iterator{Prev Next Vaild}")
+	iter = l.CircularIterator()
+
+	var result []int
+	var count int
+
+	count = 0
+	iter.ToHead()
+	for iter.Vaild() {
+		result = append(result, iter.Value())
+		iter.Next()
+		if iter.Value() == 0 {
+			count++
+			if count >= 2 {
+				break
+			}
+		}
+	}
+	log.Println(result) // [2 4 6 8 0 2 4 6 8]
+
+	result = nil
+	count = 0
+	iter.ToTail()
+	for iter.Vaild() {
+		result = append(result, iter.Value())
+		iter.Prev()
+		if iter.Value() == 8 {
+			count++
+			if count >= 2 {
+				break
+			}
+		}
+	}
+	log.Println(result) // [8 6 4 2 0 8 6 4 2 0]
+
+	log.Println("Iterator{SetValue Swap}")
+	iter1 := l.CircularIterator()
+	iter1.ToHead()
+	iter1.SetValue(8)
+	iter2 := l.CircularIterator()
+	iter2.ToTail()
+	iter2.SetValue(0)
+	log.Println(ShowList(l)) // [0 2 4 6 8] -> [8 2 4 6 0]
+	iter1.Swap(iter2)
+	log.Println(ShowList(l)) // [8 2 4 6 0] -> [0 2 4 6 8]
+
+	log.Println("Iterator{RemoveToNext RemoveToPrev}")
+	iter = l.CircularIterator()
+	iter.IndexTo(2)           // cur: 4
+	iter.RemoveToNext()       // cur:6
+	log.Println(iter.Value()) // 6  [0 2 6 8]
+	iter.RemoveToPrev()       // cur: 2
+	log.Println(iter.Value()) // 2  [0 2 8]
+	log.Println(ShowList(l))  // [0 2 8]
 }
 
 func ShowList[T any](a *arraylist.ArrayList[T]) string {

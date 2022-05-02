@@ -11,7 +11,10 @@
 	- [IndexTree](./tree/indextree/doc.md)  is a self-balancing binary search tree (BST). and have some special features
 
 	- [TreeList](./tree/treelist/doc.md)  is a self-balancing binary search tree (BST). and have some special features 
+
 - [List](./list)
+
+	- [ArrayList](./list/array_list/doc.md)  list are based on arrays 
 
 - [Search](./search)
 	- [TreeList](./search/treelist/doc.md) is a self-balancing binary search tree (BST). and have some special features. key only support the type of bytes 
