@@ -1,23 +1,24 @@
 package linkedlist
 
-type Iterator[T comparable] struct {
+// Iterator an iterator is an object that enables a programmer to traverse a container
+type Iterator[T any] struct {
 	ll  *LinkedList[T]
-	cur *Node[T]
+	cur *hNode[T]
 }
 
 // InsertBefore insert T before the iterator. must iter.Vaild() == true
 func (iter *Iterator[T]) InsertBefore(values ...T) {
 
-	var start *Node[T]
-	var end *Node[T]
+	var start *hNode[T]
+	var end *hNode[T]
 
 	iter.ll.size += uint(len(values))
 
-	start = &Node[T]{value: values[0]}
+	start = &hNode[T]{value: values[0]}
 	end = start
 
 	for _, value := range values[1:] {
-		node := &Node[T]{value: value}
+		node := &hNode[T]{value: value}
 		end.next = node
 		node.prev = end
 		end = node
@@ -35,16 +36,16 @@ func (iter *Iterator[T]) InsertBefore(values ...T) {
 // InsertAfter insert T after the iterator.  must iter.Vaild() == true
 func (iter *Iterator[T]) InsertAfter(values ...T) {
 
-	var start *Node[T]
-	var end *Node[T]
+	var start *hNode[T]
+	var end *hNode[T]
 
 	iter.ll.size += uint(len(values))
 
-	start = &Node[T]{value: values[0]}
+	start = &hNode[T]{value: values[0]}
 	end = start
 
 	for _, value := range values[1:] {
-		node := &Node[T]{value: value}
+		node := &hNode[T]{value: value}
 		end.next = node
 		node.prev = end
 		end = node

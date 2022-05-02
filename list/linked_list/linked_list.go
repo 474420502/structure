@@ -2,6 +2,8 @@ package linkedlist
 
 import (
 	"fmt"
+
+	"github.com/474420502/structure/compare"
 )
 
 // func assertImplementation() {
@@ -9,9 +11,9 @@ import (
 // 	var _ ilist.IIterator[any] = (*Iterator[any])(nil)
 // }
 
-type Node[T comparable] struct {
-	prev  *Node[T]
-	next  *Node[T]
+type hNode[T any] struct {
+	prev  *hNode[T]
+	next  *hNode[T]
 	value T
 }
 
@@ -19,18 +21,21 @@ type Node[T comparable] struct {
 // 	return node.value
 // }
 
-type LinkedList[T comparable] struct {
-	head *Node[T]
-	tail *Node[T]
+// LinkedList struct of LinkedList
+type LinkedList[T any] struct {
+	head *hNode[T]
+	tail *hNode[T]
 	size uint
+	comp compare.Compare[T]
 }
 
-func New[T comparable]() *LinkedList[T] {
-	l := &LinkedList[T]{}
-	l.head = &Node[T]{}
+// New create a object of LinkedList
+func New[T any](comp compare.Compare[T]) *LinkedList[T] {
+	l := &LinkedList[T]{comp: comp}
+	l.head = &hNode[T]{}
 	l.head.prev = nil
 
-	l.tail = &Node[T]{}
+	l.tail = &hNode[T]{}
 	l.tail.next = nil
 
 	l.head.next = l.tail
@@ -38,14 +43,19 @@ func New[T comparable]() *LinkedList[T] {
 	return l
 }
 
+// Iterator  an iterator is an object that enables a programmer to traverse a container, particularly lists
 func (l *LinkedList[T]) Iterator() *Iterator[T] {
 	return &Iterator[T]{ll: l, cur: l.head.next}
 }
 
+// Iterator
+// an iterator is an object that enables a programmer to traverse a container
+// and can circulate
 func (l *LinkedList[T]) CircularIterator() *CircularIterator[T] {
 	return &CircularIterator[T]{ll: l, cur: l.head.next}
 }
 
+// Clear clear the list
 func (l *LinkedList[T]) Clear() {
 
 	l.head.next = l.tail
@@ -54,19 +64,22 @@ func (l *LinkedList[T]) Clear() {
 	l.size = 0
 }
 
+// Empty   if the list is empty, return true. else return false
 func (l *LinkedList[T]) Empty() bool {
 	return l.size == 0
 }
 
+// Size return the size of list
 func (l *LinkedList[T]) Size() uint {
 	return l.size
 }
 
+// Push Push a value to the tail of the list
 func (l *LinkedList[T]) Push(value T) {
-	var node *Node[T]
+	var node *hNode[T]
 	l.size++
 
-	node = &Node[T]{}
+	node = &hNode[T]{}
 	node.value = value
 
 	tprev := l.tail.prev
@@ -77,12 +90,13 @@ func (l *LinkedList[T]) Push(value T) {
 	l.tail.prev = node
 }
 
+// PushFront Push values to the head of the list
 func (l *LinkedList[T]) PushFront(values ...T) {
 
-	var node *Node[T]
+	var node *hNode[T]
 	l.size += uint(len(values))
 	for _, v := range values {
-		node = &Node[T]{}
+		node = &hNode[T]{}
 		node.value = v
 
 		hnext := l.head.next
@@ -94,12 +108,13 @@ func (l *LinkedList[T]) PushFront(values ...T) {
 	}
 }
 
+// PushBack Push  values to the tail of the list
 func (l *LinkedList[T]) PushBack(values ...T) {
 
-	var node *Node[T]
+	var node *hNode[T]
 	l.size += uint(len(values))
 	for _, v := range values {
-		node = &Node[T]{}
+		node = &hNode[T]{}
 		node.value = v
 
 		tprev := l.tail.prev
@@ -111,6 +126,7 @@ func (l *LinkedList[T]) PushBack(values ...T) {
 	}
 }
 
+// PopFront pop the head of the list
 func (l *LinkedList[T]) PopFront() (result T, found bool) {
 	if l.size != 0 {
 		l.size--
@@ -128,6 +144,7 @@ func (l *LinkedList[T]) PopFront() (result T, found bool) {
 	return
 }
 
+// PopBack pop the back of the list
 func (l *LinkedList[T]) PopBack() (result T, found bool) {
 	if l.size != 0 {
 		l.size--
@@ -145,6 +162,7 @@ func (l *LinkedList[T]) PopBack() (result T, found bool) {
 	return
 }
 
+// Front return the head of list
 func (l *LinkedList[T]) Front() (result T, found bool) {
 	if l.size != 0 {
 		return l.head.next.value, true
@@ -153,6 +171,7 @@ func (l *LinkedList[T]) Front() (result T, found bool) {
 	return
 }
 
+// Back return the head of list
 func (l *LinkedList[T]) Back() (result T, found bool) {
 	if l.size != 0 {
 		return l.tail.prev.value, true
@@ -199,7 +218,7 @@ func (l *LinkedList[T]) Index(idx int) (result T, ok bool) {
 	return
 }
 
-func remove[T comparable](cur *Node[T]) {
+func remove[T any](cur *hNode[T]) {
 	curPrev := cur.prev
 	curNext := cur.next
 	curPrev.next = curNext
@@ -213,7 +232,7 @@ func (l *LinkedList[T]) Contains(values ...T) (count int) {
 
 	for cur := l.head.next; cur != l.tail; cur = cur.next {
 		for _, searchValue := range values {
-			if cur.value == searchValue {
+			if l.comp(cur.value, searchValue) == 0 {
 				count++
 			}
 		}
