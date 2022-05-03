@@ -4,23 +4,23 @@ import (
 	"fmt"
 )
 
-type Node struct {
-	prev, next *Node
+type hNode struct {
+	prev, next *hNode
 	key, value interface{}
 }
 
 // LinkedHashmap
 type LinkedHashmap struct {
-	head, tail *Node // 头节点 head->next 尾节点 tail->prev
-	hmap       map[interface{}]*Node
+	head, tail *hNode // 头节点 head->next 尾节点 tail->prev
+	hmap       map[interface{}]*hNode
 }
 
 // New
 func New() *LinkedHashmap {
 
-	lhmap := &LinkedHashmap{hmap: make(map[interface{}]*Node)}
-	lhmap.head = &Node{}
-	lhmap.tail = &Node{}
+	lhmap := &LinkedHashmap{hmap: make(map[interface{}]*hNode)}
+	lhmap.head = &hNode{}
+	lhmap.tail = &hNode{}
 	lhmap.head.next = lhmap.tail
 	lhmap.tail.prev = lhmap.head
 	return lhmap
@@ -30,7 +30,7 @@ func New() *LinkedHashmap {
 func (lhmap *LinkedHashmap) SetBack(key interface{}, value interface{}) bool {
 
 	var ok bool
-	var node *Node
+	var node *hNode
 
 	if node, ok = lhmap.hmap[key]; ok {
 		node.value = value
@@ -52,7 +52,7 @@ func (lhmap *LinkedHashmap) SetBack(key interface{}, value interface{}) bool {
 		lhmap.tail.prev = node
 
 	} else {
-		node = &Node{}
+		node = &hNode{}
 		// 直接在尾部赋值
 		lhmap.tail.key = key
 		lhmap.tail.value = value
@@ -71,7 +71,7 @@ func (lhmap *LinkedHashmap) SetBack(key interface{}, value interface{}) bool {
 // SetFront if key exists, cover and move node to front, return true. else insert new node to front. return false
 func (lhmap *LinkedHashmap) SetFront(key interface{}, value interface{}) bool {
 	var ok bool
-	var node *Node
+	var node *hNode
 
 	if node, ok = lhmap.hmap[key]; ok {
 		node.value = value
@@ -93,7 +93,7 @@ func (lhmap *LinkedHashmap) SetFront(key interface{}, value interface{}) bool {
 		lhmap.head.next = node
 
 	} else {
-		node = &Node{} // 创建空节点. 新的头部节点
+		node = &hNode{} // 创建空节点. 新的头部节点
 
 		// 直接在尾部赋值
 		lhmap.head.key = key
@@ -117,7 +117,7 @@ func (lhmap *LinkedHashmap) Put(key interface{}, value interface{}) bool {
 func (lhmap *LinkedHashmap) PushBack(key interface{}, value interface{}) bool {
 	if _, ok := lhmap.hmap[key]; !ok {
 
-		node := &Node{} // 创建空节点. 新的尾部节点
+		node := &hNode{} // 创建空节点. 新的尾部节点
 
 		// 直接在尾部赋值
 		lhmap.tail.key = key
@@ -140,7 +140,7 @@ func (lhmap *LinkedHashmap) PushBack(key interface{}, value interface{}) bool {
 func (lhmap *LinkedHashmap) PushFront(key interface{}, value interface{}) bool {
 	if _, ok := lhmap.hmap[key]; !ok {
 
-		node := &Node{} // 创建空节点. 新的头部节点
+		node := &hNode{} // 创建空节点. 新的头部节点
 
 		// 直接在尾部赋值
 		lhmap.head.key = key
@@ -187,7 +187,7 @@ func (lhmap *LinkedHashmap) Clear() {
 
 	lhmap.head.next = lhmap.tail
 	lhmap.tail.prev = lhmap.head
-	lhmap.hmap = make(map[interface{}]*Node)
+	lhmap.hmap = make(map[interface{}]*hNode)
 }
 
 // Remove if key not exists reture nil, false.
@@ -201,7 +201,7 @@ func (lhmap *LinkedHashmap) Remove(key interface{}) (interface{}, bool) {
 }
 
 // Remove if key not exists reture nil, false.
-func (lhmap *LinkedHashmap) remove(node *Node) {
+func (lhmap *LinkedHashmap) remove(node *hNode) {
 	nprev := node.prev
 	nnext := node.next
 	nprev.next = nnext
