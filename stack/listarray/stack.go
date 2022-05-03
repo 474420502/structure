@@ -4,22 +4,25 @@ import (
 	"fmt"
 )
 
-type Node[T any] struct {
+type hNode[T any] struct {
 	elements []T
 	cur      int
-	down     *Node[T]
+	down     *hNode[T]
 }
 
+// Stack the struct of stack
 type Stack[T any] struct {
-	top   *Node[T]
-	cache *Node[T]
+	top   *hNode[T]
+	cache *hNode[T]
 	size  uint
+
+	zero T
 }
 
 func (as *Stack[T]) grow() bool {
 	if as.top.cur+1 == cap(as.top.elements) {
 
-		var grownode *Node[T]
+		var grownode *hNode[T]
 		if as.cache != nil {
 			grownode = as.cache
 			grownode.cur = -1
@@ -31,7 +34,7 @@ func (as *Stack[T]) grow() bool {
 			} else {
 				growsize = 256 + as.size>>2
 			}
-			grownode = &Node[T]{elements: make([]T, growsize), cur: -1}
+			grownode = &hNode[T]{elements: make([]T, growsize), cur: -1}
 		}
 
 		grownode.down = as.top
@@ -53,20 +56,23 @@ func (as *Stack[T]) cacheRemove() bool {
 	return false
 }
 
+// New  create a object of stack
 func New[T any]() *Stack[T] {
 	s := &Stack[T]{}
 	s.size = 0
-	s.top = &Node[T]{elements: make([]T, 8), cur: -1}
+	s.top = &hNode[T]{elements: make([]T, 8), cur: -1}
 	return s
 }
 
+// New  create a object of stack with the capacity
 func NewWithCap[T any](cap int) *Stack[T] {
 	s := &Stack[T]{}
 	s.size = 0
-	s.top = &Node[T]{elements: make([]T, cap), cur: -1}
+	s.top = &hNode[T]{elements: make([]T, cap), cur: -1}
 	return s
 }
 
+// Clear Clear stack data
 func (as *Stack[T]) Clear() {
 	as.size = 0
 
@@ -74,20 +80,23 @@ func (as *Stack[T]) Clear() {
 	as.top.cur = -1
 }
 
+// Empty if stack is empty, return true. else false
 func (as *Stack[T]) Empty() bool {
 	return as.size == 0
 }
 
+// Size return the size of stack
 func (as *Stack[T]) Size() uint {
 	return as.size
 }
 
-// String 左为Top
+// String return the string of stack. a(top)->b->c
 func (as *Stack[T]) String() string {
 
 	return fmt.Sprintf("%v", as.Values())
 }
 
+// Values return the values of stacks
 func (as *Stack[T]) Values() []T {
 	result := make([]T, as.size)
 
@@ -123,6 +132,7 @@ func (as *Stack[T]) Values() []T {
 // 	return cur.elements[cur.cur-idx], true
 // }
 
+// Push Push value into stack
 func (as *Stack[T]) Push(v T) {
 	as.grow()
 	as.top.cur++
@@ -130,9 +140,10 @@ func (as *Stack[T]) Push(v T) {
 	as.size++
 }
 
-func (as *Stack[T]) Pop() (interface{}, bool) {
+// Pop pop the value from stack
+func (as *Stack[T]) Pop() (T, bool) {
 	if as.size <= 0 {
-		return nil, false
+		return as.zero, false
 	}
 
 	as.size--
@@ -145,9 +156,10 @@ func (as *Stack[T]) Pop() (interface{}, bool) {
 	return epop, true
 }
 
-func (as *Stack[T]) Peek() (interface{}, bool) {
+// Peek the top of stack
+func (as *Stack[T]) Peek() (T, bool) {
 	if as.size <= 0 {
-		return nil, false
+		return as.zero, false
 	}
 	return as.top.elements[as.top.cur], true
 }

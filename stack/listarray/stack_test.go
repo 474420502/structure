@@ -44,11 +44,11 @@ func TestForce(t *testing.T) {
 		}
 	}
 
-	if v, ok := s1.Peek(); v != nil || ok != false {
+	if _, ok := s1.Peek(); ok != false {
 		panic("")
 	}
 
-	if v, ok := s1.Pop(); v != nil || ok != false {
+	if _, ok := s1.Pop(); ok != false {
 		panic("")
 	}
 

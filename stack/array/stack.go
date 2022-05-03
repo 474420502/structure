@@ -4,35 +4,36 @@ import (
 	"fmt"
 )
 
-// Stack 栈
+// Stack the struct of stack
 type Stack[T any] struct {
 	element []T
+	zero    T
 }
 
-// New  创建一个Stack
+// New  create a object of Stack
 func New[T any]() *Stack[T] {
 	st := &Stack[T]{}
 	return st
 }
 
-// Push 压栈
+// Push Push value into stack
 func (st *Stack[T]) Push(v T) {
 	st.element = append(st.element, v)
 }
 
-// Peek 相当与栈顶
-func (st *Stack[T]) Peek() (interface{}, bool) {
+// Peek the top of stack
+func (st *Stack[T]) Peek() (T, bool) {
 	if len(st.element) == 0 {
-		return nil, false
+		return st.zero, false
 	}
 	return st.element[len(st.element)-1], true
 }
 
-// Pop 出栈
-func (st *Stack[T]) Pop() (interface{}, bool) {
+// Pop pop the value from stack
+func (st *Stack[T]) Pop() (T, bool) {
 
 	if len(st.element) == 0 {
-		return nil, false
+		return st.zero, false
 	}
 
 	last := len(st.element) - 1
@@ -41,28 +42,28 @@ func (st *Stack[T]) Pop() (interface{}, bool) {
 	return ele, true
 }
 
-// Clear 清空栈数据
+// Clear Clear stack data
 func (st *Stack[T]) Clear() {
 	st.element = st.element[0:0]
 }
 
-// Empty 如果空栈返回true
+// Empty if stack is empty, return true. else false
 func (st *Stack[T]) Empty() bool {
 	l := len(st.element)
 	return l == 0
 }
 
-// Size 数据量
+// Size return the size of stack
 func (st *Stack[T]) Size() uint {
 	return uint(len(st.element))
 }
 
-// String
+// String return the string of stack
 func (st *Stack[T]) String() string {
 	return fmt.Sprintf("%v", st.element)
 }
 
-// Values 同上
+// Values return the values of stacks
 func (st *Stack[T]) Values() []T {
 	result := make([]T, len(st.element))
 	copy(result, st.element)

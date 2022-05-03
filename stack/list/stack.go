@@ -2,47 +2,54 @@ package liststack
 
 import "fmt"
 
-type Node[T any] struct {
+type hNode[T any] struct {
 	value T
-	down  *Node[T]
+	down  *hNode[T]
 }
 
+// Stack the struct of stack
 type Stack[T any] struct {
-	top  *Node[T]
+	top  *hNode[T]
 	size uint
+	zero T
 }
 
+// New  create a object of Stack
 func New[T any]() *Stack[T] {
 	s := &Stack[T]{}
 	s.size = 0
 	return s
 }
 
+// Clear Clear stack data
 func (ls *Stack[T]) Clear() {
 	ls.size = 0
 	ls.top = nil
 }
 
+// Empty if stack is empty, return true. else false
 func (ls *Stack[T]) Empty() bool {
 	return ls.size == 0
 }
 
+// Size return the size of stack
 func (ls *Stack[T]) Size() uint {
 	return ls.size
 }
 
-// String 从左到右 左边第一个表示Top 如链表 a(top)->b->c
+// String return the string of stack. a(top)->b->c
 func (ls *Stack[T]) String() string {
 	return fmt.Sprintf("%v", ls.Values())
 }
 
-func (ls *Stack[T]) Values() []interface{} {
+// Values return the values of stacks
+func (ls *Stack[T]) Values() []T {
 
 	if ls.size == 0 {
 		return nil
 	}
 
-	result := make([]interface{}, ls.size, ls.size)
+	result := make([]T, ls.size)
 
 	cur := ls.top
 	n := ls.size - 1
@@ -54,16 +61,18 @@ func (ls *Stack[T]) Values() []interface{} {
 	return result
 }
 
+// Push Push value into stack
 func (ls *Stack[T]) Push(v T) {
-	nv := &Node[T]{value: v}
+	nv := &hNode[T]{value: v}
 	nv.down = ls.top
 	ls.top = nv
 	ls.size++
 }
 
-func (ls *Stack[T]) Pop() (interface{}, bool) {
+// Pop pop the value from stack
+func (ls *Stack[T]) Pop() (T, bool) {
 	if ls.size == 0 {
-		return nil, false
+		return ls.zero, false
 	}
 
 	ls.size--
@@ -74,9 +83,10 @@ func (ls *Stack[T]) Pop() (interface{}, bool) {
 	return result.value, true
 }
 
-func (ls *Stack[T]) Peek() (interface{}, bool) {
+// Peek the top of stack
+func (ls *Stack[T]) Peek() (T, bool) {
 	if ls.size == 0 {
-		return nil, false
+		return ls.zero, false
 	}
 	return ls.top.value, true
 }
