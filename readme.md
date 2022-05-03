@@ -15,6 +15,14 @@
 - [List](./list)
 
 	- [ArrayList](./list/array_list/doc.md)  list are based on arrays 
+	- [LinkedList](./list/linked_list/doc.md)  linkedlist are based on list 
+
+- [Stack](./stack)
+
+	- [ArrayStack](./stack/array/doc.md)  stack are based on arrays 
+	- [ListStack](./stack/list/doc.md)  stack are based on list 
+	- [LAStack](./stack/listarray/doc.md)  stack are based on both list and array
+
 
 - [Search](./search)
 	- [TreeList](./search/treelist/doc.md) is a self-balancing binary search tree (BST). and have some special features. key only support the type of bytes 
