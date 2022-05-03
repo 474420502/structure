@@ -22,7 +22,8 @@
 	- [ArrayStack](./stack/array/doc.md)  stack are based on arrays 
 	- [ListStack](./stack/list/doc.md)  stack are based on list 
 	- [LAStack](./stack/listarray/doc.md)  stack are based on both list and array
-
+- [Map](./map)
+	- [HashMap](./map/hashmap/doc.md)  Hashmap is a Map data structure. Like a list each item that is stored in a hashmap is stored at a particular index
 
 - [Search](./search)
 	- [TreeList](./search/treelist/doc.md) is a self-balancing binary search tree (BST). and have some special features. key only support the type of bytes 
