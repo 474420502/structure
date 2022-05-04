@@ -2,6 +2,7 @@ package linkedhashmap
 
 import (
 	"container/list"
+	"fmt"
 	"log"
 	"reflect"
 	"testing"
@@ -32,12 +33,13 @@ func TestPush(t *testing.T) {
 	lhm.PushFront(4, "4") // 4 1 2
 	lhm.PushBack("3", 3)  // 4 1 2 3
 
-	if lhm.String() != "[4 1 2 3]" {
+	if lhm.String() != "[{4:4} {1:1} {2:2} {3:3}]" {
 		t.Error(lhm.String())
+
 	}
 
 	lhm.Put(5, 5)
-	if lhm.String() != "[4 1 2 3 5]" {
+	if lhm.String() != "[{4:4} {1:1} {2:2} {3:3} {5:5}]" {
 		t.Error(lhm.String())
 	}
 }
@@ -93,9 +95,15 @@ func TestRemove(t *testing.T) {
 		lhm.PushBack(i, i)
 	}
 
-	var resultStr = "[0 1 2 3 4 5 6 7 8 9]"
+	var resultStr = "[{0:0} {1:1} {2:2} {3:3} {4:4} {5:5} {6:6} {7:7} {8:8} {9:9}]"
+	var slices []Slice = lhm.Slices()
+	if fmt.Sprintf("%v", slices) != resultStr {
+		t.Error(resultStr, fmt.Sprintf("%v", slices))
+	}
+
 	for i := 0; i < 10; i++ {
 		if lhm.String() != resultStr {
+			log.Println(lhm.String())
 			t.Error(lhm.String(), resultStr)
 		}
 
@@ -104,7 +112,8 @@ func TestRemove(t *testing.T) {
 			t.Error("why lhm Size != ", uint(9-i), ", check it")
 		}
 
-		resultStr = resultStr[0:1] + resultStr[3:]
+		slices = slices[1:]
+		resultStr = fmt.Sprintf("%v", slices)
 	}
 
 	if lhm.Size() != 0 {
@@ -121,7 +130,7 @@ func TestRemove(t *testing.T) {
 		}
 	}
 
-	if lhm.String() != "[4 3 2 1 0]" {
+	if lhm.String() != "[{4:4} {3:3} {2:2} {1:1} {0:0}]" {
 		t.Error(lhm.String())
 	}
 
