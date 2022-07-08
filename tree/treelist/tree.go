@@ -36,6 +36,7 @@ type Tree[KEY any, VALUE any] struct {
 	root    *treeNode[KEY, VALUE]
 	compare compare.Compare[KEY]
 
+	zero VALUE
 	// rcount int
 }
 
@@ -69,11 +70,11 @@ func (tree *Tree[KEY, VALUE]) Size() int64 {
 }
 
 // Get Get Value from key.
-func (tree *Tree[KEY, VALUE]) Get(key KEY) (interface{}, bool) {
+func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	if cur := tree.getNode(key); cur != nil {
 		return cur.Value, true
 	}
-	return nil, false
+	return tree.zero, false
 }
 
 // PutDuplicate put, when key duplicate with call do. don,t change the key of `exists`, will break the tree of blance
