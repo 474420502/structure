@@ -13,7 +13,7 @@ import (
 )
 
 func TestIteratorRange(t *testing.T) {
-	tree := New(compare.ArrayAny[[]byte])
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 	for _, v := range testutils.TestedBytesSimlpe {
 		tree.Put(v, v)
 	}
@@ -31,7 +31,7 @@ func TestIteratorRange(t *testing.T) {
 		iter := tree.IteratorRange()
 		iter.GE2LT([]byte("a4"), []byte("c4")) // a4 <= key < c4
 
-		iter.Range(func(cur *SliceIndex[[]byte]) bool {
+		iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 			result = append(result, string(cur.Key))
 			return true
 		})
@@ -44,7 +44,7 @@ func TestIteratorRange(t *testing.T) {
 		var result []string
 		iter := tree.IteratorRange()
 		iter.GT2LT([]byte("a4"), []byte("c9"))
-		iter.Range(func(cur *SliceIndex[[]byte]) bool {
+		iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 			result = append(result, string(cur.Key))
 			return true
 		})
@@ -57,7 +57,7 @@ func TestIteratorRange(t *testing.T) {
 		var result []string
 		iter := tree.IteratorRange()
 		iter.GE2LE([]byte("a0"), []byte("c9"))
-		iter.Range(func(cur *SliceIndex[[]byte]) bool {
+		iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 			result = append(result, string(cur.Key))
 			return true
 		})
@@ -71,7 +71,7 @@ func TestIteratorRange(t *testing.T) {
 		iter := tree.IteratorRange()
 		iter.SetDirection(Reverse)
 		iter.GT2LE([]byte("a0"), []byte("c9"))
-		iter.Range(func(cur *SliceIndex[[]byte]) bool {
+		iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 			result = append(result, string(cur.Key))
 			return true
 		})
@@ -87,7 +87,7 @@ func TestIteratorRangeForce(t *testing.T) {
 
 	for n := 0; n < 1000; n++ {
 
-		tree := New(compare.ArrayAny[[]byte])
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		var result [][]byte
 		var start, end []byte
 		for i := 0; i < 10; i++ {
@@ -108,7 +108,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			var result []string
 			iter := tree.IteratorRange()
 			iter.GE2LT(start, end) // a4 <= key < c4
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				// log.Println("iter1:", string(cur.Key), cur.Index)
 				result = append(result, string(cur.Key))
 				return true
@@ -143,7 +143,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			var result []string
 			iter := tree.IteratorRange()
 			iter.GT2LT(start, end) // a4 <= key < c4
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				// log.Println("iter1:", string(cur.Key), cur.Index)
 				result = append(result, string(cur.Key))
 				return true
@@ -177,7 +177,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			var result []string
 			iter := tree.IteratorRange()
 			iter.GE2LE(start, end) // a4 <= key < c4
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				// log.Println("iter1:", string(cur.Key), cur.Index)
 				result = append(result, string(cur.Key))
 				return true
@@ -211,7 +211,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			var result []string
 			iter := tree.IteratorRange()
 			iter.GT2LE(start, end) // a4 <= key < c4
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				// log.Println("iter1:", string(cur.Key), cur.Index)
 				result = append(result, string(cur.Key))
 				return true
@@ -247,7 +247,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			var result []string
 			iter := tree.IteratorRange()
 			iter.GE2LT([]byte("a4"), []byte("c4")) // a4 <= key < c4
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				result = append(result, string(cur.Key))
 				return true
 			})
@@ -260,7 +260,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			var result []string
 			iter := tree.IteratorRange()
 			iter.GT2LT([]byte("a4"), []byte("c9"))
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				result = append(result, string(cur.Key))
 				return true
 			})
@@ -273,7 +273,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			var result []string
 			iter := tree.IteratorRange()
 			iter.GE2LE([]byte("a0"), []byte("c9"))
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				result = append(result, string(cur.Key))
 				return true
 			})
@@ -287,7 +287,7 @@ func TestIteratorRangeForce(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.SetDirection(Reverse)
 			iter.GT2LE([]byte("a0"), []byte("c9"))
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				result = append(result, string(cur.Key))
 				return true
 			})
@@ -303,7 +303,7 @@ func TestIteratorRangeForce2(t *testing.T) {
 
 	for n := 0; n < 1000; n++ {
 
-		tree := New(compare.ArrayAny[[]byte])
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		var result [][]byte
 		var start, end []byte
 		for i := 0; i < 10; i++ {
@@ -325,7 +325,7 @@ func TestIteratorRangeForce2(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.SetDirection(Reverse)
 			iter.GE2LT(start, end) // a4 <= key < c4
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				// log.Println("iter1:", string(cur.Key), cur.Index)
 				result = append(result, string(cur.Key))
 				return true
@@ -363,7 +363,7 @@ func TestIteratorRangeForce2(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.SetDirection(Reverse)
 			iter.GT2LT(start, end) // a4 <= key < c4
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				// log.Println("iter1:", string(cur.Key), cur.Index)
 				result = append(result, string(cur.Key))
 				return true
@@ -400,7 +400,7 @@ func TestIteratorRangeForce2(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.SetDirection(Reverse)
 			iter.GE2LE(start, end) // a4 <= key < c4
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				// log.Println("iter1:", string(cur.Key), cur.Index)
 				result = append(result, string(cur.Key))
 				return true
@@ -437,7 +437,7 @@ func TestIteratorRangeForce2(t *testing.T) {
 			iter := tree.IteratorRange()
 			iter.SetDirection(Reverse)
 			iter.GT2LE(start, end) // a4 <= key < c4
-			iter.Range(func(cur *SliceIndex[[]byte]) bool {
+			iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 				// log.Println("iter1:", string(cur.Key), cur.Index)
 				result = append(result, string(cur.Key))
 				return true

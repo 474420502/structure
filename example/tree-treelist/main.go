@@ -11,7 +11,7 @@ import (
 func main() {
 
 	// New a object of tree
-	tree1 := treelist.New(compare.Any[int])
+	tree1 := treelist.New[int, int](compare.Any[int])
 
 	log.Println("Put Set")
 	tree1.Put(0, 0) // true
@@ -43,7 +43,7 @@ func main() {
 	log.Println(tree1.Index(4))   // {7:7}
 
 	log.Println("Intersection UnionSets") //
-	tree2 := treelist.New(compare.Any[int])
+	tree2 := treelist.New[int, int](compare.Any[int])
 	// [1 2 5]
 	tree2.Set(1, 1)
 	tree2.Set(3, 3)
@@ -100,7 +100,7 @@ func main() {
 	log.Println(iter.Index())        // 4
 
 	log.Println("PutDuplicate")
-	tree1.PutDuplicate(10, 10, func(exists *treelist.Slice[int]) {
+	tree1.PutDuplicate(10, 10, func(exists *treelist.Slice[int, int]) {
 		exists.Value = 100 // if key is exists, set the value
 	})
 	// [{0:0} {1:1} {3:3} {4:4} {7:7} {10:10}]
@@ -118,7 +118,7 @@ func main() {
 	log.Println(Tree2String(tree1)) // [{1:1} {3:3} {4:4}]
 
 	log.Println("Traverse")
-	tree1.Traverse(func(s *treelist.Slice[int]) bool {
+	tree1.Traverse(func(s *treelist.Slice[int, int]) bool {
 		log.Println(Slice2String(s))
 		return true
 	}) // {1:1} {3:3} {4:4}
@@ -151,7 +151,7 @@ func main() {
 func main2() {
 	var TestedBytesSimlpe = []int{15, 4, 11, 6, 13, 1}
 
-	tree := treelist.New(compare.Any[int])
+	tree := treelist.New[int, int](compare.Any[int])
 	for _, v := range TestedBytesSimlpe {
 		tree.Put(v, v)
 	}
@@ -163,7 +163,7 @@ func main2() {
 		var result []int
 		iter := tree.IteratorRange()
 		iter.GE2LT(6, 13) // 6 <= key < 13
-		iter.Range(func(cur *treelist.SliceIndex[int]) bool {
+		iter.Range(func(cur *treelist.SliceIndex[int, int]) bool {
 			result = append(result, cur.Key)
 			return true
 		})
@@ -176,7 +176,7 @@ func main2() {
 		var result []int
 		iter := tree.IteratorRange()
 		iter.GT2LT(6, 13) // 6 < key < 13
-		iter.Range(func(cur *treelist.SliceIndex[int]) bool {
+		iter.Range(func(cur *treelist.SliceIndex[int, int]) bool {
 			result = append(result, cur.Key)
 			return true
 		})
@@ -189,7 +189,7 @@ func main2() {
 		var result []int
 		iter := tree.IteratorRange()
 		iter.GE2LE(6, 13) // 6 <= key <= 13
-		iter.Range(func(cur *treelist.SliceIndex[int]) bool {
+		iter.Range(func(cur *treelist.SliceIndex[int, int]) bool {
 			result = append(result, cur.Key)
 			return true
 		})
@@ -203,7 +203,7 @@ func main2() {
 		iter := tree.IteratorRange()
 		iter.SetDirection(treelist.Reverse) // Reverse
 		iter.GT2LE(6, 13)                   // 6 < Key <= 13
-		iter.Range(func(cur *treelist.SliceIndex[int]) bool {
+		iter.Range(func(cur *treelist.SliceIndex[int, int]) bool {
 			result = append(result, cur.Key)
 			return true
 		})
@@ -212,7 +212,7 @@ func main2() {
 
 }
 
-func Resotre[T int](tree1 *treelist.Tree[T]) {
+func Resotre[KEY, VALUE int](tree1 *treelist.Tree[KEY, VALUE]) {
 	tree1.Clear()
 	tree1.Put(0, 0) // true
 	tree1.Put(4, 4)
@@ -222,11 +222,11 @@ func Resotre[T int](tree1 *treelist.Tree[T]) {
 	tree1.Set(7, 7) //   7
 }
 
-func Slice2String[T any](s *treelist.Slice[T]) string {
+func Slice2String[KEY any, VALUE any](s *treelist.Slice[KEY, VALUE]) string {
 	return fmt.Sprintf("{%v:%v}", s.Key, s.Value)
 }
 
-func Tree2String[T any](tree *treelist.Tree[T]) []string {
+func Tree2String[KEY, VALUE any](tree *treelist.Tree[KEY, VALUE]) []string {
 	var results []string
 	for _, s := range tree.Slices() {
 		results = append(results, Slice2String(&s))

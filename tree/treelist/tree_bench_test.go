@@ -29,7 +29,7 @@ func init() {
 
 func BenchmarkPut(b *testing.B) {
 	b.StopTimer()
-	tree := New(compare.ArrayAny[[]byte])
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 	b.ResetTimer()
 	b.StartTimer()
 
@@ -42,7 +42,7 @@ func BenchmarkPut(b *testing.B) {
 
 func BenchmarkPut2(b *testing.B) {
 	b.StopTimer()
-	tree := New(compare.ArrayAny[[]byte])
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 
 	var data [][]byte
 	for i := 0; i < Level1; i++ {
@@ -92,7 +92,7 @@ func BenchmarkPut3(b *testing.B) {
 	})
 
 	b.Run("treelist", func(b *testing.B) {
-		tree := New(compare.Any[int64])
+		tree := New[int64, int64](compare.Any[int64])
 
 		b.ResetTimer()
 
@@ -132,7 +132,7 @@ func BenchmarkPut3(b *testing.B) {
 
 func BenchmarkIndex(b *testing.B) {
 	b.StopTimer()
-	tree := New(compare.ArrayAny[[]byte])
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 
 	for i := 0; i < Level1; i++ {
 		v := []byte(strconv.Itoa(i))
@@ -156,7 +156,7 @@ func TestRemoveRange(t *testing.T) {
 	// t.StopTimer()
 	for i := 0; i < level; i++ {
 
-		tree := New(compare.ArrayAny[[]byte])
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		tree.compare = compare.ArrayLenAny[[]byte]
 		for i := 0; i < level; i += rand.Intn(10) + 10 {
 			v := []byte(strconv.Itoa(i))
@@ -280,9 +280,9 @@ func estIntersectionP(t *testing.T) {
 		var table1 map[string]bool = make(map[string]bool)
 		var table2 map[string]bool = make(map[string]bool)
 
-		tree1 := New(compare.ArrayAny[[]byte])
+		tree1 := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		tree1.compare = compare.ArrayLenAny[[]byte]
-		tree2 := New(compare.ArrayAny[[]byte])
+		tree2 := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		tree2.compare = compare.ArrayLenAny[[]byte]
 
 		for i := 0; i < 100000; i += rand.Intn(1000) + 1 {
