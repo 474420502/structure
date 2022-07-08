@@ -143,7 +143,7 @@ func (iter *Iterator[KEY, VALUE]) Key() KEY {
 }
 
 // Value return the value of current
-func (iter *Iterator[KEY, VALUE]) Value() interface{} {
+func (iter *Iterator[KEY, VALUE]) Value() VALUE {
 	return iter.cur.Value
 }
 
