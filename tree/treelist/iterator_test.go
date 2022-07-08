@@ -19,7 +19,7 @@ func TestIteratorIndexForce(t *testing.T) {
 
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.ArrayAny[[]byte])
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		tree.compare = compare.ArrayLenAny[[]byte]
 		var plist []int
 		for i := 0; i < 200; i += rand.Intn(8) + 2 {
@@ -66,7 +66,7 @@ func TestSeekRand(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
-		tree := New(compare.ArrayAny[[]byte])
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		tree.compare = compare.ArrayLenAny[[]byte]
 		var plist []int
 		for i := 0; i < 200; i += rand.Intn(4) + 1 {
@@ -130,7 +130,7 @@ func TestSeekByIndexForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
-		tree := New(compare.ArrayAny[[]byte])
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		tree.compare = compare.ArrayLenAny[[]byte]
 		var plist []int
 		for i := 0; i < 200; i += rand.Intn(8) + 4 {
@@ -174,7 +174,7 @@ func TestSeekByIndexForce(t *testing.T) {
 
 func TestSeek(t *testing.T) {
 
-	tree := New(compare.ArrayAny[[]byte])
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 	for _, v := range testutils.TestedBytesWords {
 		tree.Put(v, v)
 		// log.Println(tree.debugString(true))
@@ -253,7 +253,7 @@ func TestSeek(t *testing.T) {
 }
 
 func TestSeekRange(t *testing.T) {
-	tree := New(compare.ArrayAny[[]byte])
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 	for _, v := range testutils.TestedBytesSimlpe {
 		tree.Put(v, v)
 	}
@@ -286,7 +286,7 @@ func TestSeekRange(t *testing.T) {
 }
 
 func TestSeekDirect(t *testing.T) {
-	tree := New(compare.ArrayAny[[]byte])
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 	for _, v := range testutils.TestedBytesSimlpe {
 		tree.Put(v, v)
 	}
@@ -342,7 +342,7 @@ func TestSeekDirect(t *testing.T) {
 }
 
 func TestFirstLast(t *testing.T) {
-	tree := New(compare.ArrayAny[[]byte])
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 	for _, v := range testutils.TestedBytes {
 		tree.Put(v, v)
 		// log.Println(string(tree.root.Direct[0].Key), string(tree.root.Direct[1].Key))
@@ -366,7 +366,7 @@ func TestIteratorSeekForForce(t *testing.T) {
 	r := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.ArrayAny[[]byte])
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		var plist [][]byte
 		for i := 0; i < 200; i++ {
 			v := []byte(strconv.Itoa(r.Intn(200)))

@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func output[T any](node *treeNode[T], prefix string, isTail bool, str *string) {
+func output[KEY any, VALUE any](node *treeNode[KEY, VALUE], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -38,7 +38,7 @@ func output[T any](node *treeNode[T], prefix string, isTail bool, str *string) {
 
 }
 
-func outputfordebug[T any](node *treeNode[T], prefix string, isTail bool, str *string) {
+func outputfordebug[KEY any, VALUE any](node *treeNode[KEY, VALUE], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -82,7 +82,7 @@ func outputfordebug[T any](node *treeNode[T], prefix string, isTail bool, str *s
 	}
 }
 
-func outputfordebugNoSuffix[T any](node *treeNode[T], prefix string, isTail bool, str *string) {
+func outputfordebugNoSuffix[KEY any, VALUE any](node *treeNode[KEY, VALUE], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -115,7 +115,7 @@ func outputfordebugNoSuffix[T any](node *treeNode[T], prefix string, isTail bool
 	}
 }
 
-func debugNode[T any](root *treeNode[T]) string {
+func debugNode[KEY any, VALUE any](root *treeNode[KEY, VALUE]) string {
 	str := "\n"
 	if root == nil {
 		return str + "nil"
@@ -124,7 +124,7 @@ func debugNode[T any](root *treeNode[T]) string {
 	return str
 }
 
-func (tree *Tree[T]) debugString(isSuffix bool) string {
+func (tree *Tree[KEY, VALUE]) debugString(isSuffix bool) string {
 	str := "TreeList\n"
 	root := tree.getRoot()
 	if root == nil {
@@ -167,6 +167,6 @@ func (tree *Tree[T]) debugString(isSuffix bool) string {
 // 	cur.Key = temp
 // }
 
-// func colorNode[T any](cur *treeNode[T], color int) {
+// func colorNode[KEY any,VALUE any](cur *treeNode[KEY,VALUE], color int) {
 // 	cur.Key = []byte(fmt.Sprintf("\033[%dm%s\033[0m", color, cur.Key))
 // }
