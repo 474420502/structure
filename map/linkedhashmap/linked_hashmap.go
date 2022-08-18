@@ -4,35 +4,45 @@ import (
 	"fmt"
 )
 
-type Node struct {
-	prev, next *Node
-	key, value interface{}
+type Slice struct {
+	Key, Value interface{}
 }
 
-// LinkedHashmap
+type hNode struct {
+	Slice
+	prev, next *hNode
+}
+
+// LinkedHashmap   LinkedHashmap like list + hashmap.
 type LinkedHashmap struct {
-	head, tail *Node // 头节点 head->next 尾节点 tail->prev
-	hmap       map[interface{}]*Node
+	head, tail *hNode // head  tail
+	hmap       map[interface{}]*hNode
 }
 
-// New
+// New create a object of LinkedHashmap
 func New() *LinkedHashmap {
-	lhmap := &LinkedHashmap{hmap: make(map[interface{}]*Node)}
-	lhmap.head = &Node{}
-	lhmap.tail = &Node{}
+
+	lhmap := &LinkedHashmap{hmap: make(map[interface{}]*hNode)}
+	lhmap.head = &hNode{}
+	lhmap.tail = &hNode{}
 	lhmap.head.next = lhmap.tail
 	lhmap.tail.prev = lhmap.head
 	return lhmap
+}
+
+// String return string of slice
+func (s Slice) String() string {
+	return fmt.Sprintf("{%v:%v}", s.Key, s.Value)
 }
 
 // SetBack equal to Cover, if key exists, cover and move node to back, return true. else insert new node to back, return false
 func (lhmap *LinkedHashmap) SetBack(key interface{}, value interface{}) bool {
 
 	var ok bool
-	var node *Node
+	var node *hNode
 
 	if node, ok = lhmap.hmap[key]; ok {
-		node.value = value
+		node.Value = value
 		if node == lhmap.tail.prev {
 			return ok
 		}
@@ -51,10 +61,10 @@ func (lhmap *LinkedHashmap) SetBack(key interface{}, value interface{}) bool {
 		lhmap.tail.prev = node
 
 	} else {
-		node = &Node{}
+		node = &hNode{}
 		// 直接在尾部赋值
-		lhmap.tail.key = key
-		lhmap.tail.value = value
+		lhmap.tail.Key = key
+		lhmap.tail.Value = value
 		lhmap.hmap[key] = lhmap.tail
 
 		node.prev = lhmap.tail
@@ -70,10 +80,10 @@ func (lhmap *LinkedHashmap) SetBack(key interface{}, value interface{}) bool {
 // SetFront if key exists, cover and move node to front, return true. else insert new node to front. return false
 func (lhmap *LinkedHashmap) SetFront(key interface{}, value interface{}) bool {
 	var ok bool
-	var node *Node
+	var node *hNode
 
 	if node, ok = lhmap.hmap[key]; ok {
-		node.value = value
+		node.Value = value
 		if node == lhmap.head.next {
 			return ok
 		}
@@ -92,11 +102,11 @@ func (lhmap *LinkedHashmap) SetFront(key interface{}, value interface{}) bool {
 		lhmap.head.next = node
 
 	} else {
-		node = &Node{} // 创建空节点. 新的头部节点
+		node = &hNode{} // 创建空节点. 新的头部节点
 
 		// 直接在尾部赋值
-		lhmap.head.key = key
-		lhmap.head.value = value
+		lhmap.head.Key = key
+		lhmap.head.Value = value
 		lhmap.hmap[key] = lhmap.head
 
 		node.next = lhmap.head
@@ -116,11 +126,11 @@ func (lhmap *LinkedHashmap) Put(key interface{}, value interface{}) bool {
 func (lhmap *LinkedHashmap) PushBack(key interface{}, value interface{}) bool {
 	if _, ok := lhmap.hmap[key]; !ok {
 
-		node := &Node{} // 创建空节点. 新的尾部节点
+		node := &hNode{} // 创建空节点. 新的尾部节点
 
 		// 直接在尾部赋值
-		lhmap.tail.key = key
-		lhmap.tail.value = value
+		lhmap.tail.Key = key
+		lhmap.tail.Value = value
 		lhmap.hmap[key] = lhmap.tail
 
 		node.prev = lhmap.tail
@@ -139,11 +149,11 @@ func (lhmap *LinkedHashmap) PushBack(key interface{}, value interface{}) bool {
 func (lhmap *LinkedHashmap) PushFront(key interface{}, value interface{}) bool {
 	if _, ok := lhmap.hmap[key]; !ok {
 
-		node := &Node{} // 创建空节点. 新的头部节点
+		node := &hNode{} // 创建空节点. 新的头部节点
 
 		// 直接在尾部赋值
-		lhmap.head.key = key
-		lhmap.head.value = value
+		lhmap.head.Key = key
+		lhmap.head.Value = value
 		lhmap.hmap[key] = lhmap.head
 
 		node.next = lhmap.head
@@ -161,32 +171,35 @@ func (lhmap *LinkedHashmap) PushFront(key interface{}, value interface{}) bool {
 // Get get the value
 func (lhmap *LinkedHashmap) Get(key interface{}) (interface{}, bool) {
 	node, ok := lhmap.hmap[key]
-	return node.value, ok
+	if ok {
+		return node.Value, ok
+	}
+	return nil, false
 }
 
-// Set if key exists set value and return true. else return false.
+// Set if key exists set value and return true. else return false and do nothing.
 func (lhmap *LinkedHashmap) Set(key, value interface{}) bool {
 	if node, ok := lhmap.hmap[key]; ok {
-		node.key = key
-		node.value = value
+		node.Key = key
+		node.Value = value
 		return true
 	}
 	return false
 }
 
-// Clear
+// Clear clear the LinkedHashmap
 func (lhmap *LinkedHashmap) Clear() {
-	lhmap.head.key = nil
-	lhmap.head.value = nil
+	lhmap.head.Key = nil
+	lhmap.head.Value = nil
 	lhmap.head.prev = nil
 
-	lhmap.tail.key = nil
-	lhmap.tail.value = nil
+	lhmap.tail.Key = nil
+	lhmap.tail.Value = nil
 	lhmap.tail.next = nil
 
 	lhmap.head.next = lhmap.tail
 	lhmap.tail.prev = lhmap.head
-	lhmap.hmap = make(map[interface{}]*Node)
+	lhmap.hmap = make(map[interface{}]*hNode)
 }
 
 // Remove if key not exists reture nil, false.
@@ -194,13 +207,13 @@ func (lhmap *LinkedHashmap) Remove(key interface{}) (interface{}, bool) {
 	if node, ok := lhmap.hmap[key]; ok {
 		delete(lhmap.hmap, key)
 		lhmap.remove(node)
-		return node.value, true
+		return node.Value, true
 	}
 	return nil, false
 }
 
 // Remove if key not exists reture nil, false.
-func (lhmap *LinkedHashmap) remove(node *Node) {
+func (lhmap *LinkedHashmap) remove(node *hNode) {
 	nprev := node.prev
 	nnext := node.next
 	nprev.next = nnext
@@ -222,18 +235,28 @@ func (lhmap *LinkedHashmap) Keys() (result []interface{}) {
 
 	head := lhmap.head.next
 	for head != lhmap.tail {
-		result = append(result, head.key)
+		result = append(result, head.Key)
 		head = head.next
 	}
 
 	return
 }
 
-// Values returns all values in-order based on the key.
+// Values returns all values in-order.
 func (lhmap *LinkedHashmap) Values() (result []interface{}) {
 	head := lhmap.head.next
 	for head != lhmap.tail {
-		result = append(result, head.value)
+		result = append(result, head.Value)
+		head = head.next
+	}
+	return
+}
+
+// Slices returns all keyvalue in-order.
+func (lhmap *LinkedHashmap) Slices() (result []Slice) {
+	head := lhmap.head.next
+	for head != lhmap.tail {
+		result = append(result, head.Slice)
 		head = head.next
 	}
 	return
@@ -241,5 +264,5 @@ func (lhmap *LinkedHashmap) Values() (result []interface{}) {
 
 // String returns a string
 func (lhmap *LinkedHashmap) String() string {
-	return fmt.Sprint(lhmap.Values())
+	return fmt.Sprint(lhmap.Slices())
 }

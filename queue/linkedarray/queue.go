@@ -5,29 +5,29 @@ import (
 )
 
 // ArrayQueue
-type ArrayQueue struct {
+type ArrayQueue[T any] struct {
 	size  int64
-	data  []interface{}
+	data  []T
 	cap   int64
 	start int64
 	end   int64
 }
 
-func New() *ArrayQueue {
-	return &ArrayQueue{
+func New[T any]() *ArrayQueue[T] {
+	return &ArrayQueue[T]{
 		size:  0,
 		start: 0,
 		end:   0,
 		cap:   8,
-		data:  make([]interface{}, 8),
+		data:  make([]T, 8),
 	}
 }
 
-func (queue *ArrayQueue) grow() {
+func (queue *ArrayQueue[T]) grow() {
 	if queue.size >= queue.cap {
 		// 扩容
 		cap := queue.cap << 1
-		growData := make([]interface{}, cap)
+		growData := make([]T, cap)
 		copy(growData, queue.data[queue.start:])
 		copy(growData[queue.cap-queue.start:], queue.data[0:queue.start])
 		queue.data = growData
@@ -37,10 +37,10 @@ func (queue *ArrayQueue) grow() {
 	}
 }
 
-func (queue *ArrayQueue) slimming() {
+func (queue *ArrayQueue[T]) slimming() {
 	if queue.size <= (queue.cap >> 1) {
 		cap := (queue.cap - queue.cap>>2)
-		growData := make([]interface{}, cap)
+		growData := make([]T, cap)
 
 		if queue.start > queue.end {
 			copy(growData, queue.data[queue.start:])
@@ -56,7 +56,7 @@ func (queue *ArrayQueue) slimming() {
 	}
 }
 
-func (queue *ArrayQueue) PushBack(value interface{}) {
+func (queue *ArrayQueue[T]) PushBack(value T) {
 	queue.grow()
 
 	queue.data[queue.end] = value
@@ -67,7 +67,7 @@ func (queue *ArrayQueue) PushBack(value interface{}) {
 	}
 }
 
-func (queue *ArrayQueue) PushFront(value interface{}) {
+func (queue *ArrayQueue[T]) PushFront(value T) {
 	queue.grow()
 
 	queue.start = queue.start - 1
@@ -79,7 +79,7 @@ func (queue *ArrayQueue) PushFront(value interface{}) {
 	queue.size++
 }
 
-func (queue *ArrayQueue) Index(idx int64) interface{} {
+func (queue *ArrayQueue[T]) Index(idx int64) interface{} {
 	if idx < queue.size {
 		idx = queue.start + idx
 		if idx >= queue.cap {
@@ -92,11 +92,11 @@ func (queue *ArrayQueue) Index(idx int64) interface{} {
 	panic(fmt.Errorf("out of size(%d): %d", queue.size, idx))
 }
 
-func (queue *ArrayQueue) Front() interface{} {
+func (queue *ArrayQueue[T]) Front() interface{} {
 	return queue.data[queue.start]
 }
 
-func (queue *ArrayQueue) Back() interface{} {
+func (queue *ArrayQueue[T]) Back() interface{} {
 	idx := queue.end - 1
 	if idx < 0 {
 		idx = queue.cap - 1
@@ -104,11 +104,11 @@ func (queue *ArrayQueue) Back() interface{} {
 	return queue.data[idx]
 }
 
-func (queue *ArrayQueue) Size() int64 {
+func (queue *ArrayQueue[T]) Size() int64 {
 	return queue.size
 }
 
-func (queue *ArrayQueue) PopBack() interface{} {
+func (queue *ArrayQueue[T]) PopBack() interface{} {
 	if queue.size == 0 {
 		return nil
 	}
@@ -126,7 +126,7 @@ func (queue *ArrayQueue) PopBack() interface{} {
 	return tail
 }
 
-func (queue *ArrayQueue) PopFront() interface{} {
+func (queue *ArrayQueue[T]) PopFront() interface{} {
 	if queue.size == 0 {
 		return nil
 	}
@@ -141,7 +141,7 @@ func (queue *ArrayQueue) PopFront() interface{} {
 	return head
 }
 
-func (queue *ArrayQueue) Traverse(do func(idx int64, value interface{}) bool) {
+func (queue *ArrayQueue[T]) Traverse(do func(idx int64, value T) bool) {
 
 	var idx int64 = 0
 	var count int64 = 0
@@ -165,8 +165,8 @@ func (queue *ArrayQueue) Traverse(do func(idx int64, value interface{}) bool) {
 }
 
 // Values 返回所有队列数据. 遍历不推荐这样
-func (queue *ArrayQueue) Values() []interface{} {
-	var result []interface{}
+func (queue *ArrayQueue[T]) Values() []T {
+	var result []T
 
 	var count int64 = 0
 	for i := queue.start; i < queue.cap && count < queue.size; i++ {

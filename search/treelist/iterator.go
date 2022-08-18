@@ -12,10 +12,9 @@ type Iterator struct {
 	nodePoint
 }
 
-// SeekGE 搜索到 大于等于key 的前缀. 如果存在等值的key 返回true. 否则false
-//
+// SeekGE
 // seek to Greater Than or Equal the key.
-// [less equal greater] --> if equal is not exists, take the great
+// if equal is not exists, take the great key
 func (iter *Iterator) SeekGE(key []byte) bool {
 	const R = 1
 	cur, idx, dir := iter.tree.seekNodeWithIndex(key)
@@ -28,10 +27,9 @@ func (iter *Iterator) SeekGE(key []byte) bool {
 	return dir == 0
 }
 
-// SeekGT 搜索到 大于key 的前缀. 如果存在等值的key 返回true. 否则false
-//
+// SeekGT
 // seek to Greater Than the key.
-// [less equal greater] -->  take the great
+// take the great key
 func (iter *Iterator) SeekGT(key []byte) bool {
 	const R = 1
 	cur, idx, dir := iter.tree.seekNodeWithIndex(key)
@@ -44,8 +42,7 @@ func (iter *Iterator) SeekGT(key []byte) bool {
 	return dir == 0
 }
 
-// SeekByIndex 位移到 有序序列的第index个
-//
+// SeekByIndex
 // seek to  the key by index. like index of array. index is ordered
 func (iter *Iterator) SeekByIndex(index int64) {
 	cur := iter.tree.index(index)
@@ -53,10 +50,9 @@ func (iter *Iterator) SeekByIndex(index int64) {
 	iter.cur = cur
 }
 
-// SeekLE 搜索到 小于等于key 的前缀. 如果存在等值的key 返回true. 否则false
-//
+// SeekLE
 // seek to  less than or equal the key.
-// [less equal greater] -->  if equal is not exists, take the less
+// if equal is not exists, take the less key
 func (iter *Iterator) SeekLE(key []byte) bool {
 	const L = 0
 	cur, idx, dir := iter.tree.seekNodeWithIndex(key)
@@ -69,10 +65,8 @@ func (iter *Iterator) SeekLE(key []byte) bool {
 	return dir == 0
 }
 
-// SeekLE 搜索到 小于key 的前缀. 如果存在等值的key 返回true. 否则false
-//
+// SeekLT
 // seek to  less than  the key.
-// [less equal greater] --> take the less
 func (iter *Iterator) SeekLT(key []byte) bool {
 	const L = 0
 	cur, idx, dir := iter.tree.seekNodeWithIndex(key)
@@ -104,12 +98,12 @@ func (iter *Iterator) SeekToLast() {
 
 }
 
-// Valid 校验数据是否存在 配合Seek使用
+// Valid  if current value is not nil return true. else return false. for use with Seek
 func (iter *Iterator) Valid() bool {
 	return iter.cur != nil
 }
 
-// Prev 位移至前一个
+// Prev  the current iterator move to the prev. before call it must call Vaild() and return true.
 func (iter *Iterator) Prev() {
 	const L = 0
 
@@ -118,45 +112,41 @@ func (iter *Iterator) Prev() {
 }
 
 // Compare iterator the  current value comare to key.
-//
 // if cur.key > key. return 1.
-//
 // if cur.key == key return 0.
-//
 // if cur.key < key return - 1.
 func (iter *Iterator) Compare(key []byte) int {
 	return iter.tree.compare(iter.cur.Key, key)
 }
 
-// Next 位移至下一个
+// Next Next the current iterator move to the next. before call it must call Vaild() and return true.
 func (iter *Iterator) Next() {
 	const R = 1
 	iter.cur = iter.cur.Direct[R]
 	iter.idx++
 }
 
-// Slice 当前item的key value
+// Slice return the KeyValue of current
 func (iter *Iterator) Slice() *Slice {
 	return &iter.cur.Slice
 }
 
-// Index 当前item的index. 有序的位置 与数组等义
+// Index return the Index of the current iterator. Ordered position equivalent to the Index of an Priority Queue(Array)
 func (iter *Iterator) Index() int64 {
 	return iter.idx
 }
 
-// Key 当前item的key
+// Key return the key of current
 func (iter *Iterator) Key() []byte {
-	return iter.cur.Key.([]byte)
+	return iter.cur.Key
 }
 
-// Value 当前item的value
+// Value return the value of current
 func (iter *Iterator) Value() interface{} {
 	return iter.cur.Value
 }
 
-// Clone 复制一个当前迭代的iterator. 用于复位
-//
+// Clone
 // copy a iterator. eg: record iterator position
 func (iter *Iterator) Clone() *Iterator {
 	return &Iterator{tree: iter.tree, nodePoint: nodePoint{cur: iter.cur, idx: iter.idx}}

@@ -10,6 +10,10 @@ import (
 	"github.com/474420502/random"
 	utils "github.com/474420502/structure"
 	"github.com/474420502/structure/compare"
+	avl "github.com/474420502/structure/tree/avl"
+	indextree "github.com/474420502/structure/tree/indextree"
+
+	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
 const Level0 = 100000
@@ -25,7 +29,7 @@ func init() {
 
 func BenchmarkPut(b *testing.B) {
 	b.StopTimer()
-	tree := New(compare.Bytes)
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 	b.ResetTimer()
 	b.StartTimer()
 
@@ -38,10 +42,10 @@ func BenchmarkPut(b *testing.B) {
 
 func BenchmarkPut2(b *testing.B) {
 	b.StopTimer()
-	tree := New(compare.Bytes)
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 
 	var data [][]byte
-	for i := 0; i < Level0; i++ {
+	for i := 0; i < Level1; i++ {
 		data = append(data, utils.Rangdom(8, 32))
 	}
 
@@ -57,12 +61,78 @@ func BenchmarkPut2(b *testing.B) {
 		idx++
 	}
 
-	b.Log(len(data))
+	b.Log(tree.Size())
+}
+
+func BenchmarkPut3(b *testing.B) {
+	var data []int64
+
+	if !testutils.LoadData("BenchmarkPut", data) {
+		for i := 0; i < 4000000; i++ {
+			v := rand.Int63()
+			data = append(data, v)
+		}
+		testutils.SaveData("BenchmarkPut", data)
+	}
+
+	b.ResetTimer()
+
+	rand.Seed(time.Now().Unix())
+	start := int(rand.Int63n(500000))
+
+	b.Run("pre", func(b *testing.B) {
+		tree := avl.New(compare.Any[int64])
+
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			v := data[i+start]
+			tree.Put(v, v)
+		}
+		// b.Log(tree.Size())
+	})
+
+	b.Run("treelist", func(b *testing.B) {
+		tree := New[int64, int64](compare.Any[int64])
+
+		b.ResetTimer()
+
+		// b.N = 100
+		for i := 0; i < b.N; i++ {
+			v := data[i+start]
+			tree.Put(v, v)
+		}
+
+	})
+
+	b.Run("indextree", func(b *testing.B) {
+		tree := indextree.New(compare.Any[int64])
+
+		b.ResetTimer()
+
+		// b.N = 100
+		for i := 0; i < b.N; i++ {
+			v := data[i+start]
+			tree.Put(v, v)
+		}
+
+	})
+
+	b.Run("avl", func(b *testing.B) {
+		tree := avl.New(compare.Any[int64])
+
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			v := data[i+start]
+			tree.Put(v, v)
+		}
+
+	})
+
 }
 
 func BenchmarkIndex(b *testing.B) {
 	b.StopTimer()
-	tree := New(compare.Bytes)
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 
 	for i := 0; i < Level1; i++ {
 		v := []byte(strconv.Itoa(i))
@@ -86,8 +156,8 @@ func TestRemoveRange(t *testing.T) {
 	// t.StopTimer()
 	for i := 0; i < level; i++ {
 
-		tree := New(compare.Bytes)
-		tree.compare = compare.BytesLen
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree.compare = compare.ArrayLenAny[[]byte]
 		for i := 0; i < level; i += rand.Intn(10) + 10 {
 			v := []byte(strconv.Itoa(i))
 			tree.Put(v, v)
@@ -119,10 +189,10 @@ func TestRemoveRange(t *testing.T) {
 // 	// t.StopTimer()
 // 	for i := 0; i < level; i++ {
 
-// 		// tree := New(compare.Bytes)
-// 		// tree.compare = compare.BytesLen
-// 		treeEx := New(compare.Bytes)
-// 		treeEx.compare = compare.BytesLen
+// 		// tree := New(compare.CompareBytes[[]byte])
+// 		// tree.compare = compare.CompareBytesLen[[]byte]
+// 		treeEx := New(compare.CompareBytes[[]byte])
+// 		treeEx.compare = compare.CompareBytesLen[[]byte]
 // 		for i := 0; i < level; i += rand.Intn(10) + 1 {
 // 			v := []byte(strconv.Itoa(i))
 // 			// tree.Put(v, v)
@@ -159,10 +229,10 @@ func TestTrimBench(t *testing.T) {
 	// // t.StopTimer()
 	// for i := 0; i < level; i++ {
 
-	// 	tree := New(compare.Bytes)
-	// 	tree.compare = compare.BytesLen
-	// 	treeEx := New(compare.Bytes)
-	// 	treeEx.compare = compare.BytesLen
+	// 	tree := New(compare.CompareBytes[[]byte])
+	// 	tree.compare = compare.CompareBytesLen[[]byte]
+	// 	treeEx := New(compare.CompareBytes[[]byte])
+	// 	treeEx.compare = compare.CompareBytesLen[[]byte]
 	// 	for i := 0; i < level; i += rand.Intn(10) + 1 {
 	// 		v := []byte(strconv.Itoa(i))
 	// 		tree.Put(v, v)
@@ -210,10 +280,10 @@ func estIntersectionP(t *testing.T) {
 		var table1 map[string]bool = make(map[string]bool)
 		var table2 map[string]bool = make(map[string]bool)
 
-		tree1 := New(compare.Bytes)
-		tree1.compare = compare.BytesLen
-		tree2 := New(compare.Bytes)
-		tree2.compare = compare.BytesLen
+		tree1 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree1.compare = compare.ArrayLenAny[[]byte]
+		tree2 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree2.compare = compare.ArrayLenAny[[]byte]
 
 		for i := 0; i < 100000; i += rand.Intn(1000) + 1 {
 			v := []byte(strconv.Itoa(i))

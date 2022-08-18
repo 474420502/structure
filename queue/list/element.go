@@ -1,19 +1,19 @@
 package listqueue
 
-type Element struct {
-	prev  *Element
-	next  *Element
-	value interface{}
+type Element[T any] struct {
+	prev  *Element[T]
+	next  *Element[T]
+	value T
 }
 
-func (e *Element) Prev() *Element {
+func (e *Element[T]) Prev() *Element[T] {
 	return e.prev
 }
 
-func (e *Element) Next() *Element {
+func (e *Element[T]) Next() *Element[T] {
 	return e.next
 }
 
-func (e *Element) Value() interface{} {
+func (e *Element[T]) Value() interface{} {
 	return e.value
 }

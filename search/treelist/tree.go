@@ -11,19 +11,19 @@ func init() {
 }
 
 type Slice struct {
-	Key   interface{}
+	Key   []byte
 	Value interface{}
 }
 
-func copybytes(key interface{}) []byte {
-	k := key.([]byte)
-	var buf []byte = make([]byte, len(k))
-	copy(buf, k)
-	return buf
-}
+// func copybytes(key []byte) []byte {
+// 	var buf []byte = make([]byte, len(key))
+// 	copy(buf, key)
+// 	return buf
+// }
 
+// String show the string of keyvalue
 func (s *Slice) String() string {
-	return string(s.Key.([]byte))
+	return fmt.Sprintf("{%v:%v}", string(s.Key), s.Value)
 }
 
 type treeNode struct {
@@ -37,30 +37,86 @@ type treeNode struct {
 }
 
 func (n *treeNode) String() string {
-	return string(n.Key.([]byte))
+	return string(n.Key)
 }
 
+// Tree the struct of treelist
 type Tree struct {
 	root    *treeNode
-	compare compare.Compare
+	compare compare.Compare[[]byte]
 
 	// rcount int
 }
 
-func New() *Tree {
-	return &Tree{compare: compare.Bytes, root: &treeNode{}}
+func compareBytes(s1, s2 []byte) int {
+	switch {
+	case len(s1) > len(s2):
+		for i := 0; i < len(s2); i++ {
+			if s1[i] != s2[i] {
+				if s1[i] > s2[i] {
+					return 1
+				}
+				return -1
+			}
+		}
+		return 1
+	case len(s1) < len(s2):
+		for i := 0; i < len(s1); i++ {
+			if s1[i] != s2[i] {
+				if s1[i] > s2[i] {
+					return 1
+				}
+				return -1
+			}
+		}
+		return -1
+	default:
+		for i := 0; i < len(s1); i++ {
+			if s1[i] != s2[i] {
+				if s1[i] > s2[i] {
+					return 1
+				}
+				return -1
+			}
+		}
+		return 0
+	}
 }
 
-func (tree *Tree) SetCompare(comp compare.Compare) {
+func compareBytesLen(s1, s2 []byte) int {
+	switch {
+	case len(s1) > len(s2):
+		return 1
+	case len(s1) < len(s2):
+		return -1
+	default:
+		for i := 0; i < len(s1); i++ {
+			if s1[i] != s2[i] {
+				if s1[i] > s2[i] {
+					return 1
+				}
+				return -1
+			}
+		}
+		return 0
+	}
+}
+
+// New create a object of tree
+func New() *Tree {
+	return &Tree{compare: compareBytes, root: &treeNode{}}
+}
+
+func (tree *Tree) SetCompare(comp compare.Compare[[]byte]) {
 	tree.compare = comp
 }
 
-// Iterator Return the Iterator of tree. like list or skiplist
+// Iterator Return the Iterator of tree. similar to list or skiplist
 func (tree *Tree) Iterator() *Iterator {
 	return &Iterator{tree: tree}
 }
 
-// IteratorRange Return the Iterator of tree. like list or skiplist.
+// IteratorRange Return the Iterator of tree. similar to list or skiplist.
 //
 // the struct can set range.
 func (tree *Tree) IteratorRange() *IteratorRange {
@@ -76,7 +132,7 @@ func (tree *Tree) Size() int64 {
 }
 
 // Get Get Value from key.
-func (tree *Tree) Get(key interface{}) (interface{}, bool) {
+func (tree *Tree) Get(key []byte) (interface{}, bool) {
 	if cur := tree.getNode(key); cur != nil {
 		return cur.Value, true
 	}
@@ -85,11 +141,11 @@ func (tree *Tree) Get(key interface{}) (interface{}, bool) {
 
 // PutDuplicate put, when key duplicate with call do. don,t change the key of `exists`, will break the tree of blance
 // 				if duplicate, will return true.
-func (tree *Tree) PutDuplicate(key interface{}, value interface{}, do func(exists *Slice)) bool {
+func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Slice)) bool {
 	const L = 0
 	const R = 1
 
-	if len(key.([]byte)) == 0 {
+	if len(key) == 0 {
 		panic(fmt.Errorf("key must not be nil"))
 	}
 
@@ -172,11 +228,11 @@ func (tree *Tree) PutDuplicate(key interface{}, value interface{}, do func(exist
 }
 
 // Set Insert the key In treelist, if key exists, cover
-func (tree *Tree) Set(key interface{}, value interface{}) bool {
+func (tree *Tree) Set(key []byte, value interface{}) bool {
 	const L = 0
 	const R = 1
 
-	if len(key.([]byte)) == 0 {
+	if len(key) == 0 {
 		panic(fmt.Errorf("key must not be nil"))
 	}
 
@@ -261,17 +317,17 @@ func (tree *Tree) Set(key interface{}, value interface{}) bool {
 }
 
 // Put Insert the key In treelist, if key exists, ignore
-func (tree *Tree) Put(key interface{}, value interface{}) bool {
+func (tree *Tree) Put(key []byte, value interface{}) bool {
 	const L = 0
 	const R = 1
 
-	if len(key.([]byte)) == 0 {
+	if len(key) == 0 {
 		panic(fmt.Errorf("key must not be nil"))
 	}
 
 	cur := tree.getRoot()
 	if cur == nil {
-		node := &treeNode{Slice: Slice{Key: key.([]byte), Value: value}, Size: 1, Parent: tree.root}
+		node := &treeNode{Slice: Slice{Key: key, Value: value}, Size: 1, Parent: tree.root}
 		tree.root.Children[0] = node
 		tree.root.Direct[L] = node
 		tree.root.Direct[R] = node
@@ -291,7 +347,7 @@ func (tree *Tree) Put(key interface{}, value interface{}) bool {
 				cur = cur.Children[L]
 			} else {
 
-				node := &treeNode{Parent: cur, Slice: Slice{Key: key.([]byte), Value: value}, Size: 1}
+				node := &treeNode{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
 				cur.Children[L] = node
 
 				if left != nil {
@@ -319,7 +375,7 @@ func (tree *Tree) Put(key interface{}, value interface{}) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &treeNode{Parent: cur, Slice: Slice{Key: key.([]byte), Value: value}, Size: 1}
+				node := &treeNode{Parent: cur, Slice: Slice{Key: key, Value: value}, Size: 1}
 				cur.Children[R] = node
 
 				if left != nil {
@@ -355,7 +411,7 @@ func (tree *Tree) Index(i int64) *Slice {
 }
 
 // IndexOf Get the Index of key in the Treelist(Order)
-func (tree *Tree) IndexOf(key interface{}) int64 {
+func (tree *Tree) IndexOf(key []byte) int64 {
 	const L = 0
 	const R = 1
 
@@ -386,7 +442,7 @@ func (tree *Tree) IndexOf(key interface{}) int64 {
 
 }
 
-// Traverse 遍历的方法 默认是LDR 从小到大 Compare 为 l < r
+// Traverse the traversal method defaults to LDR. from smallest to largest.
 func (tree *Tree) Traverse(every func(s *Slice) bool) {
 	root := tree.getRoot()
 	if root == nil {
@@ -412,6 +468,7 @@ func (tree *Tree) Traverse(every func(s *Slice) bool) {
 	traverasl(root)
 }
 
+//  Slices  return all slice. from smallest to largest.
 func (tree *Tree) Slices() []Slice {
 	var mszie int64
 	root := tree.getRoot()
@@ -426,13 +483,15 @@ func (tree *Tree) Slices() []Slice {
 	return result
 }
 
-func (tree *Tree) Remove(key interface{}) *Slice {
+// Remove remove key and return value that be removed
+func (tree *Tree) Remove(key []byte) *Slice {
 	if cur := tree.getNode(key); cur != nil {
 		return tree.removeNode(cur)
 	}
 	return nil
 }
 
+// RemoveIndex remove key value by index and return value that be removed
 func (tree *Tree) RemoveIndex(index int64) *Slice {
 	if cur := tree.index(index); cur != nil {
 		return tree.removeNode(cur)
@@ -440,6 +499,7 @@ func (tree *Tree) RemoveIndex(index int64) *Slice {
 	return nil
 }
 
+// Head returns the head of the ordered data of tree
 func (tree *Tree) Head() *Slice {
 	h := tree.root.Direct[0]
 	if h != nil {
@@ -448,6 +508,7 @@ func (tree *Tree) Head() *Slice {
 	return nil
 }
 
+// RemoveHead remove the head of the ordered data of tree. similar to the pop function of heap
 func (tree *Tree) RemoveHead() *Slice {
 	if tree.getRoot() != nil {
 		return tree.removeNode(tree.root.Direct[0])
@@ -455,6 +516,7 @@ func (tree *Tree) RemoveHead() *Slice {
 	return nil
 }
 
+// Tail returns the tail of the ordered data of tree
 func (tree *Tree) Tail() *Slice {
 	t := tree.root.Direct[1]
 	if t != nil {
@@ -463,6 +525,7 @@ func (tree *Tree) Tail() *Slice {
 	return nil
 }
 
+// RemoveTail remove the tail of the ordered data of tree.
 func (tree *Tree) RemoveTail() *Slice {
 	if tree.getRoot() != nil {
 		return tree.removeNode(tree.root.Direct[1])
@@ -470,8 +533,8 @@ func (tree *Tree) RemoveTail() *Slice {
 	return nil
 }
 
-// RemoveRange
-func (tree *Tree) RemoveRange(low, hight interface{}) bool {
+// RemoveRange remove keys values by range. [low, high]
+func (tree *Tree) RemoveRange(low, hight []byte) bool {
 
 	const L = 0
 	const R = 1
@@ -592,7 +655,8 @@ func (tree *Tree) RemoveRange(low, hight interface{}) bool {
 	return true
 }
 
-// RemoveRangeByIndex 1.range [low:hight] 2.low hight 必须包含存在的值.[low: hight+1] [low-1: hight].  [low-1: hight+1]. error: [low-1:low-2] or [hight+1:hight+2]
+// RemoveRangeByIndex 1.remove range [low:hight]
+// 2.low and hight that the range must contain a value that exists. eg: [low: hight+1] [low-1: hight].  [low-1: hight+1]. error: [low-1:low-2] or [hight+1:hight+2]
 func (tree *Tree) RemoveRangeByIndex(low, hight int64) {
 
 	if low > hight {
@@ -745,8 +809,8 @@ func (tree *Tree) Clear() {
 	tree.root.Direct[1] = nil
 }
 
-// Trim range [low:hight]
-func (tree *Tree) Trim(low, hight interface{}) {
+// Trim retain the value of the range . [low high]
+func (tree *Tree) Trim(low, hight []byte) {
 
 	if tree.compare(low, hight) > 0 {
 		panic(errLowerGtHigh)
@@ -831,7 +895,7 @@ func (tree *Tree) Trim(low, hight interface{}) {
 
 }
 
-// TrimByIndex range [low:hight]
+// TrimByIndex retain the value of the index range . [low high]
 func (tree *Tree) TrimByIndex(low, hight int64) {
 
 	if low > hight {
@@ -936,7 +1000,7 @@ func (tree *Tree) TrimByIndex(low, hight int64) {
 	}
 }
 
-// Intersection 交集
+// Intersection  tree intersection with other. [1 2 3] [2 3 4] -> [2 3].
 func (tree *Tree) Intersection(other *Tree) *Tree {
 
 	const L = 0
@@ -970,7 +1034,7 @@ func (tree *Tree) Intersection(other *Tree) *Tree {
 	return result
 }
 
-// UnionSets 并集
+// UnionSets tree unionsets with other. [1 2 3] [2 3 4] -> [1 2 3 4].
 func (tree *Tree) UnionSets(other *Tree) *Tree {
 	const L = 0
 	const R = 1
@@ -1015,7 +1079,7 @@ func (tree *Tree) UnionSets(other *Tree) *Tree {
 	return result
 }
 
-// DifferenceSets 差集
+// DifferenceSets The set of elements after subtracting B from A
 func (tree *Tree) DifferenceSets(other *Tree) *Tree {
 	const L = 0
 	const R = 1

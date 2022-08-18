@@ -16,6 +16,7 @@ type IteratorRange struct {
 	dir          RangeDirection
 }
 
+// SliceIndex slice and  with index
 type SliceIndex struct {
 	*Slice
 	Index int64

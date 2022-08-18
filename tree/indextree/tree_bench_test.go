@@ -19,7 +19,7 @@ func init() {
 
 func BenchmarkPutEx(b *testing.B) {
 	b.StopTimer()
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	b.ResetTimer()
 	b.StartTimer()
 
@@ -30,7 +30,7 @@ func BenchmarkPutEx(b *testing.B) {
 
 func BenchmarkIndex(b *testing.B) {
 	b.StopTimer()
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 
 	for i := 0; i < Level3; i++ {
 		tree.Put(i, i)

@@ -11,7 +11,7 @@ import (
 func TestForce(t *testing.T) {
 
 	rand := random.New(t.Name())
-	s1 := New()
+	s1 := New[int]()
 	s2 := list.New()
 
 	for i := 0; i < 2000; i++ {
@@ -44,12 +44,12 @@ func TestForce(t *testing.T) {
 		}
 	}
 
-	if v, ok := s1.Peek(); v != nil || ok != false {
-		panic("")
+	if v, ok := s1.Peek(); ok != false {
+		panic(v)
 	}
 
-	if v, ok := s1.Pop(); v != nil || ok != false {
-		panic("")
+	if v, ok := s1.Pop(); ok != false {
+		panic(v)
 	}
 
 	s1.Clear()
@@ -75,7 +75,7 @@ func TestForce(t *testing.T) {
 
 func TestString(t *testing.T) {
 	rand := random.New(t.Name())
-	s1 := New()
+	s1 := New[int]()
 
 	for i := 0; i < 10; i++ {
 		v := rand.Intn(100)
