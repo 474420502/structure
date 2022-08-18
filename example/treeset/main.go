@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	set := treeset.New(compare.Int)
+	set := treeset.New(compare.Any[int])
 
 	for _, v := range []int{5, 25, 4, 11, 0} {
 		set.Add(v) // return true

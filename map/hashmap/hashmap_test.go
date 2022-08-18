@@ -13,7 +13,7 @@ func TestForce(t *testing.T) {
 
 	rand := random.New()
 	hm := New()
-	set := treeset.New(compare.Int)
+	set := treeset.New(compare.Any[int])
 
 	for n := 0; n < 2000; n++ {
 
@@ -38,13 +38,13 @@ func TestForce(t *testing.T) {
 		}
 
 		for _, k := range hm.Keys() {
-			if ok := set.Contains(k); !ok {
+			if ok := set.Contains(k.(int)); !ok {
 				panic("")
 			}
 		}
 
 		for _, v := range hm.Values() {
-			if ok := set.Contains(v); !ok {
+			if ok := set.Contains(v.(int)); !ok {
 				panic("")
 			}
 		}
@@ -63,13 +63,13 @@ func TestForce(t *testing.T) {
 		}
 
 		for _, k := range hm.Keys() {
-			if ok := set.Contains(k); !ok {
+			if ok := set.Contains(k.(int)); !ok {
 				panic("")
 			}
 		}
 
 		for _, v := range hm.Values() {
-			if ok := set.Contains(v); !ok {
+			if ok := set.Contains(v.(int)); !ok {
 				panic("")
 			}
 		}

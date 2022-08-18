@@ -11,7 +11,7 @@ import (
 func main() {
 	// all api is fast
 	r := random.New(1636706158629652669)
-	queue := treequeue.New(compare.Int)
+	queue := treequeue.New(compare.Any[int])
 
 	for i := 0; i < 10; i++ {
 		v := r.Intn(10)
@@ -39,7 +39,7 @@ func main() {
 
 	log.Println(queue.Index(0).Key()) // 94
 
-	queue = treequeue.New(compare.IntDesc) //  From big to small
+	queue = treequeue.New(compare.AnyDesc[int]) //  From big to small
 	for i := 0; i < 10; i++ {
 		queue.Put(i, i)
 	}
