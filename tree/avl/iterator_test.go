@@ -12,7 +12,7 @@ import (
 )
 
 func TestNextPrev(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for i := 0; i < 10; i++ {
 		tree.Set(i, i)
 	}
@@ -74,7 +74,7 @@ func TestNextPrev(t *testing.T) {
 }
 
 func TestSeekFor(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for i := 0; i < 20; i += 2 {
 		tree.Set(i, i)
 	}
@@ -136,7 +136,7 @@ func TestSeekFor(t *testing.T) {
 func TestIteratorForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Int)
+		tree := New(compare.Any[int])
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
@@ -165,7 +165,7 @@ func TestIteratorForce(t *testing.T) {
 				log.Panicln(iter.Value(), priority)
 			}
 		} else {
-			for i := idx; i < tree.Size(); i++ {
+			for i := idx; i < int(tree.Size()); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}
@@ -190,7 +190,7 @@ func TestIteratorForce(t *testing.T) {
 				log.Panicln(iter.Value(), priority, idx-1, s)
 			}
 		} else {
-			for i := idx - 1; i < tree.Size(); i++ {
+			for i := idx - 1; i < int(tree.Size()); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}
@@ -227,7 +227,7 @@ func TestIteratorForce(t *testing.T) {
 func TestIteratorForce2(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Int)
+		tree := New(compare.Any[int])
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
@@ -256,7 +256,7 @@ func TestIteratorForce2(t *testing.T) {
 				log.Panicln(iter.Value(), priority)
 			}
 		} else {
-			for i := idx; i < tree.Size(); i++ {
+			for i := idx; i < int(tree.Size()); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}
@@ -282,7 +282,7 @@ func TestIteratorForce2(t *testing.T) {
 				log.Panicln(iter.Value(), priority, idx-1, s)
 			}
 		} else {
-			for i := idx - 1; i < tree.Size(); i++ {
+			for i := idx - 1; i < int(tree.Size()); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}
@@ -318,7 +318,7 @@ func TestIteratorForce2(t *testing.T) {
 
 func TestCompareSimilarForce(t *testing.T) {
 	tree1 := treelist.New()
-	tree2 := New(compare.Bytes)
+	tree2 := New(compare.ArrayAny[[]byte])
 
 	rand := random.New()
 
@@ -347,7 +347,7 @@ func TestCompareSimilarForce(t *testing.T) {
 		}
 
 		for iter1.Valid() && iter2.Vaild() {
-			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+			if !bytes.Equal(iter1.Key(), iter2.Key()) {
 				t.Error("SeekGE")
 				panic(nil)
 			}
@@ -361,7 +361,7 @@ func TestCompareSimilarForce(t *testing.T) {
 		}
 
 		for iter1.Valid() && iter2.Vaild() {
-			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+			if !bytes.Equal(iter1.Key(), iter2.Key()) {
 				t.Error("SeekGE")
 				panic(nil)
 			}
@@ -375,7 +375,7 @@ func TestCompareSimilarForce(t *testing.T) {
 		}
 
 		for iter1.Valid() && iter2.Vaild() {
-			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+			if !bytes.Equal(iter1.Key(), iter2.Key()) {
 				t.Error("SeekLE")
 				panic(nil)
 			}
@@ -389,7 +389,7 @@ func TestCompareSimilarForce(t *testing.T) {
 		}
 
 		for iter1.Valid() && iter2.Vaild() {
-			if !bytes.Equal(iter1.Key(), iter2.Key().([]byte)) {
+			if !bytes.Equal(iter1.Key(), iter2.Key()) {
 				t.Error("SeekLE")
 				panic(nil)
 			}
@@ -398,4 +398,26 @@ func TestCompareSimilarForce(t *testing.T) {
 		}
 
 	}
+}
+
+func TestIeratorCompare(t *testing.T) {
+	tree := New(compare.Any[int])
+	for i := 0; i < 10; i++ {
+		tree.Put(i, i)
+	}
+
+	for i := 0; i < 10; i++ {
+		iter := tree.Iterator()
+		iter.SeekGE(i)
+		if iter.Compare(i) != 0 {
+			t.Error()
+		}
+		if iter.Compare(i+1) > 0 {
+			t.Error()
+		}
+		if iter.Compare(i-1) < 0 {
+			t.Error()
+		}
+	}
+
 }

@@ -17,7 +17,7 @@ func init() {
 }
 
 func TestGet(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for i := 0; i < 100; i++ {
 		tree.Put(i, i)
 		if _, ok := tree.Get(i); !ok {
@@ -29,7 +29,7 @@ func TestGet(t *testing.T) {
 func TestIndexForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Int)
+		tree := New(compare.Any[int])
 
 		var arr []int = make([]int, 0, 50)
 		for i := 0; i < 50; i++ {
@@ -51,7 +51,7 @@ func TestIndexForce(t *testing.T) {
 }
 
 func TestIndex(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for i := 0; i < 100; i++ {
 		tree.Put(i, i)
 		// log.Println(tree.debugString(true))
@@ -70,7 +70,7 @@ func TestIndex(t *testing.T) {
 func TestRankForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Int)
+		tree := New(compare.Any[int])
 		var arr []int = make([]int, 0, 50)
 		for i := 0; i < 50; i++ {
 			r := rand.Intn(1000)
@@ -89,7 +89,7 @@ func TestRankForce(t *testing.T) {
 }
 
 func TestRank(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for i := 0; i < 100; i++ {
 		tree.Put(i, i)
 		// log.Println(tree.debugString(true))
@@ -106,15 +106,15 @@ func TestRank(t *testing.T) {
 }
 
 func TestRemove1(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for _, i := range testutils.TestedArray {
 		if !tree.Put(i, i) {
-			log.Println("equal key", i)
+			// log.Println("equal key", i)
 		}
 	}
 
 	for _, v := range tree.Values() {
-		if tree.Remove(v) != v {
+		if tree.Remove(v.(int)) != v {
 			t.Error("remove error check it")
 		}
 	}
@@ -125,10 +125,10 @@ func TestRemove1(t *testing.T) {
 }
 
 func TestRemove2(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for _, i := range testutils.TestedBigArray {
 		if !tree.Put(i, i) {
-			log.Println("equal key", i)
+			// log.Println("equal key", i)
 		}
 	}
 
@@ -137,7 +137,7 @@ func TestRemove2(t *testing.T) {
 	}
 
 	for _, v := range tree.Values() {
-		tree.Remove(v)
+		tree.Remove(v.(int))
 	}
 
 	if tree.Size() != 0 {
@@ -146,7 +146,7 @@ func TestRemove2(t *testing.T) {
 }
 
 func TestRemove3(t *testing.T) {
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for n := 0; n < 1000; n++ {
 		tree.Clear()
 		for i := 0; i < 100; i += rand.Intn(3) + 1 {
@@ -171,7 +171,7 @@ func TestRemove3(t *testing.T) {
 
 func TestRemoveRange(t *testing.T) {
 	rand := random.New(t.Name())
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for n := 0; n < 2000; n++ {
 		tree.Clear()
 		var sarr []int
@@ -204,7 +204,7 @@ func TestRemoveRange(t *testing.T) {
 
 func TestTrim(t *testing.T) {
 	rand := random.New(t.Name())
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 	for n := 0; n < 2000; n++ {
 		tree.Clear()
 		var sarr []int
@@ -246,7 +246,7 @@ func TestTrim(t *testing.T) {
 
 func TestRemoveRangeIndex(t *testing.T) {
 
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 
 	v := 0
 	tree.Put(v, v)
@@ -291,8 +291,8 @@ func TestRemoveRangeIndexForce(t *testing.T) {
 	for n := 0; n < 2000; n++ {
 
 		var priority []int
-		tree1 := New(compare.Int)
-		tree2 := New(compare.Int)
+		tree1 := New(compare.Any[int])
+		tree2 := New(compare.Any[int])
 
 		for i := 0; i < 200; i += rand.Intn(8) + 1 {
 			v := i
@@ -339,8 +339,8 @@ func TestTrimIndexForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
-		tree1 := New(compare.Int)
-		tree2 := New(compare.Int)
+		tree1 := New(compare.Any[int])
+		tree2 := New(compare.Any[int])
 		var priority []int
 
 		for i := 0; i < 200; i += rand.Intn(4) + 1 {
@@ -379,7 +379,7 @@ func TestTrimIndexForce(t *testing.T) {
 
 func TestTrimIndex(t *testing.T) {
 
-	tree := New(compare.Int)
+	tree := New(compare.Any[int])
 
 	tree.Put(0, 0)
 	tree.TrimByIndex(0, 0)
@@ -407,7 +407,7 @@ func TestTrimIndex(t *testing.T) {
 	}
 
 	var result []interface{}
-	tree.Traverse(func(k interface{}, v interface{}) bool {
+	tree.Traverse(func(k int, v interface{}) bool {
 		result = append(result, k)
 		return true
 	})
@@ -423,7 +423,7 @@ func TestAllForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
-		tree1 := New(compare.Int)
+		tree1 := New(compare.Any[int])
 		var dict map[int]int = make(map[int]int)
 
 		for i := 0; i < 100; i++ {
@@ -448,7 +448,7 @@ func TestAllForce(t *testing.T) {
 func TestSimpleForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree1 := New(compare.Int)
+		tree1 := New(compare.Any[int])
 		tree2 := make(map[int]int)
 
 		for i := 0; i < 40; i++ {
@@ -467,7 +467,7 @@ func TestSimpleForce(t *testing.T) {
 			i := rand.Intn(int(tree1.Size()))
 
 			k, v1 := tree1.Index(int64(i))
-			if v2, ok := tree2[k.(int)]; !ok || v1 != v2 {
+			if v2, ok := tree2[k]; !ok || v1 != v2 {
 				panic("")
 			}
 
@@ -477,10 +477,10 @@ func TestSimpleForce(t *testing.T) {
 
 			if rand.Intn(2) == 0 {
 				tree1.Remove(k)
-				delete(tree2, k.(int))
+				delete(tree2, k)
 			} else {
 				tree1.RemoveIndex(int64(i))
-				delete(tree2, k.(int))
+				delete(tree2, k)
 			}
 
 			if rand.Intn(2) == 0 {
@@ -510,7 +510,7 @@ func TestSplitContain(t *testing.T) {
 
 	for n := 0; n < 1000; n++ {
 
-		tree1 := New(compare.Int)
+		tree1 := New(compare.Any[int])
 		var priority []int
 		for i := 0; i < 80; i++ {
 			v := rand.Intn(200)
@@ -576,7 +576,7 @@ func TestSplit(t *testing.T) {
 
 	for n := 0; n < 1000; n++ {
 
-		tree1 := New(compare.Int)
+		tree1 := New(compare.Any[int])
 		var priority []int
 		for i := 0; i < 80; i++ {
 			v := rand.Intn(200)
@@ -622,7 +622,7 @@ func TestSplit(t *testing.T) {
 }
 
 func TestCase(t *testing.T) {
-	tree1 := New(compare.Int)
+	tree1 := New(compare.Any[int])
 
 	for i := 0; i < 100; i++ {
 		v := rand.Intn(1000)

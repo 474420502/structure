@@ -12,7 +12,7 @@ func TestForcePush(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
-		queue1 := New()
+		queue1 := New[int]()
 		queue2 := list.New()
 
 		for i := 0; i < 10; i += 1 {

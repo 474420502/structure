@@ -10,7 +10,7 @@ import (
 )
 
 func TestCasePut(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	for i := 0; i < 16; i++ {
 		q.PushBack(i)
@@ -31,15 +31,15 @@ func TestCasePut(t *testing.T) {
 }
 
 func TestCasePop(t *testing.T) {
-	var result []interface{}
-	q := New()
+	var result []int
+	q := New[int]()
 
 	for i := 0; i < 16; i++ {
 		q.PushBack(i)
 	}
 
 	result = q.Values()
-	q.Traverse(func(idx int64, value interface{}) bool {
+	q.Traverse(func(idx int64, value int) bool {
 		if result[idx] != value {
 			panic("check error")
 		}
@@ -51,7 +51,7 @@ func TestCasePop(t *testing.T) {
 	}
 
 	result = q.Values()
-	q.Traverse(func(idx int64, value interface{}) bool {
+	q.Traverse(func(idx int64, value int) bool {
 		if result[idx] != value {
 			panic("check error")
 		}
@@ -79,7 +79,7 @@ func TestCasePop(t *testing.T) {
 	}
 
 	result = q.Values()
-	q.Traverse(func(idx int64, value interface{}) bool {
+	q.Traverse(func(idx int64, value int) bool {
 		if result[idx] != value {
 			panic("check error")
 		}
@@ -123,7 +123,7 @@ func TestForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
-		queue1 := New()
+		queue1 := New[int]()
 		queue2 := list.New()
 
 		for i := 0; i < 10; i += 1 {
@@ -160,7 +160,7 @@ func TestForce(t *testing.T) {
 		}
 
 		e := queue2.Front()
-		queue1.Traverse(func(idx int64, value interface{}) bool {
+		queue1.Traverse(func(idx int64, value int) bool {
 			if e.Value != value {
 				panic(fmt.Errorf("%d,%d,%d", idx, e.Value, value))
 			}
@@ -222,7 +222,7 @@ func TestForce(t *testing.T) {
 		}
 
 		e = queue2.Front()
-		queue1.Traverse(func(idx int64, value interface{}) bool {
+		queue1.Traverse(func(idx int64, value int) bool {
 			if e.Value != value {
 				panic(fmt.Errorf("%d,%d,%d", idx, e.Value, value))
 			}

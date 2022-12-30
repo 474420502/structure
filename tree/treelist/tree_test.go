@@ -21,8 +21,8 @@ func init() {
 func TestIndexForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Bytes)
-		tree.compare = compare.BytesLen
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree.compare = compare.ArrayLenAny[[]byte]
 		var arr []int = make([]int, 0, 50)
 		for i := 0; i < 50; i++ {
 			r := rand.Intn(1000)
@@ -37,8 +37,8 @@ func TestIndexForce(t *testing.T) {
 		for i, v := range arr {
 			vv := []byte(strconv.Itoa(v))
 			s := tree.Index(int64(i))
-			if bytes.Compare(s.Key.([]byte), vv) != 0 {
-				t.Error("error ", string(vv), string(s.Key.([]byte)))
+			if bytes.Compare(s.Key, vv) != 0 {
+				t.Error("error ", string(vv), string(s.Key))
 			}
 		}
 	}
@@ -46,14 +46,14 @@ func TestIndexForce(t *testing.T) {
 }
 
 func TestIndex(t *testing.T) {
-	tree := New(compare.Bytes)
-	tree.compare = compare.BytesLen
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+	tree.compare = compare.ArrayLenAny[[]byte]
 	for i := 0; i < 100; i++ {
 		v := []byte(strconv.Itoa(i))
 		tree.Put(v, v)
 
 		s := tree.Index(int64(i))
-		if bytes.Compare(s.Key.([]byte), v) != 0 {
+		if bytes.Compare(s.Key, v) != 0 {
 			t.Error(s, v)
 		}
 		iter := tree.Iterator()
@@ -61,7 +61,7 @@ func TestIndex(t *testing.T) {
 		if iter.Index() != int64(i) {
 			t.Error("iterator index error")
 		}
-		if bytes.Compare(iter.Key().([]byte), v) != 0 {
+		if bytes.Compare(iter.Key(), v) != 0 {
 			t.Error("iterator key error")
 		}
 	}
@@ -69,8 +69,8 @@ func TestIndex(t *testing.T) {
 }
 
 func TestRank(t *testing.T) {
-	tree := New(compare.Bytes)
-	tree.compare = compare.BytesLen
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+	tree.compare = compare.ArrayLenAny[[]byte]
 
 	for i := 0; i < 100; i++ {
 		v := []byte(strconv.Itoa(i))
@@ -87,18 +87,18 @@ func TestRank(t *testing.T) {
 }
 
 func TestRemove1(t *testing.T) {
-	tree := New(compare.Bytes)
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 	for _, i := range testutils.TestedArray {
 		v := []byte(strconv.Itoa(i))
 		if !tree.Put(v, v) {
-			log.Println("equal key", i)
+			// log.Println("equal key", i)
 		}
 	}
 
 	for _, v := range tree.Slices() {
 		r := tree.Remove(v.Key)
-		if bytes.Compare(r.Key.([]byte), v.Key.([]byte)) != 0 {
-			log.Println("remove error check it", string(r.Key.([]byte)), string(v.Key.([]byte)))
+		if bytes.Compare(r.Key, v.Key) != 0 {
+			log.Println("remove error check it", string(r.Key), string(v.Key))
 		}
 	}
 
@@ -108,11 +108,11 @@ func TestRemove1(t *testing.T) {
 }
 
 func TestRemove2(t *testing.T) {
-	tree := New(compare.Bytes)
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 	for _, i := range testutils.TestedBigArray {
 		v := []byte(strconv.Itoa(i))
 		if !tree.Put(v, v) {
-			log.Println("equal key", i)
+			// log.Println("equal key", i)
 		}
 	}
 
@@ -133,8 +133,8 @@ func TestRemoveNode(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 1000; n++ {
 
-		tree := New(compare.Bytes)
-		tree.compare = compare.BytesLen
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree.compare = compare.ArrayLenAny[[]byte]
 
 		var dmap map[int]int = make(map[int]int)
 
@@ -151,7 +151,7 @@ func TestRemoveNode(t *testing.T) {
 				if r == nil {
 					t.Error(r)
 				}
-				if bytes.Compare(r.Key.([]byte), v) != 0 {
+				if bytes.Compare(r.Key, v) != 0 {
 					t.Error()
 				}
 			} else {
@@ -168,8 +168,8 @@ func TestRemoveForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 1000; n++ {
 
-		tree := New(compare.Bytes)
-		tree.compare = compare.BytesLen
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree.compare = compare.ArrayLenAny[[]byte]
 
 		var priority [][]byte
 
@@ -200,8 +200,8 @@ func TestRemoveForce(t *testing.T) {
 			}
 
 			var idx = 0
-			tree.Traverse(func(s *Slice) bool {
-				if tree.compare(s.Key.([]byte), priority[idx]) != 0 {
+			tree.Traverse(func(s *Slice[[]byte, []byte]) bool {
+				if tree.compare(s.Key, priority[idx]) != 0 {
 					panic("")
 				}
 				idx++
@@ -224,8 +224,8 @@ func TestRemoveForce(t *testing.T) {
 }
 
 func TestRange(t *testing.T) {
-	// tree := New(compare.Bytes)
-	// tree.compare = compare.BytesLen
+	// tree := New(compare.CompareBytes[[]byte])
+	// tree.compare = compare.CompareBytesLen[[]byte]
 	// for i := 0; i < 100; i += 4 {
 	// 	v := []byte(strconv.Itoa(i))
 	// 	tree.Put(v, v)
@@ -240,9 +240,9 @@ func TestRange(t *testing.T) {
 			startkey = endkey
 			endkey = temp
 		}
-		tree := New(compare.Bytes)
-		tree.compare = compare.BytesLen
-		avltree := avl.New(compare.Int)
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree.compare = compare.ArrayLenAny[[]byte]
+		avltree := avl.New(compare.Any[int])
 
 		for i := 0; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
@@ -265,7 +265,7 @@ func TestRange(t *testing.T) {
 			return
 		}
 
-		avltree.Traverse(func(k, v interface{}) bool {
+		avltree.Traverse(func(k int, v interface{}) bool {
 			key := []byte(strconv.Itoa(v.(int)))
 			if _, ok := tree.Get(key); !ok {
 				t.Error("tree is error")
@@ -305,11 +305,11 @@ func TestRange(t *testing.T) {
 		}
 
 		for iter.Valid() {
-			if _, ok := tree.Get(iter.Key().([]byte)); !ok {
+			if _, ok := tree.Get(iter.Key()); !ok {
 				log.Println("start:", startkey, "end:", endkey)
 				// log.Println(srctree)
 				log.Println(tree.debugString(true))
-				log.Println("not ok", string(iter.Key().([]byte)))
+				log.Println("not ok", string(iter.Key()))
 				panic("")
 			}
 			iter.Next()
@@ -330,9 +330,9 @@ func TestRangeReturn(t *testing.T) {
 			endkey = temp
 		}
 
-		tree := New(compare.Bytes)
-		tree.compare = compare.BytesLen
-		avltree := avl.New(compare.Int)
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree.compare = compare.ArrayLenAny[[]byte]
+		avltree := avl.New(compare.Any[int])
 
 		for i := 100; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
@@ -364,8 +364,8 @@ func TestHeadTail(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 1000; n++ {
 
-		tree := New(compare.Bytes)
-		tree.compare = compare.BytesLen
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree.compare = compare.ArrayLenAny[[]byte]
 
 		var min, max int
 		for i := 0; i < 500; i += rand.Intn(8) + 1 {
@@ -378,11 +378,11 @@ func TestHeadTail(t *testing.T) {
 				max = i
 			}
 
-			if compare.BytesLen(tree.Head().Key, []byte(strconv.Itoa(min))) != 0 {
+			if compare.ArrayLenAny(tree.Head().Key, []byte(strconv.Itoa(min))) != 0 {
 				t.Error("test the seed")
 			}
 
-			if compare.BytesLen(tree.Tail().Key, []byte(strconv.Itoa(max))) != 0 {
+			if compare.ArrayLenAny(tree.Tail().Key, []byte(strconv.Itoa(max))) != 0 {
 				t.Error("test the seed")
 			}
 		}
@@ -393,8 +393,8 @@ func TestRemoveHeadTail(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 1000; n++ {
 
-		tree := New(compare.Bytes)
-		tree.compare = compare.BytesLen
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree.compare = compare.ArrayLenAny[[]byte]
 
 		var min, max int
 		for i := 0; i < rand.Intn(500); i += rand.Intn(4) + 1 {
@@ -415,12 +415,12 @@ func TestRemoveHeadTail(t *testing.T) {
 
 		tree.RemoveHead()
 		if s := tree.Size(); s > 0 {
-			if compare.BytesLen(tree.Head().Key, []byte(strconv.Itoa(min))) == 0 {
+			if compare.ArrayLenAny(tree.Head().Key, []byte(strconv.Itoa(min))) == 0 {
 				t.Error("test the seed")
 			}
 
 			if s == 1 {
-				if compare.BytesLen(tree.Head().Key, tree.Tail().Key) != 0 {
+				if compare.ArrayLenAny(tree.Head().Key, tree.Tail().Key) != 0 {
 					t.Error(n, "head is should be equal to tail")
 				}
 			}
@@ -433,12 +433,12 @@ func TestRemoveHeadTail(t *testing.T) {
 
 		tree.RemoveTail()
 		if s := tree.Size(); s > 0 {
-			if compare.BytesLen(tree.Tail().Key, []byte(strconv.Itoa(max))) == 0 {
+			if compare.ArrayLenAny(tree.Tail().Key, []byte(strconv.Itoa(max))) == 0 {
 				t.Error("test the seed")
 			}
 
 			if s == 1 {
-				if compare.BytesLen(tree.Head().Key, tree.Tail().Key) != 0 {
+				if compare.ArrayLenAny(tree.Head().Key, tree.Tail().Key) != 0 {
 					t.Error(n, "head is should be equal to tail")
 				}
 			}
@@ -453,8 +453,8 @@ func TestRemoveHeadTail(t *testing.T) {
 
 func TestRemoveRangeIndex(t *testing.T) {
 
-	tree := New(compare.Bytes)
-	tree.compare = compare.BytesLen
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+	tree.compare = compare.ArrayLenAny[[]byte]
 
 	v := []byte(strconv.Itoa(0))
 	tree.Put(v, v)
@@ -478,7 +478,7 @@ func TestRemoveRangeIndex(t *testing.T) {
 	}
 
 	tree.RemoveRangeByIndex(0, tree.Size()-2)
-	if tree.Size() != 1 || string(tree.Index(0).Key.([]byte)) == "0" {
+	if tree.Size() != 1 || string(tree.Index(0).Key) == "0" {
 		t.Error()
 	}
 
@@ -498,10 +498,10 @@ func TestRemoveRangeIndexForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
-		tree := New(compare.Bytes)
-		tree.compare = compare.BytesLen
-		tree2 := New(compare.Bytes)
-		tree2.compare = compare.BytesLen
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree.compare = compare.ArrayLenAny[[]byte]
+		tree2 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree2.compare = compare.ArrayLenAny[[]byte]
 
 		for i := 0; i < 200; i += rand.Intn(8) + 1 {
 			v := []byte(strconv.Itoa(i))
@@ -561,10 +561,10 @@ func TestTrimIndexForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
-		tree := New(compare.Bytes)
-		tree.compare = compare.BytesLen
-		tree2 := New(compare.Bytes)
-		tree2.compare = compare.BytesLen
+		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree.compare = compare.ArrayLenAny[[]byte]
+		tree2 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree2.compare = compare.ArrayLenAny[[]byte]
 
 		for i := 0; i < 200; i += rand.Intn(4) + 1 {
 			v := []byte(strconv.Itoa(i))
@@ -622,8 +622,8 @@ func TestTrimIndexForce(t *testing.T) {
 
 func TestTrimIndex(t *testing.T) {
 
-	tree := New(compare.Bytes)
-	tree.compare = compare.BytesLen
+	tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
+	tree.compare = compare.ArrayLenAny[[]byte]
 
 	v := []byte(strconv.Itoa(0))
 	tree.Put(v, v)
@@ -652,8 +652,9 @@ func TestTrimIndex(t *testing.T) {
 	}
 
 	var result []string
-	tree.Traverse(func(s *Slice) bool {
-		result = append(result, string(s.Key.([]byte)))
+
+	tree.Traverse(func(s *Slice[[]byte, []byte]) bool {
+		result = append(result, string(s.Key))
 		return true
 	})
 
@@ -666,10 +667,10 @@ func TestTrimIndex(t *testing.T) {
 func TestIntersectionSlice(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree1 := New(compare.Bytes)
-		tree1.compare = compare.BytesLen
-		tree2 := New(compare.Bytes)
-		tree2.compare = compare.BytesLen
+		tree1 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree1.compare = compare.ArrayLenAny[[]byte]
+		tree2 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree2.compare = compare.ArrayLenAny[[]byte]
 
 		var table1 map[string]bool = make(map[string]bool)
 		var table2 map[string]bool = make(map[string]bool)
@@ -689,7 +690,7 @@ func TestIntersectionSlice(t *testing.T) {
 
 		var result1 []string
 		for _, s := range tree1.intersectionSlice(tree2) {
-			result1 = append(result1, string(s.Key.([]byte)))
+			result1 = append(result1, string(s.Key))
 		}
 
 		var result2 []string
@@ -708,13 +709,49 @@ func TestIntersectionSlice(t *testing.T) {
 	}
 }
 
+func TestIntersectionBase(t *testing.T) {
+	tree1 := New[int, int](compare.Any[int])
+	tree2 := New[int, int](compare.Any[int])
+
+	for i := 1; i < 5; i++ {
+		tree1.Put(i, i)
+	}
+
+	for i := 2; i < 6; i++ {
+		tree2.Put(i, i)
+	}
+
+	// [{2 2} {3 3} {4 4}]
+	var result string
+	result = fmt.Sprintf("%v", tree1.Intersection(tree2).Slices())
+	if result != "[{2 2} {3 3} {4 4}]" {
+		t.Error(result)
+	}
+
+	result = fmt.Sprintf("%v", tree1.UnionSets(tree2).Slices())
+	if fmt.Sprintf("%v", result) != "[{1 1} {2 2} {3 3} {4 4} {5 5}]" {
+		t.Error(result)
+	}
+
+	result = fmt.Sprintf("%v", tree1.DifferenceSets(tree2).Slices())
+	if fmt.Sprintf("%v", result) != "[{1 1}]" {
+		t.Error(result)
+	}
+
+	result = fmt.Sprintf("%v", tree2.DifferenceSets(tree1).Slices())
+	if fmt.Sprintf("%v", result) != "[{5 5}]" {
+		t.Error(result)
+	}
+
+}
+
 func TestIntersection(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree1 := New(compare.Bytes)
-		tree1.compare = compare.BytesLen
-		tree2 := New(compare.Bytes)
-		tree2.compare = compare.BytesLen
+		tree1 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree1.compare = compare.ArrayLenAny[[]byte]
+		tree2 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree2.compare = compare.ArrayLenAny[[]byte]
 
 		var table1 map[string]bool = make(map[string]bool)
 		var table2 map[string]bool = make(map[string]bool)
@@ -733,8 +770,8 @@ func TestIntersection(t *testing.T) {
 		}
 
 		var result1 []string
-		tree1.Intersection(tree2).Traverse(func(s *Slice) bool {
-			result1 = append(result1, string(s.Key.([]byte)))
+		tree1.Intersection(tree2).Traverse(func(s *Slice[[]byte, []byte]) bool {
+			result1 = append(result1, string(s.Key))
 			return true
 		})
 
@@ -757,10 +794,10 @@ func TestIntersection(t *testing.T) {
 func TestUnionSetSlice(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree1 := New(compare.Bytes)
-		tree1.compare = compare.BytesLen
-		tree2 := New(compare.Bytes)
-		tree2.compare = compare.BytesLen
+		tree1 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree1.compare = compare.ArrayLenAny[[]byte]
+		tree2 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree2.compare = compare.ArrayLenAny[[]byte]
 
 		var table1 map[string]bool = make(map[string]bool)
 		// var table2 map[string]bool = make(map[string]bool)
@@ -780,7 +817,7 @@ func TestUnionSetSlice(t *testing.T) {
 
 		var result1 []string
 		for _, s := range tree1.unionSetSlice(tree2) {
-			result1 = append(result1, string(s.Key.([]byte)))
+			result1 = append(result1, string(s.Key))
 		}
 
 		var result2 []string
@@ -800,10 +837,10 @@ func TestUnionSetSlice(t *testing.T) {
 func TestUnionSet(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree1 := New(compare.Bytes)
-		tree1.compare = compare.BytesLen
-		tree2 := New(compare.Bytes)
-		tree2.compare = compare.BytesLen
+		tree1 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree1.compare = compare.ArrayLenAny[[]byte]
+		tree2 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree2.compare = compare.ArrayLenAny[[]byte]
 
 		var table1 map[string]bool = make(map[string]bool)
 		// var table2 map[string]bool = make(map[string]bool)
@@ -822,8 +859,8 @@ func TestUnionSet(t *testing.T) {
 		}
 
 		var result1 []string
-		tree1.UnionSets(tree2).Traverse(func(s *Slice) bool {
-			result1 = append(result1, string(s.Key.([]byte)))
+		tree1.UnionSets(tree2).Traverse(func(s *Slice[[]byte, []byte]) bool {
+			result1 = append(result1, string(s.Key))
 			return true
 		})
 
@@ -844,10 +881,10 @@ func TestUnionSet(t *testing.T) {
 func TestDifferenceSets(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree1 := New(compare.Bytes)
-		tree1.compare = compare.BytesLen
-		tree2 := New(compare.Bytes)
-		tree2.compare = compare.BytesLen
+		tree1 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree1.compare = compare.ArrayLenAny[[]byte]
+		tree2 := New[[]byte, []byte](compare.ArrayAny[[]byte])
+		tree2.compare = compare.ArrayLenAny[[]byte]
 
 		var table1 map[string]bool = make(map[string]bool)
 		var table2 map[string]bool = make(map[string]bool)
@@ -866,8 +903,8 @@ func TestDifferenceSets(t *testing.T) {
 		}
 
 		var result1 []string
-		tree1.DifferenceSets(tree2).Traverse(func(s *Slice) bool {
-			result1 = append(result1, string(s.Key.([]byte)))
+		tree1.DifferenceSets(tree2).Traverse(func(s *Slice[[]byte, []byte]) bool {
+			result1 = append(result1, string(s.Key))
 			return true
 		})
 
@@ -892,8 +929,8 @@ func TestSet(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
 
-		tree1 := New(compare.Bytes)
-		tree1.compare = compare.BytesLen
+		tree1 := New[[]byte, int](compare.ArrayAny[[]byte])
+		tree1.compare = compare.ArrayLenAny[[]byte]
 		var dict map[int]int = make(map[int]int)
 		for i := 0; i < 20; i++ {
 
@@ -936,7 +973,7 @@ func TestSet(t *testing.T) {
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)
 			dict[v] = i
-			tree1.PutDuplicate([]byte(strconv.Itoa(v)), i, func(exists *Slice) {
+			tree1.PutDuplicate([]byte(strconv.Itoa(v)), i, func(exists *Slice[[]byte, int]) {
 				exists.Value = i
 			})
 		}

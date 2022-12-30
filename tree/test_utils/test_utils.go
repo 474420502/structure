@@ -1,6 +1,10 @@
 package testutils
 
 import (
+	"encoding/gob"
+	"fmt"
+	"log"
+	"os"
 	"strconv"
 )
 
@@ -18,3 +22,31 @@ var TestedBytes = func() [][]byte {
 
 var TestedBytesWords = [][]byte{[]byte("world"), []byte("word"), []byte("hello")}
 var TestedBytesSimlpe = [][]byte{[]byte("c1"), []byte("c4"), []byte("c6"), []byte("a1"), []byte("a3"), []byte("a5")}
+
+func LoadData(p string, data interface{}) bool {
+	f, err := os.Open(fmt.Sprintf("/tmp/go-structure-%s", p))
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	defer f.Close()
+	err = gob.NewDecoder(f).Decode(data)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}
+
+func SaveData(p string, data interface{}) {
+	f, err := os.OpenFile(fmt.Sprintf("/tmp/go-structure-%s", p), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	err = gob.NewEncoder(f).Encode(data)
+	if err != nil {
+		panic(err)
+	}
+
+}

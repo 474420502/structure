@@ -8,9 +8,23 @@ import (
 )
 
 func BenchmarkPut(b *testing.B) {
-	tree := New(compare.Int64)
+	h := New(compare.Any[int64])
 	for i := 0; i < b.N; i++ {
 		v := rand.Int63()
-		tree.Put(v)
+		h.Put(v)
+	}
+}
+
+func BenchmarkPop(b *testing.B) {
+	b.StopTimer()
+	h := New(compare.Any[int64])
+	for i := 0; i < b.N; i++ {
+		v := rand.Int63()
+		h.Put(v)
+	}
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		h.Pop()
 	}
 }
