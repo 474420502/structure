@@ -2,6 +2,32 @@
 
 ## Provide a powerful and easy-to-use data structure
 
+- [Tree](./tree)
+
+	- [AVL](./tree/avl/doc.md) is a self-balancing binary search tree (BST)
+
+	- [Heap](./tree/heap/doc.md)  a heap is a specialized tree-based data structure which is essentially an almost complete tree that satisfies the heap property
+
+	- [IndexTree](./tree/indextree/doc.md)  is a self-balancing binary search tree (BST). and have some special features
+
+	- [TreeList](./tree/treelist/doc.md)  is a self-balancing binary search tree (BST). and have some special features 
+
+- [List](./list)
+
+	- [ArrayList](./list/array_list/doc.md)  list are based on arrays 
+	- [LinkedList](./list/linked_list/doc.md)  linkedlist are based on list 
+
+- [Stack](./stack)
+
+	- [ArrayStack](./stack/array/doc.md)  stack are based on arrays 
+	- [ListStack](./stack/list/doc.md)  stack are based on list 
+	- [LAStack](./stack/listarray/doc.md)  stack are based on both list and array
+- [Map](./map)
+	- [HashMap](./map/hashmap/doc.md)  Hashmap is a Map data structure. Like a list each item that is stored in a hashmap is stored at a particular index
+
+- [Search](./search)
+	- [TreeList](./search/treelist/doc.md) is a self-balancing binary search tree (BST). and have some special features. key only support the type of bytes 
+	
 * PriorityQueue
 
 ```go
@@ -162,4 +188,75 @@ func main() {
 
 	log.Println(bloom.HitSize(), ratio) // 95192(bit used by bloom) 0.04843(percentage of duplicates)
 }
+```
+
+## The version of generics.
+
+* AVL 
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/tree/avl"
+)
+
+func main() {
+
+	// all api is fast
+
+	// API like treequeue
+	tree := avl.New(compare.Any[int])
+
+	tree.Put(0, 0)
+	tree.Put(4, 4)
+	tree.Put(1, 1)
+	tree.Put(2, 2)
+	tree.Put(3, 3)
+
+	log.Println(tree.String())
+	//
+	// │       ┌── 4
+	// │   ┌── 3
+	// │   │   └── 2
+	// └── 1
+	//     └── 0
+
+	log.Println(tree.Get(4)) // 4,true
+
+	iter := tree.Iterator()
+	iter.SeekToFirst()
+
+	for iter.Vaild() {
+		log.Println(iter.Value()) // 0 1 2 3 4
+		iter.Next()
+	}
+
+	iter.SeekToLast()
+	for iter.Vaild() {
+		log.Println(iter.Value()) // 4 3 2 1 0
+		iter.Prev()
+	}
+
+	log.Println(tree.Remove(2)) // 2, true
+	log.Println(tree.Remove(2)) // <nil>, false
+
+	log.Println(tree.String())
+	// 	│       ┌── 4
+	// 	│   ┌── 3
+	// 	└── 1
+	// 		└── 0
+
+	iter.Next() // the pos of iter is before 0. so need call Next()
+	for iter.Vaild() {
+		log.Println(iter.Value()) // 0 1 3 4
+		iter.Next()
+	}
+
+	log.Println(tree.Get(2)) // nil,false
+}
+
 ```

@@ -11,10 +11,10 @@ import (
 
 func TestTreeSet_Add(t *testing.T) {
 	type fields struct {
-		tree *Tree
+		tree *Tree[int]
 	}
 	type args struct {
-		items []interface{}
+		items []int
 	}
 	tests := []struct {
 		name   string
@@ -22,12 +22,12 @@ func TestTreeSet_Add(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		{name: "add int", result: "(1, 3, 5)", args: args{items: []interface{}{1, 5, 3, 3, 5}}},
-		{name: "add -int", result: "(-5, 1, 5, 3132)", args: args{items: []interface{}{-5, -5, 3132, 3132, 5, 1, 1, 1}}},
+		{name: "add int", result: "(1, 3, 5)", args: args{items: []int{1, 5, 3, 3, 5}}},
+		{name: "add -int", result: "(-5, 1, 5, 3132)", args: args{items: []int{-5, -5, 3132, 3132, 5, 1, 1, 1}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New(compare.Int)
+			set := New(compare.Any[int])
 			set.Sets(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
@@ -35,20 +35,24 @@ func TestTreeSet_Add(t *testing.T) {
 		})
 	}
 
+	type argsstr struct {
+		items []string
+	}
+
 	tests2 := []struct {
 		name   string
 		result string
 		fields fields
-		args   args
+		args   argsstr
 	}{
-		{name: "add String 1", result: "(1, 3, 5)", args: args{items: []interface{}{"1", "5", "3", "3", "5"}}},
-		{name: "add String 2", result: "(-5, 1, 3132, 5)", args: args{items: []interface{}{"-5", "-5", "3132", "3132", "5", "1", "1", "1"}}},
-		{name: "add String 3", result: "(a, aa, b, bc)", args: args{items: []interface{}{"a", "b", "aa", "aa", "bc"}}},
-		{name: "add String 4", result: "(他, 你, 我, 我我)", args: args{items: []interface{}{"我", "你", "他", "我", "我我"}}},
+		{name: "add String 1", result: "(1, 3, 5)", args: argsstr{items: []string{"1", "5", "3", "3", "5"}}},
+		{name: "add String 2", result: "(-5, 1, 3132, 5)", args: argsstr{items: []string{"-5", "-5", "3132", "3132", "5", "1", "1", "1"}}},
+		{name: "add String 3", result: "(a, aa, b, bc)", args: argsstr{items: []string{"a", "b", "aa", "aa", "bc"}}},
+		{name: "add String 4", result: "(他, 你, 我, 我我)", args: argsstr{items: []string{"我", "你", "他", "我", "我我"}}},
 	}
 	for _, tt := range tests2 {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New(compare.String)
+			set := New(compare.ArrayAny[string])
 			set.Sets(tt.args.items...)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
@@ -65,11 +69,11 @@ func TestTreeSet_Add(t *testing.T) {
 
 func TestTreeSet_Remove(t *testing.T) {
 	type fields struct {
-		tree *Tree
+		tree *Tree[int]
 	}
 	type args struct {
-		addItems    []interface{}
-		removeItems []interface{}
+		addItems    []int
+		removeItems []int
 	}
 	tests := []struct {
 		name   string
@@ -79,19 +83,19 @@ func TestTreeSet_Remove(t *testing.T) {
 	}{
 		{name: "remove 1", result: "()",
 			args: args{
-				addItems:    []interface{}{5, 7, 5, 3, 2},
-				removeItems: []interface{}{5, 7, 3, 2}},
+				addItems:    []int{5, 7, 5, 3, 2},
+				removeItems: []int{5, 7, 3, 2}},
 		},
 
 		{name: "remove 2", result: "(5)",
 			args: args{
-				addItems:    []interface{}{5, 7, 5, 3, 2},
-				removeItems: []interface{}{7, 3, 2}},
+				addItems:    []int{5, 7, 5, 3, 2},
+				removeItems: []int{7, 3, 2}},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New(compare.Int)
+			set := New(compare.Any[int])
 			set.Sets(tt.args.addItems...)
 			set.Remove(tt.args.removeItems...)
 
@@ -103,7 +107,7 @@ func TestTreeSet_Remove(t *testing.T) {
 }
 
 func TestTreeSet_Iterator(t *testing.T) {
-	set := New(compare.Int)
+	set := New(compare.Any[int])
 	set.Sets(5, 4, 3, 5)
 
 	iter := set.Iterator()
@@ -165,7 +169,7 @@ func TestForce(t *testing.T) {
 	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
-		set := New(compare.Int)
+		set := New(compare.Any[int])
 		var hashset map[int]bool = make(map[int]bool)
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)

@@ -2,11 +2,47 @@ package arraylist
 
 import (
 	"fmt"
+	"sort"
 	"testing"
+
+	"github.com/474420502/random"
+	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/tree/avl"
 )
 
+func BenchmarkCase1(b *testing.B) {
+	var result = sort.IntSlice{}
+	r := random.New()
+
+	for i := 0; i < b.N; i++ {
+		v := r.Int()
+		result = append(result, v)
+
+		result.Sort()
+		result.Search(v)
+		result.Search(v)
+		result.Search(v)
+		result.Search(v)
+
+		if result.Len() == 32 {
+			result = sort.IntSlice{}
+		}
+	}
+}
+
+func BenchmarkCase2(b *testing.B) {
+	// var result = sort.IntSlice{}
+	r := random.New()
+	tree := avl.New(compare.Any[int])
+	for i := 0; i < b.N; i++ {
+		v := r.Int()
+
+		tree.Put(v, v)
+	}
+}
+
 func TestIterator(t *testing.T) {
-	l := New()
+	l := New(compare.Any[int])
 
 	for i := 0; i < 5; i++ {
 		l.Push(i)
@@ -15,8 +51,8 @@ func TestIterator(t *testing.T) {
 	iter := l.Iterator()
 
 	var result []int
-	for iter.Next() {
-		result = append(result, iter.Value().(int))
+	for ; iter.Vaild(); iter.Next() {
+		result = append(result, iter.Value())
 	}
 
 	if fmt.Sprintf("%v", result) != "[0 1 2 3 4]" {
@@ -25,19 +61,36 @@ func TestIterator(t *testing.T) {
 
 	iter = l.Iterator()
 	result = nil
-	for iter.Prev() {
-		result = append(result, iter.Value().(int))
+	iter.ToTail()
+	for ; iter.Vaild(); iter.Prev() {
+		result = append(result, iter.Value())
 	}
 
 	if fmt.Sprintf("%v", result) != "[4 3 2 1 0]" {
 		t.Error(result)
 	}
 
-	citer := l.CircularIterator()
+	iter.ToTail()
+	for ; iter.Vaild(); iter.Prev() {
+		iter.SetValue(iter.Value() + 1)
+	}
+
+	iter.ToHead()
+	for ; iter.Vaild(); iter.Next() {
+		iter.SetValue(iter.Value() - 1)
+	}
+
+	if fmt.Sprintf("%v", result) != "[4 3 2 1 0]" {
+		t.Error(result)
+	}
+
+	citer := l.CircularIterator() // 4
+	// log.Println(l.String())
 	result = nil
 	for i := 0; i < 11; i++ {
-		if citer.Next() {
-			result = append(result, citer.Value().(int))
+		if citer.Vaild() {
+			result = append(result, citer.Value())
+			citer.Next()
 		}
 	}
 
@@ -52,8 +105,9 @@ func TestIterator(t *testing.T) {
 	citer = l.CircularIterator()
 	result = nil
 	for i := 0; i < 11; i++ {
-		if citer.Prev() {
-			result = append(result, citer.Value().(int))
+		if citer.Vaild() {
+			result = append(result, citer.Value())
+			citer.Prev()
 		}
 	}
 
@@ -61,13 +115,13 @@ func TestIterator(t *testing.T) {
 		t.Error("len(result) != 11, is ", len(result))
 	}
 
-	if fmt.Sprintf("%v", result) != "[4 3 2 1 0 4 3 2 1 0 4]" {
+	if fmt.Sprintf("%v", result) != "[0 4 3 2 1 0 4 3 2 1 0]" {
 		t.Error(result)
 	}
 }
 
 func TestPush(t *testing.T) {
-	l := New()
+	l := New(compare.Any[int])
 
 	for i := 0; i < 2; i++ {
 		l.PushFront(1)
@@ -95,7 +149,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestGrowth(t *testing.T) {
-	l := New()
+	l := New(compare.Any[int])
 	for i := 0; i < 5; i++ {
 		l.PushFront(1)
 	}
@@ -106,7 +160,7 @@ func TestGrowth(t *testing.T) {
 		t.Error(result)
 	}
 
-	l = New()
+	l = New(compare.Any[int])
 	for i := 0; i < 7; i++ {
 		l.PushBack(1)
 	}
@@ -126,7 +180,7 @@ func TestGrowth(t *testing.T) {
 }
 
 func TestPop(t *testing.T) {
-	l := New()
+	l := New(compare.Any[int])
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
 	}
@@ -165,7 +219,7 @@ func TestPop(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	l := New()
+	l := New(compare.Any[uint])
 	for i := 0; i < 5; i++ {
 		l.PushFront(uint(i))
 	}
@@ -173,13 +227,10 @@ func TestRemove(t *testing.T) {
 	var result string
 
 	for _, selval := range []uint{4, 3} {
-		last, _ := l.Index((int)(selval))
-		if v, isfound := l.Remove((int)(selval)); isfound {
-			if v != last {
-				t.Error(v, " != ", last)
-			}
-		} else {
-			t.Error("should be found")
+		last := l.Index((selval))
+		v := l.Remove(selval)
+		if v != last {
+			t.Error(v, " != ", last)
 		}
 	}
 
@@ -188,22 +239,21 @@ func TestRemove(t *testing.T) {
 		t.Error("should be [4 3 2], value =", result)
 	}
 
-	v, _ := l.Remove(1)
+	v := l.Remove(1)
 	if v != uint(3) {
 		t.Error(v)
 	}
 
-	v, _ = l.Remove(1)
+	v = l.Remove(1)
 	if v != uint(2) {
 		t.Error(v)
 	}
 
-	v, _ = l.Remove(1)
-	if v != nil && l.Size() != 1 {
+	if l.Size() != 1 {
 		t.Error(v)
 	}
 
-	v, _ = l.Remove(0)
+	v = l.Remove(0)
 	if v != uint(4) && l.Size() != 0 {
 		t.Error(v, "size = ", l.Size())
 	}
@@ -211,14 +261,14 @@ func TestRemove(t *testing.T) {
 }
 
 func TestTraversal(t *testing.T) {
-	l := New()
+	l := New(compare.Any[uint])
 	for i := 0; i < 5; i++ {
 		l.PushFront(uint(i))
 	}
 
-	var result []interface{}
+	var result []uint
 
-	l.Traverse(func(v interface{}) bool {
+	l.Traverse(func(i uint, v uint) bool {
 		result = append(result, v)
 		return true
 	})
@@ -229,7 +279,7 @@ func TestTraversal(t *testing.T) {
 
 	l.PushBack(7, 8)
 	result = nil
-	l.Traverse(func(v interface{}) bool {
+	l.Traverse(func(i uint, v uint) bool {
 		result = append(result, v)
 		return true
 	})
@@ -240,10 +290,10 @@ func TestTraversal(t *testing.T) {
 }
 
 func TestRemain(t *testing.T) {
-	l := New()
+	l := New(compare.Any[int])
 	for i := 0; i < 10; i++ {
 		l.Push(i)
-		if !l.Contains(i) {
+		if l.Contains(i) == 0 {
 			t.Error("Contains", i)
 		}
 	}

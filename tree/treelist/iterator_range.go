@@ -5,24 +5,24 @@ type RangeDirection int
 const (
 	// Forward start to end
 	Forward RangeDirection = 0
-	// Reverse end to start
+	// Reverse end KEYo start
 	Reverse RangeDirection = 1
 )
 
 // IteratorRange the iterator for easy to range the data
-type IteratorRange struct {
-	tree         *Tree
-	siter, eiter nodePoint
+type IteratorRange[KEY any, VALUE any] struct {
+	tree         *Tree[KEY, VALUE]
+	siter, eiter hNode[KEY, VALUE]
 	dir          RangeDirection
 }
 
-type SliceIndex struct {
-	*Slice
+type SliceIndex[KEY any, VALUE any] struct {
+	*Slice[KEY, VALUE]
 	Index int64
 }
 
 // SetDirection set iterator range direction. default Forward(start to end)
-func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
+func (ir *IteratorRange[KEY, VALUE]) Range(do func(cur *SliceIndex[KEY, VALUE]) bool) {
 
 	if ir.siter.idx > ir.eiter.idx {
 		return
@@ -33,8 +33,8 @@ func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
 		R = 1
 	)
 
-	var cur *treeNode
-	var end *treeNode
+	var cur *treeNode[KEY, VALUE]
+	var end *treeNode[KEY, VALUE]
 	var dir int
 	var idx int64
 
@@ -51,7 +51,7 @@ func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
 	}
 
 	for {
-		if !do(&SliceIndex{Slice: &cur.Slice, Index: idx}) || cur == end {
+		if !do(&SliceIndex[KEY, VALUE]{Slice: &cur.Slice, Index: idx}) || cur == end {
 			break
 		}
 		cur = cur.Direct[dir]
@@ -61,17 +61,17 @@ func (ir *IteratorRange) Range(do func(cur *SliceIndex) bool) {
 }
 
 // SetDirection set iterator range direction. default Forward(start to end)
-func (ir *IteratorRange) SetDirection(dir RangeDirection) {
+func (ir *IteratorRange[KEY, VALUE]) SetDirection(dir RangeDirection) {
 	ir.dir = dir
 }
 
 // SetDirection set iterator range direction
-func (ir *IteratorRange) Direction() RangeDirection {
+func (ir *IteratorRange[KEY, VALUE]) Direction() RangeDirection {
 	return ir.dir
 }
 
 // Size get range size
-func (ir *IteratorRange) Size() int64 {
+func (ir *IteratorRange[KEY, VALUE]) Size() int64 {
 
 	if ir.siter.cur == nil || ir.eiter.cur == nil || ir.siter.idx > ir.eiter.idx {
 		return 0
@@ -82,7 +82,7 @@ func (ir *IteratorRange) Size() int64 {
 }
 
 // GE2LE [s,e] start with GE, end with LE. (like Seek**)
-func (ir *IteratorRange) GE2LE(start, end interface{}) {
+func (ir *IteratorRange[KEY, VALUE]) GE2LE(start, end KEY) {
 
 	const (
 		L = 0
@@ -108,7 +108,7 @@ func (ir *IteratorRange) GE2LE(start, end interface{}) {
 }
 
 // GE2LE (s,e] start with GT, end with LE. (like Seek**)
-func (ir *IteratorRange) GT2LE(start, end interface{}) {
+func (ir *IteratorRange[KEY, VALUE]) GT2LE(start, end KEY) {
 
 	const (
 		L = 0
@@ -134,7 +134,7 @@ func (ir *IteratorRange) GT2LE(start, end interface{}) {
 }
 
 // GE2LT [s,e) start with GE, end with LT. (like Seek**)
-func (ir *IteratorRange) GE2LT(start, end interface{}) {
+func (ir *IteratorRange[KEY, VALUE]) GE2LT(start, end KEY) {
 
 	const (
 		L = 0
@@ -160,7 +160,7 @@ func (ir *IteratorRange) GE2LT(start, end interface{}) {
 }
 
 // GE2LT (s,e) start with GT, end with LT. (like Seek**)
-func (ir *IteratorRange) GT2LT(start, end interface{}) {
+func (ir *IteratorRange[KEY, VALUE]) GT2LT(start, end KEY) {
 
 	const (
 		L = 0
