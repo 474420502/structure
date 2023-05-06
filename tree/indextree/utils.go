@@ -53,7 +53,6 @@ func (tree *Tree[T]) fixPut(cur *hNode[T]) {
 
 	var height int64 = 2
 	var lsize, rsize int64
-	var relations int = L
 	var parent *hNode[T]
 
 	cur = cur.Parent
@@ -71,13 +70,15 @@ func (tree *Tree[T]) fixPut(cur *hNode[T]) {
 			// 右就检测左边
 			if rsize > lsize {
 				if rsize-lsize >= limitSize.bottomsize {
-					cur = tree.sizeRRotate(cur)
+					tree.sizeRRotate(cur)
+					// height--
 					tree.fixPutSize(parent)
 					return
 				}
 			} else {
 				if lsize-rsize >= limitSize.bottomsize {
-					cur = tree.sizeLRotate(cur)
+					tree.sizeLRotate(cur)
+					// height--
 					tree.fixPutSize(parent)
 					return
 				}

@@ -98,7 +98,6 @@ func (tree *Tree[KEY, VALUE]) fixPut(cur *treeNode[KEY, VALUE]) {
 
 	var height int64 = 2
 	var lsize, rsize int64
-	var relations int = L
 	var parent *treeNode[KEY, VALUE]
 
 	cur = cur.Parent

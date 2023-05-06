@@ -140,7 +140,8 @@ func (tree *Tree) Get(key []byte) (interface{}, bool) {
 }
 
 // PutDuplicate put, when key duplicate with call do. don,t change the key of `exists`, will break the tree of blance
-// 				if duplicate, will return true.
+//
+//	if duplicate, will return true.
 func (tree *Tree) PutDuplicate(key []byte, value interface{}, do func(exists *Slice)) bool {
 	const L = 0
 	const R = 1
@@ -468,7 +469,7 @@ func (tree *Tree) Traverse(every func(s *Slice) bool) {
 	traverasl(root)
 }
 
-//  Slices  return all slice. from smallest to largest.
+// Slices  return all slice. from smallest to largest.
 func (tree *Tree) Slices() []Slice {
 	var mszie int64
 	root := tree.getRoot()
