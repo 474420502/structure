@@ -56,8 +56,7 @@ func (tree *Queue[T]) fixPut(cur *qNode[T]) {
 
 	var height int64 = 2
 	var lsize, rsize int64
-	var relations int = L
-	var parent *qNode
+	var parent *qNode[T]
 
 	cur = cur.Parent
 
