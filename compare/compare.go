@@ -1,7 +1,5 @@
 package compare
 
-import "time"
-
 type Compare[T any] func(k1, k2 T) int
 
 type ArrayType interface {
@@ -68,6 +66,18 @@ func ArrayAny[T ArrayType](k1, k2 T) int {
 
 type DefaultAny interface {
 	int | int64 | int32 | int8 | float32 | float64 | uint8 | uint | uint32 | uint64
+}
+
+func AnyEx[T DefaultAny](k1, k2 T) int {
+
+	if k1 > k2 {
+		return 0
+	} else if k1 < k2 {
+		return 1
+	} else {
+		return -1
+	}
+
 }
 
 func Any[T DefaultAny](k1, k2 T) int {
@@ -285,33 +295,33 @@ func AnyDesc[T DefaultAny](k1, k2 T) int {
 // 	}
 // }
 
-type TimeType interface {
-	~*time.Time
-	After(time.Time) bool
-	Before(time.Time) bool
-}
+// type TimeType[T any] interface {
+// 	After(T) bool
+// 	Before(T) bool
+// 	*T
+// }
 
-func Time[T TimeType](k1, k2 T) int {
-	switch {
-	case k1.After(*k2):
-		return 1
-	case k1.Before(*k2):
-		return -1
-	default:
-		return 0
-	}
-}
+// func Time[P any, T TimeType[P]](k1, k2 T) int {
+// 	switch {
+// 	case k1.After(*k2):
+// 		return 1
+// 	case k1.Before(*k2):
+// 		return -1
+// 	default:
+// 		return 0
+// 	}
+// }
 
-func TimeDesc[T TimeType](k2, k1 T) int {
+// func TimeDesc[P any, T TimeType[P]](k2, k1 T) int {
 
-	if k1.After(*k2) {
-		return 1
-	} else if k1.Before(*k2) {
-		return -1
-	}
-	return 0
+// 	if k1.After(*k2) {
+// 		return 1
+// 	} else if k1.Before(*k2) {
+// 		return -1
+// 	}
+// 	return 0
 
-}
+// }
 
 // // Bytes []byte compare
 // func BytesDesc(k2, k1 interface{}) int {
