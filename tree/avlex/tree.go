@@ -14,7 +14,7 @@ type Tree[KEY, VALUE any] struct {
 func NewTree[KEY, VALUE any](Compare compare.Compare[KEY]) *Tree[KEY, VALUE] {
 
 	tree := &Tree[KEY, VALUE]{
-		Center:  &Node[KEY, VALUE]{Height: 0},
+		Center:  &Node[KEY, VALUE]{Height: 65535},
 		Compare: Compare,
 		Size:    0,
 	}
@@ -23,13 +23,23 @@ func NewTree[KEY, VALUE any](Compare compare.Compare[KEY]) *Tree[KEY, VALUE] {
 	return tree
 }
 
-func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
-	target, isRepeat, _ := tree.put(tree.Center, 1, key)
+func (tree *Tree[KEY, VALUE]) Set(key KEY, value VALUE) bool {
+	target, isExists, _ := tree.put(tree.Center, 1, key)
+	target.Key = key
 	target.Value = value
-	if isRepeat {
+	if !isExists {
 		tree.Size += 1
 	}
-	return isRepeat
+	return !isExists
+}
+
+func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
+	target, isExists, _ := tree.put(tree.Center, 1, key)
+	if !isExists {
+		target.Value = value
+		tree.Size += 1
+	}
+	return !isExists
 }
 
 func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
@@ -41,10 +51,11 @@ func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	return cur.Value, true
 }
 
-func (tree *Tree[KEY, VALUE]) Remove(key KEY) bool {
-	isRemoved, _ := tree.remove(key, tree.Center, 0, 1)
-	if isRemoved {
+func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
+	target, _ := tree.remove(key, tree.Center, 0, 1)
+	if target != nil {
 		tree.Size -= 1
+		return *target, true
 	}
-	return isRemoved
+	return tree.zero, false
 }
