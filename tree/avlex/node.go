@@ -40,41 +40,39 @@ func (node *Node[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) boo
 
 	lh, rh := getHeight(node.Children[0]), getHeight(node.Children[1])
 
-	if lh > rh {
+	diff := lh - rh
 
-		if lh-rh > 1 {
-			sub := node.Children[0]
-			if getHeight(sub.Children[1]) > getHeight(sub.Children[0]) {
-				rightRotateWithLeft(parent, child)
-			} else {
-				rightRotate(parent, child)
-			}
-			return true
-
+	if diff > 1 {
+		sub := node.Children[0]
+		if getHeight(sub.Children[1]) > getHeight(sub.Children[0]) {
+			rightRotateWithLeft(parent, child)
 		} else {
+			rightRotate(parent, child)
+		}
+		return true
+	} else if diff < -1 {
+		sub := node.Children[1]
+		if getHeight(sub.Children[0]) > getHeight(sub.Children[1]) {
+			leftRotateWithRight(parent, child)
+		} else {
+			leftRotate(parent, child)
+		}
+		return true
+	} else {
+		if lh > rh {
 			if node.Height != lh+1 {
 				node.Height = lh + 1
 				return true
 			}
-		}
-
-	} else {
-
-		if rh-lh > 1 {
-			sub := node.Children[1]
-			if getHeight(sub.Children[0]) > getHeight(sub.Children[1]) {
-				leftRotateWithRight(parent, child)
-			} else {
-				leftRotate(parent, child)
-			}
-			return true
 		} else {
 			if node.Height != rh+1 {
 				node.Height = rh + 1
 				return true
 			}
 		}
+
 	}
+
 	return false
 }
 
@@ -103,8 +101,7 @@ func updateHeight[KEY, VALUE any](cur *Node[KEY, VALUE]) {
 func leftRotateWithRight[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
 	cur := parent.Children[child] //
 	sub := cur.Children[1]        // right
-
-	subsub := sub.Children[0] // right->left
+	subsub := sub.Children[0]     // right->left
 
 	parent.Children[child] = subsub
 
@@ -127,10 +124,11 @@ func rightRotateWithLeft[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
 	subsub := sub.Children[1]     // left->right
 
 	parent.Children[child] = subsub
-	children := subsub.Children
 
+	children := subsub.Children
 	subsub.Children[1] = cur
 	subsub.Children[0] = sub
+
 	cur.Children[0] = children[1]
 	sub.Children[1] = children[0]
 
@@ -176,7 +174,7 @@ func view[KEY, VALUE any](root *Node[KEY, VALUE]) (result string) {
 	return
 }
 
-func checkHeightTree[KEY, VALUE any](root *Node[KEY, VALUE]) bool {
+func (tree *Tree[KEY, VALUE]) checkHeightTree(root *Node[KEY, VALUE]) bool {
 	errorNode := 0
 	var check func(root *Node[KEY, VALUE]) = nil
 	check = func(root *Node[KEY, VALUE]) {
@@ -195,6 +193,19 @@ func checkHeightTree[KEY, VALUE any](root *Node[KEY, VALUE]) bool {
 		if root.Height != height+1 {
 			errorNode += 1
 		}
+
+		if root.Children[0] != nil {
+			if tree.Compare(root.Key, root.Children[0].Key) != 0 {
+				panic("error tree tree.Compare(root.Key, root.Children[0].Key) != 0")
+			}
+		}
+
+		if root.Children[1] != nil {
+			if tree.Compare(root.Key, root.Children[1].Key) != 1 {
+				panic("error tree tree.Compare(root.Key, root.Children[1].Key) != 1 ")
+			}
+		}
+
 		check(root.Children[0])
 		check(root.Children[1])
 	}

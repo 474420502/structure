@@ -149,7 +149,7 @@ func TestForce(t *testing.T) {
 // 	New(compare.TimeDesc[time.Time])
 // }
 
-func BenchmarkMark(b *testing.B) {
+func BenchmarkPut(b *testing.B) {
 	rand := random.New(1683721792150515321)
 
 	tree := New(compare.Any[int])
@@ -164,4 +164,36 @@ func BenchmarkMark(b *testing.B) {
 		v := rand.Int()
 		tree.Put(v, v)
 	}
+}
+
+func BenchmarkRemove(b *testing.B) {
+	rand := random.New(1683721792150515321)
+	tree := New(compare.Any[int])
+	var removelist []int
+	var ri = 0
+
+	for i := 0; i < b.N; i++ {
+		if tree.Size() == 0 {
+			b.StopTimer()
+			removelist = nil
+			ri = 0
+			for i := 0; i < 100; i++ {
+				v := rand.Intn(100)
+				if tree.Put(v, v) {
+					removelist = append(removelist, v)
+				}
+
+				if i%25 == 0 {
+					removelist = append(removelist, rand.Intn(100))
+				}
+				// tree.check()
+			}
+			b.StartTimer()
+		}
+
+		v := removelist[ri]
+		tree.Remove(v)
+		ri += 1
+	}
+
 }
