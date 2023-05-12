@@ -2,7 +2,7 @@ package avlex
 
 import "log"
 
-func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) (target *Node[KEY, VALUE], isRepeat bool, isRebalance bool) {
+func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) (target *Node[KEY, VALUE], isExists bool, isRebalance bool) {
 
 	cur := parent.Children[child]
 	if cur == nil {
@@ -10,21 +10,19 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 		target.Key = key
 		parent.Children[child] = target
 		if parent.Children[^child+2] == nil {
-			return target, true, true
+			return target, false, true
 		}
-		return target, true, false
+		return target, false, false
 	}
 
 	cmp := tree.Compare(cur.Key, key)
 
 	if cmp < 0 {
-		cur.Key = key
-		return cur, false, false
+		return cur, true, false
 	} else {
-		target, isRepeat, isRebalance = tree.put(cur, cmp, key)
-
-		if !isRepeat || !isRebalance {
-			return target, isRepeat, isRebalance
+		target, isExists, isRebalance = tree.put(cur, cmp, key)
+		if isExists || !isRebalance {
+			return target, isExists, isRebalance
 		}
 	}
 
@@ -32,7 +30,7 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 		isRebalance = cur.rebalance(parent, child)
 	}
 
-	return target, isRepeat, isRebalance
+	return target, isExists, isRebalance
 }
 
 func (tree *Tree[KEY, VALUE]) get(key KEY, cur *Node[KEY, VALUE]) *Node[KEY, VALUE] {
@@ -46,12 +44,12 @@ func (tree *Tree[KEY, VALUE]) get(key KEY, cur *Node[KEY, VALUE]) *Node[KEY, VAL
 	return tree.get(key, cur.Children[cmp])
 }
 
-func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (isRemoved, isRebalance bool) {
+func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (target *VALUE, isRebalance bool) {
 	parent := grandpa.Children[child2]
 	cur := parent.Children[child1]
 
 	if cur == nil {
-		return false, false
+		return nil, false
 	}
 
 	cmp := tree.Compare(cur.Key, key)
@@ -60,27 +58,28 @@ func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2,
 		// remove 两种状态. 当前值不在底, 在底
 		if cur.Children[0] == nil {
 			parent.Children[child1] = cur.Children[1]
-			return true, true
+			return &cur.Value, true
 		}
 
 		if cur.Children[1] == nil {
 			parent.Children[child1] = cur.Children[0]
-			return true, true
+			return &cur.Value, true
 		}
 
+		target = &cur.Value
 		replacer, _ := tree.neighboring(cur, child1, ^child1+2)
 		cur.Key = replacer.Key
 		cur.Value = replacer.Value
 
-		return true, cur.rebalance(parent, child1)
+		return target, cur.rebalance(parent, child1)
 	}
 
-	isRemoved, isRebalance = tree.remove(key, parent, child1, cmp)
+	target, isRebalance = tree.remove(key, parent, child1, cmp)
 	if cur != tree.Center && isRebalance {
 		isRebalance = cur.rebalance(parent, child1)
 	}
 
-	return isRemoved, isRebalance
+	return target, isRebalance
 }
 
 func (tree *Tree[KEY, VALUE]) neighboring(parent *Node[KEY, VALUE], child2, child1 int) (*Node[KEY, VALUE], bool) {

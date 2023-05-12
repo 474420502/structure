@@ -80,7 +80,7 @@ func TestCaseR(t *testing.T) {
 			// }
 
 			beforeView := tree.view()
-			if ok := tree.Remove(v); ok {
+			if _, ok := tree.Remove(v); ok {
 				if isDebug {
 					log.Print(beforeView, " key: ", v, "", tree.view(), "\n")
 				}
@@ -122,7 +122,8 @@ func TestCompareOther(t *testing.T) {
 		for _, v := range removelist {
 
 			_, ok := tree2.Remove(v)
-			if ok != tree.Remove(v) {
+			_, ok2 := tree.Remove(v)
+			if ok != ok2 {
 				panic("ok")
 			}
 
