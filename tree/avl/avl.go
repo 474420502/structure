@@ -52,6 +52,21 @@ func (tree *Tree[T]) String() string {
 	return str
 }
 
+// String show the view of tree by chars
+func (tree *Tree[T]) View() (result string) {
+
+	result = "\n"
+	if tree.size == 0 {
+		result += "└── nil"
+		return
+	}
+
+	// str := "AVLTree\n"
+	outputfordebugNoParent(tree.Root, "", true, &result)
+
+	return
+}
+
 // Size get the size of tree
 func (tree *Tree[T]) Size() int64 {
 	return tree.size
@@ -592,6 +607,40 @@ func output[T any](node *Node[T], prefix string, isTail bool, str *string) {
 		output(node.Children[0], newPrefix, true, str)
 	}
 
+}
+
+func outputfordebugNoParent[T any](node *Node[T], prefix string, isTail bool, str *string) {
+
+	if node.Children[1] != nil {
+		newPrefix := prefix
+		if isTail {
+			newPrefix += "│   "
+		} else {
+			newPrefix += "    "
+		}
+		outputfordebugNoParent(node.Children[1], newPrefix, false, str)
+	}
+	*str += prefix
+	if isTail {
+		*str += "└── "
+	} else {
+		*str += "┌── "
+	}
+
+	suffix := "("
+
+	suffix += fmt.Sprintf("%v", node.height+1) + ")"
+	*str += fmt.Sprintf("%v", node.Value) + suffix + "\n"
+
+	if node.Children[0] != nil {
+		newPrefix := prefix
+		if isTail {
+			newPrefix += "    "
+		} else {
+			newPrefix += "│   "
+		}
+		outputfordebugNoParent(node.Children[0], newPrefix, true, str)
+	}
 }
 
 func outputfordebug[T any](node *Node[T], prefix string, isTail bool, str *string) {

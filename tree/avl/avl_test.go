@@ -4,7 +4,6 @@ import (
 	"log"
 	"sort"
 	"testing"
-	"time"
 
 	random "github.com/474420502/random"
 	"github.com/474420502/structure/compare"
@@ -146,6 +145,23 @@ func TestForce(t *testing.T) {
 	}
 }
 
-func TestCaseX(t *testing.T) {
-	New(compare.TimeDesc[*time.Time])
+// func TestCaseX(t *testing.T) {
+// 	New(compare.TimeDesc[time.Time])
+// }
+
+func BenchmarkMark(b *testing.B) {
+	rand := random.New(1683721792150515321)
+
+	tree := New(compare.Any[int])
+	b.StopTimer()
+	for i := 0; i < 10000; i++ {
+		v := rand.Int()
+		tree.Put(v, v)
+		// tree.check()
+	}
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		v := rand.Int()
+		tree.Put(v, v)
+	}
 }
