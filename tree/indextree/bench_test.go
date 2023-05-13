@@ -55,7 +55,7 @@ func BenchmarkPut(b *testing.B) {
 	start := int(rand.Int63n(500000))
 
 	b.Run("pre", func(b *testing.B) {
-		tree := avl.New(CompareAny[int64])
+		tree := avl.New[int64, int64](compare.AnyEx[int64])
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -79,7 +79,7 @@ func BenchmarkPut(b *testing.B) {
 	})
 
 	b.Run("avl", func(b *testing.B) {
-		tree := avl.New(CompareAny[int64])
+		tree := avl.New[int64, int64](compare.AnyEx[int64])
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -93,7 +93,7 @@ func BenchmarkPut(b *testing.B) {
 
 func TestHeight(t *testing.T) {
 	itree := New(CompareAny[int64])
-	avltree := avl.New(CompareAny[int64])
+	avltree := avl.New[int64, int64](compare.AnyEx[int64])
 
 	var diffcount = 0
 	for i := 0; i < 5000; i++ {
@@ -101,11 +101,11 @@ func TestHeight(t *testing.T) {
 		itree.Put(v, v)
 		avltree.Put(v, v)
 
-		if itree.Size() != avltree.Size() {
+		if itree.Size() != int64(avltree.Size()) {
 			log.Panic()
 		}
 
-		if h1, h2 := itree.hight(), avltree.Height(); math.Abs(float64(h1-h2)) >= 1 {
+		if h1, h2 := itree.hight(), avltree.Height(); math.Abs(float64(h1-int(h2))) >= 1 {
 			diffcount++
 			// log.Println("height:", h1,  h2, "diff:", diffcount, h1-h2)
 		}
@@ -124,7 +124,7 @@ func BenchmarkPut2(b *testing.B) {
 
 func BenchmarkAvlPut(b *testing.B) {
 
-	tree := avl.New(CompareAny[int64])
+	tree := avl.New[int64, int64](compare.AnyEx[int64])
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		v := rand.Int63()
