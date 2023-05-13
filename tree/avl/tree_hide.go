@@ -1,6 +1,10 @@
-package avlex
+package avl
 
 import "log"
+
+func (tree *Tree[KEY, VALUE]) getRoot() *Node[KEY, VALUE] {
+	return tree.Center.Children[1]
+}
 
 func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) (target *Node[KEY, VALUE], isExists bool, isRebalance bool) {
 
@@ -27,7 +31,7 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 	}
 
 	if isRebalance {
-		isRebalance = cur.rebalance(parent, child)
+		isRebalance = tree.rebalance(parent, child)
 	}
 
 	return target, isExists, isRebalance
@@ -66,17 +70,19 @@ func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2,
 			return &cur.Value, true
 		}
 
-		target = &cur.Value
+		var result = cur.Value
+		target = &result
+
 		replacer, _ := tree.neighboring(cur, child1, ^child1+2)
 		cur.Key = replacer.Key
 		cur.Value = replacer.Value
 
-		return target, cur.rebalance(parent, child1)
+		return target, tree.rebalance(parent, child1)
 	}
 
 	target, isRebalance = tree.remove(key, parent, child1, cmp)
 	if cur != tree.Center && isRebalance {
-		isRebalance = cur.rebalance(parent, child1)
+		isRebalance = tree.rebalance(parent, child1)
 	}
 
 	return target, isRebalance
@@ -94,14 +100,55 @@ func (tree *Tree[KEY, VALUE]) neighboring(parent *Node[KEY, VALUE], child2, chil
 
 	result, isRebalance := tree.neighboring(cur, child1, child1)
 	if isRebalance {
-		isRebalance = cur.rebalance(parent, child2)
+		isRebalance = tree.rebalance(parent, child2)
 	}
 
 	return result, isRebalance
 }
 
+func (tree *Tree[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) bool {
+
+	node := parent.Children[child]
+	lh, rh := getHeight(node.Children[0]), getHeight(node.Children[1])
+
+	diff := lh - rh
+
+	if diff >= tree.differenceHeight {
+		sub := node.Children[0]
+		if getHeight(sub.Children[1]) > getHeight(sub.Children[0]) {
+			rightRotateWithLeft(parent, child)
+		} else {
+			rightRotate(parent, child)
+		}
+		return true
+	} else if diff <= -tree.differenceHeight {
+		sub := node.Children[1]
+		if getHeight(sub.Children[0]) > getHeight(sub.Children[1]) {
+			leftRotateWithRight(parent, child)
+		} else {
+			leftRotate(parent, child)
+		}
+		return true
+	} else {
+		if lh > rh {
+			if node.Height != lh+1 {
+				node.Height = lh + 1
+				return true
+			}
+		} else {
+			if node.Height != rh+1 {
+				node.Height = rh + 1
+				return true
+			}
+		}
+
+	}
+
+	return false
+}
+
 func (tree *Tree[KEY, VALUE]) check() (result string) {
-	if !tree.checkHeightTree(tree.Center.Children[1]) {
+	if !tree.checkHeightTree(tree.getRoot()) {
 		log.Panic("height error")
 	}
 	return
@@ -109,11 +156,11 @@ func (tree *Tree[KEY, VALUE]) check() (result string) {
 
 func (tree *Tree[KEY, VALUE]) view() (result string) {
 	result = "\n"
-	if tree.Center.Children[1] == nil {
+	if tree.getRoot() == nil {
 		result += "└── nil"
 		return
 	}
 	var nmap = make(map[*Node[KEY, VALUE]]int)
-	outputfordebug(nmap, tree.Center.Children[1], "", true, &result)
+	outputfordebug(nmap, tree.getRoot(), "", true, &result)
 	return
 }

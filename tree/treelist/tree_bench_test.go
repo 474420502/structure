@@ -81,7 +81,7 @@ func BenchmarkPut3(b *testing.B) {
 	start := int(rand.Int63n(500000))
 
 	b.Run("pre", func(b *testing.B) {
-		tree := avl.New(compare.Any[int64])
+		tree := avl.New[int64, int64](compare.AnyEx[int64])
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -118,7 +118,7 @@ func BenchmarkPut3(b *testing.B) {
 	})
 
 	b.Run("avl", func(b *testing.B) {
-		tree := avl.New(compare.Any[int64])
+		tree := avl.New[int64, int64](compare.AnyEx[int64])
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {

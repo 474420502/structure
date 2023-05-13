@@ -1,4 +1,4 @@
-package avlex
+package avl
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 type Node[KEY any, VALUE any] struct {
 	Key      KEY
 	Value    VALUE
-	Height   int
+	Height   int8
 	Children [2]*Node[KEY, VALUE]
 }
 
@@ -15,66 +15,66 @@ func (node *Node[KEY, VALUE]) String() string {
 	return fmt.Sprintf("%v(%v)", node.Key, node.Value)
 }
 
-func (node *Node[KEY, VALUE]) updateHeight() bool {
-	lh, rh := getHeight(node.Children[0])+1, getHeight(node.Children[1])+1
-	if lh > rh {
-		if node.Height != lh {
-			node.Height = lh
-			return true
-		}
-	} else {
-		if node.Height != rh {
-			node.Height = rh
-			return true
-		}
-	}
+// func (node *Node[KEY, VALUE]) updateHeight() bool {
+// 	lh, rh := getHeight(node.Children[0])+1, getHeight(node.Children[1])+1
+// 	if lh > rh {
+// 		if node.Height != lh {
+// 			node.Height = lh
+// 			return true
+// 		}
+// 	} else {
+// 		if node.Height != rh {
+// 			node.Height = rh
+// 			return true
+// 		}
+// 	}
 
-	return false
-}
+// 	return false
+// }
 
 func (node *Node[KEY, VALUE]) updateHeightOneChild(child int) {
 	node.Height = getHeight(node.Children[child]) + 1
 }
 
-func (node *Node[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) bool {
+// func (node *Node[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) bool {
 
-	lh, rh := getHeight(node.Children[0]), getHeight(node.Children[1])
+// 	lh, rh := getHeight(node.Children[0]), getHeight(node.Children[1])
 
-	diff := lh - rh
+// 	diff := lh - rh
 
-	if diff > 1 {
-		sub := node.Children[0]
-		if getHeight(sub.Children[1]) > getHeight(sub.Children[0]) {
-			rightRotateWithLeft(parent, child)
-		} else {
-			rightRotate(parent, child)
-		}
-		return true
-	} else if diff < -1 {
-		sub := node.Children[1]
-		if getHeight(sub.Children[0]) > getHeight(sub.Children[1]) {
-			leftRotateWithRight(parent, child)
-		} else {
-			leftRotate(parent, child)
-		}
-		return true
-	} else {
-		if lh > rh {
-			if node.Height != lh+1 {
-				node.Height = lh + 1
-				return true
-			}
-		} else {
-			if node.Height != rh+1 {
-				node.Height = rh + 1
-				return true
-			}
-		}
+// 	if diff > 1 {
+// 		sub := node.Children[0]
+// 		if getHeight(sub.Children[1]) > getHeight(sub.Children[0]) {
+// 			rightRotateWithLeft(parent, child)
+// 		} else {
+// 			rightRotate(parent, child)
+// 		}
+// 		return true
+// 	} else if diff < -1 {
+// 		sub := node.Children[1]
+// 		if getHeight(sub.Children[0]) > getHeight(sub.Children[1]) {
+// 			leftRotateWithRight(parent, child)
+// 		} else {
+// 			leftRotate(parent, child)
+// 		}
+// 		return true
+// 	} else {
+// 		if lh > rh {
+// 			if node.Height != lh+1 {
+// 				node.Height = lh + 1
+// 				return true
+// 			}
+// 		} else {
+// 			if node.Height != rh+1 {
+// 				node.Height = rh + 1
+// 				return true
+// 			}
+// 		}
 
-	}
+// 	}
 
-	return false
-}
+// 	return false
+// }
 
 func newNode[KEY any, VALUE any]() *Node[KEY, VALUE] {
 	return &Node[KEY, VALUE]{
@@ -82,21 +82,21 @@ func newNode[KEY any, VALUE any]() *Node[KEY, VALUE] {
 	}
 }
 
-func getHeight[KEY, VALUE any](cur *Node[KEY, VALUE]) int {
+func getHeight[KEY, VALUE any](cur *Node[KEY, VALUE]) int8 {
 	if cur == nil {
 		return 0
 	}
 	return cur.Height
 }
 
-func updateHeight[KEY, VALUE any](cur *Node[KEY, VALUE]) {
-	lh, rh := getHeight(cur.Children[0]), getHeight(cur.Children[1])
-	if lh > rh {
-		cur.Height = lh + 1
-	} else {
-		cur.Height = rh + 1
-	}
-}
+// func updateHeight[KEY, VALUE any](cur *Node[KEY, VALUE]) {
+// 	lh, rh := getHeight(cur.Children[0]), getHeight(cur.Children[1])
+// 	if lh > rh {
+// 		cur.Height = lh + 1
+// 	} else {
+// 		cur.Height = rh + 1
+// 	}
+// }
 
 func leftRotateWithRight[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
 	cur := parent.Children[child] //
@@ -163,16 +163,16 @@ func rightRotate[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
 	sub.updateHeightOneChild(1)
 }
 
-func view[KEY, VALUE any](root *Node[KEY, VALUE]) (result string) {
-	result = "\n"
-	if root == nil {
-		result += "└── nil"
-		return
-	}
-	var nmap = make(map[*Node[KEY, VALUE]]int)
-	outputfordebug(nmap, root, "", true, &result)
-	return
-}
+// func view[KEY, VALUE any](root *Node[KEY, VALUE]) (result string) {
+// 	result = "\n"
+// 	if root == nil {
+// 		result += "└── nil"
+// 		return
+// 	}
+// 	var nmap = make(map[*Node[KEY, VALUE]]int)
+// 	outputfordebug(nmap, root, "", true, &result)
+// 	return
+// }
 
 func (tree *Tree[KEY, VALUE]) checkHeightTree(root *Node[KEY, VALUE]) bool {
 	errorNode := 0
@@ -182,7 +182,7 @@ func (tree *Tree[KEY, VALUE]) checkHeightTree(root *Node[KEY, VALUE]) bool {
 			return
 		}
 
-		height := 0
+		var height int8
 		lh, rh := getHeight(root.Children[0]), getHeight(root.Children[1])
 		if lh > rh {
 			height = lh
