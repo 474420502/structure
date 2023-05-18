@@ -133,6 +133,23 @@ func BenchmarkAvlPut(b *testing.B) {
 	b.Log(tree.Size())
 }
 
+func BenchmarkIndexTreePut(b *testing.B) {
+	rand := random.New(1683721792150515321)
+
+	tree := New(compare.Any[int])
+	b.StopTimer()
+	for i := 0; i < 10000; i++ {
+		v := rand.Int()
+		tree.Put(v, v)
+		// tree.check()
+	}
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		v := rand.Int()
+		tree.Put(v, v)
+	}
+}
+
 func TestCase10(t *testing.T) {
 
 	// for _, v := range []int{0, 131, 756, 459, 533} {

@@ -1,4 +1,4 @@
-package avl
+package itree
 
 import (
 	"log"
@@ -10,11 +10,11 @@ import (
 
 func TestCase(t *testing.T) {
 
-	r := random.New(1684012134704818399)
+	r := random.New(1683745535466910261)
 
 	tree := New[int, int](compare.AnyEx[int])
 	var s []int
-	count := 20
+	count := 40
 	for i := 0; i < count; i++ {
 		v := r.Intn(100)
 
@@ -23,18 +23,53 @@ func TestCase(t *testing.T) {
 		}
 
 	}
-	log.Printf("%v", s)
+	log.Printf("%v len:%d", s, len(s))
 	tree.check()
 
 	log.Println(tree.view())
 
+	iter := tree.Iterator()
+
+	iter.SeekLE(93) //
+	log.Println(iter.Vaild())
+	log.Println(iter.Key(), iter.Value())
+	iter.Prev()
+	log.Println(iter.Vaild())
+	log.Println(iter.Key(), iter.Value())
+
+	iter.SeekLT(27)
+	log.Println(iter.Vaild())
+	log.Println(iter.Key(), iter.Value())
+	a := iter.Clone()
+
+	iter.SeekGE(65)
+	log.Println(iter.Vaild())
+	log.Println(iter.Key(), iter.Value())
+
+	log.Println(a.Vaild())
+	log.Println(a.Key(), a.Value())
+
+	log.Println(iter, a)
+
+	iter.SeekToFirst()
+	log.Println(iter.Vaild())
+	log.Println(iter.Key(), iter.Value())
+
+	iter.SeekToLast()
+
+	iter.Prev()
+	log.Println(iter.Vaild())
+	log.Println(iter.Key(), iter.Value())
+	iter.Prev()
+	log.Println(iter.Vaild())
+	log.Println(iter.Key(), iter.Value())
 }
 
 func TestCasePut(t *testing.T) {
 
 	r := random.New()
 
-	for n := 0; n < 500; n++ {
+	for n := 0; n < 10000; n++ {
 		tree := New[int, int](compare.AnyEx[int])
 		count := r.Intn(100)
 		for i := 0; i < count; i++ {
@@ -51,9 +86,9 @@ func TestCasePut(t *testing.T) {
 func TestCaseR(t *testing.T) {
 	log.SetFlags(log.Llongfile)
 
-	r := random.New(t.Name())
+	r := random.New(1684430584192166479)
 
-	for nn := 0; nn < 100; nn++ {
+	for nn := 0; nn < 1000; nn++ {
 
 		tree := New[int, int](compare.AnyEx[int])
 		count := r.Intn(50) + 50
