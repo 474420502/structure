@@ -1,4 +1,4 @@
-package avl
+package itree
 
 import (
 	"log"
@@ -16,7 +16,7 @@ func TestPutGet(t *testing.T) {
 		tree.Set(i, i)
 	}
 
-	log.Println(tree.view())
+	// log.Println(tree.String())
 
 	for i := 0; i < int(tree.Size()); i++ {
 		if v, b := tree.Get(i); !b || v != i {
@@ -86,7 +86,7 @@ func TestForce(t *testing.T) {
 	rand := random.New(t.Name())
 
 	tree := New[int, int](compare.AnyEx[int])
-	for n := 0; n < 2000; n++ {
+	for n := 0; n < 5000; n++ {
 
 		var priority []int
 		for i := 0; i < 100; i++ {
@@ -100,12 +100,15 @@ func TestForce(t *testing.T) {
 			panic("")
 		}
 
+		// tree.check()
+
 		sort.Slice(priority, func(i, j int) bool {
 			return priority[i] < priority[j]
 		})
 
 		for i, v := range tree.Values() {
 			if priority[i] != v {
+				log.Println(tree.view())
 				panic("")
 			}
 		}
@@ -150,7 +153,6 @@ func TestForce(t *testing.T) {
 
 func BenchmarkPut(b *testing.B) {
 	rand := random.New(1683721792150515321)
-
 	tree := New[int, int](compare.AnyEx[int])
 	b.StopTimer()
 	for i := 0; i < 10000; i++ {
@@ -177,14 +179,14 @@ func BenchmarkRemove(b *testing.B) {
 			b.StopTimer()
 			removelist = nil
 			ri = 0
-			for i := 0; i < 100; i++ {
-				v := rand.Intn(100)
+			for i := 0; i < 1000; i++ {
+				v := rand.Intn(1000)
 				if tree.Put(v, v) {
 					removelist = append(removelist, v)
 				}
 
 				if i%25 == 0 {
-					removelist = append(removelist, rand.Intn(100))
+					removelist = append(removelist, rand.Intn(1000))
 				}
 				// tree.check()
 			}
