@@ -242,7 +242,7 @@ func TestRange(t *testing.T) {
 		}
 		tree := New()
 		tree.compare = compareBytesLen
-		avltree := avl.New(compare.Any[int])
+		avltree := avl.New[int, int](compare.AnyEx[int])
 
 		for i := 0; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
@@ -265,8 +265,8 @@ func TestRange(t *testing.T) {
 			return
 		}
 
-		avltree.Traverse(func(k int, v interface{}) bool {
-			key := []byte(strconv.Itoa(v.(int)))
+		avltree.Traverse(func(k int, v int) bool {
+			key := []byte(strconv.Itoa(v))
 			if _, ok := tree.Get(key); !ok {
 				t.Error("tree is error")
 			}
@@ -332,7 +332,7 @@ func TestRangeReturn(t *testing.T) {
 
 		tree := New()
 		tree.compare = compareBytesLen
-		avltree := avl.New(compare.Any[int])
+		avltree := avl.New[int, int](compare.AnyEx[int])
 
 		for i := 100; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))

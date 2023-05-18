@@ -147,9 +147,79 @@ func TestForce(t *testing.T) {
 	}
 }
 
+func TestIndex(t *testing.T) {
+	tree := New[int, int](compare.AnyEx[int])
+	for i := 0; i < 100; i++ {
+		tree.Put(i, i)
+		// log.Println(tree.debugString(true))
+	}
+
+	// log.Println(tree.debugString(true))
+
+	for i := 0; i < 100; i++ {
+		if v := tree.Index(i); v != i {
+			t.Error("index error", v, i)
+		}
+	}
+
+}
+
+func TestRankForce(t *testing.T) {
+	rand := random.New(t.Name())
+	for n := 0; n < 2000; n++ {
+		tree := New[int, int](compare.AnyEx[int])
+		var arr []int = make([]int, 0, 50)
+		for i := 0; i < 50; i++ {
+			r := rand.Intn(1000)
+			if tree.Put(r, r) {
+				arr = append(arr, r)
+			}
+		}
+		sort.Ints(arr)
+		for i, v := range arr {
+			idx := tree.IndexOf(v)
+			if idx != i {
+				t.Error("error ", i, idx)
+			}
+		}
+	}
+}
+
+func TestRank(t *testing.T) {
+	tree := New[int, int](compare.AnyEx[int])
+	for i := 0; i < 100; i++ {
+		tree.Put(i, i)
+		// log.Println(tree.debugString(true))
+	}
+
+	// log.Println(tree.debugString(true))
+
+	for i := 0; i < 100; i++ {
+		if v := tree.IndexOf(i); v != i {
+			t.Error("index error", i, "rank", v)
+		}
+	}
+	tree.IndexOf(100)
+}
+
 // func TestCaseX(t *testing.T) {
 // 	New[int,int](compare.TimeDescEx[time.Time])
 // }
+
+func BenchmarkIndex(b *testing.B) {
+	b.StopTimer()
+	tree := New[int, int](compare.AnyEx[int])
+	for i := 0; i < 1000; i++ {
+		tree.Put(i, i)
+	}
+	b.StartTimer()
+
+	r := random.New()
+	s := tree.Size()
+	for i := 0; i < b.N; i++ {
+		tree.Index(r.Intn(s))
+	}
+}
 
 func BenchmarkPut(b *testing.B) {
 	rand := random.New(1683721792150515321)
