@@ -131,6 +131,25 @@ func TestCaseR(t *testing.T) {
 	// log.Println(tree.View())
 }
 
+func TestCaseMainIndex(t *testing.T) {
+	log.SetFlags(log.Llongfile)
+
+	r := random.New(1684430584192166479)
+
+	tree := New[int, int](compare.AnyEx[int])
+	count := r.Intn(100)
+	for i := 0; i < count; i++ {
+		v := r.Intn(100)
+		tree.Put(v, v)
+		tree.check()
+	}
+
+	log.Println(tree.view())
+
+	log.Println(tree.Index(29))
+
+}
+
 // func TestCompareOther(t *testing.T) {
 
 // 	r := random.New(t.Name())

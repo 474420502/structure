@@ -22,6 +22,13 @@ func (node *Node[KEY, VALUE]) updateSize() {
 	}
 }
 
+func (node *Node[KEY, VALUE]) getSize() int {
+	if node == nil {
+		return 0
+	}
+	return node.Size
+}
+
 func newNode[KEY any, VALUE any]() *Node[KEY, VALUE] {
 	return &Node[KEY, VALUE]{
 		Size: 1,

@@ -4,6 +4,9 @@ import (
 	"log"
 )
 
+var errOutOfIndex = "out of index"
+var errLowerGtHigh = "low is behind high"
+
 func (tree *Tree[KEY, VALUE]) getRoot() *Node[KEY, VALUE] {
 	return tree.Center.Children[1]
 }
@@ -61,6 +64,24 @@ func (tree *Tree[KEY, VALUE]) get(key KEY, cur *Node[KEY, VALUE]) *Node[KEY, VAL
 		return cur
 	}
 	return tree.get(key, cur.Children[cmp])
+}
+
+func (tree *Tree[KEY, VALUE]) index(i int) *Node[KEY, VALUE] {
+
+	cur := tree.getRoot()
+	var idx int = cur.Children[0].getSize()
+	for {
+		if idx > i {
+			cur = cur.Children[0]
+			idx -= cur.Children[1].getSize() + 1
+		} else if idx < i {
+			cur = cur.Children[1]
+			idx += cur.Children[0].getSize() + 1
+		} else {
+			return cur
+		}
+	}
+
 }
 
 func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (target *VALUE) {

@@ -1,6 +1,8 @@
 package itree
 
 import (
+	"log"
+
 	"github.com/474420502/structure/compare"
 )
 
@@ -13,17 +15,6 @@ type Tree[KEY, VALUE any] struct {
 }
 
 func New[KEY, VALUE any](Compare compare.Compare[KEY]) *Tree[KEY, VALUE] {
-
-	tree := &Tree[KEY, VALUE]{
-		Center:  &Node[KEY, VALUE]{Size: 0},
-		Compare: Compare,
-	}
-
-	tree.Center.Children[0] = tree.Center
-	return tree
-}
-
-func NewEx[KEY, VALUE any](Compare compare.Compare[KEY], differenceHeight int8) *Tree[KEY, VALUE] {
 
 	tree := &Tree[KEY, VALUE]{
 		Center:  &Node[KEY, VALUE]{Size: 0},
@@ -58,6 +49,52 @@ func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	}
 
 	return cur.Value, true
+}
+
+func (tree *Tree[KEY, VALUE]) Index(idx int) VALUE {
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Panicf("%v size: %d index: %d", errOutOfIndex, tree.Size(), idx)
+		}
+	}()
+
+	if idx < 0 {
+		return tree.index(tree.Size() + idx).Value
+	}
+	return tree.index(idx).Value
+}
+
+func (tree *Tree[KEY, VALUE]) IndexOf(key KEY) int {
+
+	cur := tree.getRoot()
+	if cur == nil {
+		return -1
+	}
+
+	var offset int = cur.Children[0].getSize()
+	for {
+		cmp := tree.Compare(cur.Key, key)
+		if cmp < 0 {
+			return offset
+		} else {
+			if cmp == 0 {
+				cur = cur.Children[0]
+				if cur == nil {
+					return -1
+				}
+				offset -= getSize(cur.Children[1]) + 1
+			} else {
+				cur = cur.Children[1]
+				if cur == nil {
+					return -1
+				}
+				offset += getSize(cur.Children[0]) + 1
+			}
+
+		}
+
+	}
 }
 
 func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
