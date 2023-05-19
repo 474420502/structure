@@ -84,6 +84,47 @@ func (tree *Tree[KEY, VALUE]) index(i int) *Node[KEY, VALUE] {
 
 }
 
+func (tree *Tree[KEY, VALUE]) removeIndex(parent *Node[KEY, VALUE], child, idx, i int) (target *VALUE) {
+
+	// cur := tree.getRoot()
+	// var idx int = cur.Children[0].getSize()
+	parent.Size--
+	cur := parent.Children[child]
+	if idx == i {
+		if cur.Children[0] == nil {
+			parent.Children[child] = cur.Children[1]
+			return &cur.Value
+		}
+
+		if cur.Children[1] == nil {
+			parent.Children[child] = cur.Children[0]
+			return &cur.Value
+		}
+
+		var result = cur.Value
+		target = &result
+
+		replacer, _ := tree.neighboring(cur, child, ^child+2)
+		cur.Key = replacer.Key
+		cur.Value = replacer.Value
+		cur.updateSize()
+		tree.rebalance(parent, child)
+
+		return target
+	}
+
+	if idx > i {
+		cur = cur.Children[0]
+		idx -= cur.Children[1].getSize() + 1
+		return tree.removeIndex(cur, 0, idx, i)
+	} else {
+		cur = cur.Children[1]
+		idx += cur.Children[0].getSize() + 1
+		return tree.removeIndex(cur, 1, idx, i)
+	}
+
+}
+
 func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (target *VALUE) {
 	parent := grandpa.Children[child2]
 	cur := parent.Children[child1]
@@ -216,6 +257,78 @@ func (tree *Tree[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) boo
 		}
 	}
 	return false
+}
+
+func (tree *Tree[KEY, VALUE]) trimLow(parent *Node[KEY, VALUE], child int, key KEY) *Node[KEY, VALUE] {
+
+	cur := parent.Children[child]
+
+	if cur == nil {
+		return nil
+	}
+
+	cmp := tree.Compare(cur.Key, key)
+	if cmp < 0 {
+		cur.Children[0] = nil
+		return cur
+	}
+
+	if cmp == 1 {
+		cur = tree.trimLow(cur, cmp, key)
+	} else {
+		cur.Children[cmp] = tree.trimLow(cur, cmp, key)
+	}
+	if cur != nil {
+		cur.updateSize()
+	}
+	return cur
+}
+
+func (tree *Tree[KEY, VALUE]) trimHigh(parent *Node[KEY, VALUE], child int, key KEY) *Node[KEY, VALUE] {
+
+	cur := parent.Children[child]
+
+	if cur == nil {
+		return nil
+	}
+
+	cmp := tree.Compare(cur.Key, key)
+	if cmp < 0 {
+		cur.Children[1] = nil
+		return cur
+	}
+
+	if cmp == 0 {
+		cur = tree.trimHigh(cur, cmp, key)
+	} else {
+		cur.Children[cmp] = tree.trimHigh(cur, cmp, key)
+	}
+	if cur != nil {
+		cur.updateSize()
+	}
+	return cur
+}
+
+func (tree *Tree[KEY, VALUE]) seekTrimRoot(cur *Node[KEY, VALUE], low, high KEY) *Node[KEY, VALUE] {
+
+	if cur == nil {
+		return nil
+	}
+
+	cmplow := tree.Compare(cur.Key, low)
+	if cmplow < 0 {
+		return cur
+	}
+	cmphigh := tree.Compare(cur.Key, high)
+	if cmplow < 0 {
+		return cur
+	}
+
+	if cmplow != cmphigh {
+		return cur
+	}
+
+	return tree.seekTrimRoot(cur.Children[cmplow], low, high)
 }
 
 func (tree *Tree[KEY, VALUE]) check() (result string) {

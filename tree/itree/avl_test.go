@@ -1,6 +1,7 @@
 package itree
 
 import (
+	"fmt"
 	"log"
 	"sort"
 	"testing"
@@ -202,9 +203,88 @@ func TestRank(t *testing.T) {
 	tree.IndexOf(100)
 }
 
-// func TestCaseX(t *testing.T) {
-// 	New[int,int](compare.TimeDescEx[time.Time])
-// }
+func TestTrim(t *testing.T) {
+	rand := random.New(t.Name())
+	tree := New[int, int](compare.AnyEx[int])
+	for n := 0; n < 2000; n++ {
+		tree.Clear()
+		var sarr []int
+		for i := 0; i < 100; i += rand.Intn(3) + 1 {
+			tree.Put(i, i)
+			sarr = append(sarr, i)
+		}
+
+		sort.Ints(sarr)
+
+		// log.Println(tree.debugString(true))
+
+		for i := 0; i < 5; i++ {
+			if len(sarr) == 0 {
+				return
+			}
+			s := rand.Intn(len(sarr))
+			e := rand.Intn(len(sarr))
+			if s > e {
+				s, e = e, s
+			}
+			r1 := sarr[s]
+			r2 := sarr[e]
+
+			sarr = sarr[s:e]
+			sarr = append(sarr, r2)
+			tree.Trim(r1, r2)
+			// log.Println(tree.debugString(true))
+
+			result1 := fmt.Sprintf("%v", sarr)
+			result2 := fmt.Sprintf("%v", tree.Values())
+			if result1 != result2 {
+				t.Error(result1)
+				t.Error(result2)
+			}
+		}
+	}
+}
+
+func TestTrimIndex(t *testing.T) {
+
+	tree := New[int, int](compare.AnyEx[int])
+
+	tree.Put(0, 0)
+	tree.TrimByIndex(0, 0)
+	if tree.Size() != 1 {
+		t.Error()
+	}
+
+	for i := 0; i < 10; i++ {
+		v := i
+		tree.Put(v, v)
+	}
+
+	if tree.Size() != 10 {
+		t.Error()
+	}
+	tree.TrimByIndex(8, 9)
+	if tree.Size() != 2 {
+		t.Error()
+	}
+	if tree.IndexOf(8) != 0 {
+		t.Error()
+	}
+	if tree.IndexOf(9) != 1 {
+		t.Error()
+	}
+
+	var result []interface{}
+	tree.Traverse(func(k int, v int) bool {
+		result = append(result, k)
+		return true
+	})
+
+	s := fmt.Sprintf("%v", result)
+	if s != "[8 9]" {
+		t.Error()
+	}
+}
 
 func BenchmarkIndex(b *testing.B) {
 	b.StopTimer()
