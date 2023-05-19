@@ -105,6 +105,153 @@ func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
 	return tree.zero, false
 }
 
+// RemoveIndex remove key value by index and return value that be removed
+func (tree *Tree[KEY, VALUE]) RemoveIndex(index int) VALUE {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Panicf("%v size: %d index: %d", errOutOfIndex, tree.Size(), index)
+		}
+	}()
+
+	cur := tree.getRoot()
+	var idx int = cur.Children[0].getSize()
+
+	if idx < 0 {
+		return *tree.removeIndex(cur, 0, idx, tree.Size()+index)
+	}
+	return *tree.removeIndex(cur, 0, idx, index)
+}
+
+// RemoveRange remove keys values by range. [low, high]
+func (tree *Tree[KEY, VALUE]) Trim(low, high KEY) {
+	cur := tree.seekTrimRoot(tree.getRoot(), low, high)
+	if cur == nil {
+		tree.Clear()
+		return
+	}
+	cur.Children[0] = tree.trimLow(cur, 0, low)
+	cur.Children[1] = tree.trimHigh(cur, 1, high)
+	cur.updateSize()
+	tree.Center.Children[1] = cur
+}
+
+// TrimByIndex retain the value of the index range . [low high]
+func (tree *Tree[KEY, VALUE]) TrimByIndex(low, high int) {
+	root := tree.getRoot()
+	if root == nil {
+		return
+	}
+
+	cur := tree.seekTrimIndexRoot(root, root.Children[0].getSize(), low, high)
+	if cur == nil {
+		tree.Clear()
+		return
+	}
+	log.Println(cur.view())
+}
+
+func (tree *Tree[KEY, VALUE]) seekTrimIndexRoot(cur *Node[KEY, VALUE], idx, low, high int) *Node[KEY, VALUE] {
+
+	if idx > low && idx > high {
+		cur = cur.Children[0]
+		idx -= cur.Children[1].getSize() + 1
+		return tree.seekTrimIndexRoot(cur, idx, low, high)
+	} else if idx < low && idx < high {
+		cur = cur.Children[1]
+		idx += cur.Children[0].getSize() + 1
+		return tree.seekTrimIndexRoot(cur, idx, low, high)
+	}
+	return cur
+}
+
+// RemoveRange remove keys values by range. [low, high]
+func (tree *Tree[KEY, VALUE]) RemoveRange(low, high KEY) {
+
+	const L = 0
+	const R = 1
+
+	c := tree.Compare(low, high)
+	if c > 0 {
+		panic("key2 must greater than key1 or equal to")
+	} else if c == 0 {
+		tree.Remove(low)
+		return
+	}
+
+	// root := tree.getRangeRoot(low, high)
+	// if root == nil {
+	// 	return
+	// }
+
+	// var ltrim, rtrim func(*hNode[T]) *hNode[T]
+	// ltrim = func(root *hNode[T]) *hNode[T] {
+	// 	if root == nil {
+	// 		return nil
+	// 	}
+	// 	c = tree.compare(low, root.Key)
+	// 	if c > 0 {
+	// 		child := ltrim(root.Children[R])
+	// 		root.Children[R] = child
+	// 		if child != nil {
+	// 			child.Parent = root
+	// 		}
+	// 		root.Size = getChildrenSumSize(root) + 1
+	// 		return root
+	// 	} else {
+	// 		return ltrim(root.Children[L])
+	// 	}
+	// }
+
+	// var lgroup *hNode[T]
+	// if root.Children[L] != nil {
+	// 	lgroup = ltrim(root.Children[L])
+	// }
+
+	// rtrim = func(root *hNode[T]) *hNode[T] {
+	// 	if root == nil {
+	// 		return nil
+	// 	}
+	// 	c = tree.compare(high, root.Key)
+	// 	if c < 0 {
+	// 		child := rtrim(root.Children[L])
+	// 		root.Children[L] = child
+	// 		if child != nil {
+	// 			child.Parent = root
+	// 		}
+	// 		root.Size = getChildrenSumSize(root) + 1
+	// 		return root
+	// 	} else {
+	// 		return rtrim(root.Children[R])
+	// 	}
+	// }
+
+	// var rgroup *hNode[T]
+	// if root.Children[R] != nil {
+	// 	rgroup = rtrim(root.Children[R])
+	// }
+
+	// if lgroup == nil && rgroup == nil {
+	// 	rparent := root.Parent
+	// 	size := root.Size
+	// 	root.Parent.Children[getRelationship(root)] = nil
+	// 	for rparent != tree.root {
+	// 		rparent.Size -= size
+	// 		rparent = rparent.Parent
+	// 	}
+
+	// 	return
+	// }
+
+	// // Left and right tree concat
+	// rsize := getSize(rgroup)
+	// lsize := getSize(lgroup)
+	// if lsize > rsize {
+	// 	tree.mergeGroups(root, lgroup, rgroup, rsize, R)
+	// } else {
+	// 	tree.mergeGroups(root, rgroup, lgroup, lsize, L)
+	// }
+}
+
 func (tree *Tree[KEY, VALUE]) Clear() {
 	tree.Center.Children[1] = nil
 }

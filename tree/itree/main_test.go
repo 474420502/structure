@@ -26,7 +26,9 @@ func TestCase(t *testing.T) {
 	log.Printf("%v len:%d", s, len(s))
 	tree.check()
 
-	log.Println(tree.view())
+	// log.Println(tree.view())
+
+	// tree.Trim(70, 70)
 
 	iter := tree.Iterator()
 
@@ -137,7 +139,7 @@ func TestCaseMainIndex(t *testing.T) {
 	r := random.New(1684430584192166479)
 
 	tree := New[int, int](compare.AnyEx[int])
-	count := r.Intn(100)
+	count := r.Intn(20)
 	for i := 0; i < count; i++ {
 		v := r.Intn(100)
 		tree.Put(v, v)
@@ -145,9 +147,11 @@ func TestCaseMainIndex(t *testing.T) {
 	}
 
 	log.Println(tree.view())
-
+	tree.TrimByIndex(9, 10)
 	log.Println(tree.Index(29))
-
+	log.Println(tree.RemoveIndex(29))
+	tree.check()
+	log.Println(tree.view())
 }
 
 // func TestCompareOther(t *testing.T) {
