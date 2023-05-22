@@ -286,6 +286,40 @@ func TestTrimIndex(t *testing.T) {
 	}
 }
 
+func TestRemoveRange(t *testing.T) {
+	rand := random.New(t.Name())
+	tree := New[int, int](compare.AnyEx[int])
+	for n := 0; n < 2000; n++ {
+		tree.Clear()
+		var sarr []int
+		for i := 0; i < 100; i += rand.Intn(3) + 1 {
+			tree.Put(i, i)
+			sarr = append(sarr, i)
+		}
+
+		sort.Ints(sarr)
+
+		for i := 0; i < 5; i++ {
+			s := rand.Intn(100)
+			e := s + rand.Intn(20) + 15
+			// log.Println(tree.view())
+			tree.RemoveRange(s, e)
+			r1 := sort.Search(len(sarr), func(i int) bool { return sarr[i] >= s })
+			r2 := sort.Search(len(sarr), func(i int) bool { return sarr[i] > e })
+			sarr = append(sarr[0:r1], sarr[r2:]...)
+
+			result1 := fmt.Sprintf("%v", sarr)
+			result2 := fmt.Sprintf("%v", tree.Values())
+			if result1 != result2 {
+				t.Error(result1)
+				t.Error(result2)
+			}
+
+			tree.check()
+		}
+	}
+}
+
 func BenchmarkIndex(b *testing.B) {
 	b.StopTimer()
 	tree := New[int, int](compare.AnyEx[int])
