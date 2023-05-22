@@ -139,7 +139,7 @@ func TestCaseMainIndex(t *testing.T) {
 	r := random.New(1684430584192166479)
 
 	tree := New[int, int](compare.AnyEx[int])
-	count := r.Intn(20)
+	count := r.Intn(40)
 	for i := 0; i < count; i++ {
 		v := r.Intn(100)
 		tree.Put(v, v)
@@ -147,7 +147,8 @@ func TestCaseMainIndex(t *testing.T) {
 	}
 
 	log.Println(tree.view())
-	tree.TrimByIndex(9, 10)
+	// tree.TrimByIndex(1, -1)
+	tree.RemoveRange(72, 75)
 	log.Println(tree.Index(29))
 	log.Println(tree.RemoveIndex(29))
 	tree.check()
