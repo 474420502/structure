@@ -147,12 +147,13 @@ func TestCaseMainIndex(t *testing.T) {
 	}
 
 	log.Println(tree.view())
-	// tree.TrimByIndex(1, -1)
-	tree.RemoveRange(72, 75)
-	log.Println(tree.Index(29))
-	log.Println(tree.RemoveIndex(29))
-	tree.check()
-	log.Println(tree.view())
+	tree.Split(42)
+	// // tree.TrimByIndex(1, -1)
+	// tree.RemoveRangeByIndex(23, 24)
+	// log.Println(tree.Index(29))
+	// log.Println(tree.RemoveIndex(29))
+	// tree.check()
+	// log.Println(tree.view())
 }
 
 // func TestCompareOther(t *testing.T) {

@@ -163,6 +163,38 @@ func TestIndex(t *testing.T) {
 		}
 	}
 
+	func() {
+
+		defer func() {
+			if err := recover(); err != nil {
+				if err.(string) != "out of index size: 100 index: 100" {
+					log.Panic(err)
+				}
+			}
+		}()
+
+		tree.RemoveIndex(100)
+	}()
+
+	func() {
+
+		tree := New[int, int](compare.AnyEx[int])
+		for i := 0; i < 100; i++ {
+			tree.Put(i, i)
+		}
+
+		tree.RemoveIndex(99)
+		defer func() {
+			if err := recover(); err != nil {
+				if err.(string) != "out of index size: 99 index: 99" {
+					log.Panic(err)
+				}
+			}
+		}()
+
+		tree.RemoveIndex(99)
+	}()
+
 }
 
 func TestRankForce(t *testing.T) {
@@ -318,6 +350,221 @@ func TestRemoveRange(t *testing.T) {
 			tree.check()
 		}
 	}
+}
+
+func TestRemoveRangeIndex(t *testing.T) {
+
+	tree := New[int, int](compare.AnyEx[int])
+
+	v := 0
+	tree.Put(v, v)
+	tree.RemoveRangeByIndex(0, 0)
+	if tree.Size() != 0 {
+		t.Error(tree.view())
+	}
+
+	for i := 0; i < 10; i++ {
+		v := i
+		tree.Put(v, v)
+	}
+	tree.RemoveRangeByIndex(-1, 20)
+	if tree.Size() != 0 {
+		t.Error()
+	}
+
+	for i := 0; i < 10; i++ {
+		v := i
+		tree.Put(v, v)
+	}
+
+	tree.RemoveRangeByIndex(0, tree.Size()-2)
+	k := tree.Index(0)
+	if tree.Size() != 1 || k == 0 {
+		t.Error()
+	}
+
+	for i := 0; i < 10; i++ {
+		v := i
+		tree.Set(v, v)
+	}
+	tree.RemoveRangeByIndex(0, -10)
+	if tree.Size() != 10 {
+		t.Error()
+	}
+}
+
+func TestRemoveRangeIndexForce(t *testing.T) {
+
+	rand := random.New(t.Name())
+	for n := 0; n < 2000; n++ {
+
+		var priority []int
+		tree1 := New[int, int](compare.AnyEx[int])
+		tree2 := New[int, int](compare.AnyEx[int])
+
+		for i := 0; i < 200; i += rand.Intn(8) + 1 {
+			v := i
+			tree1.Put(v, v)
+			tree2.Put(v, v)
+			priority = append(priority, v)
+		}
+
+		s := rand.Intn(tree1.Size())
+		e := rand.Intn(tree1.Size())
+		if s > e {
+			s, e = e, s
+		}
+
+		size := tree1.Size()
+		// log.Println(tree.debugString(true))
+
+		tree1.RemoveRangeByIndex(s, e)
+		skey := tree2.Index(s)
+		ekey := tree2.Index(e)
+		tree2.RemoveRange(skey, ekey)
+		priority = append(priority[0:s], priority[e+1:]...)
+
+		if int(tree1.Size()) != len(priority) {
+			log.Panic(tree1.Size(), len(priority))
+		}
+		if e-s+1 != size-tree1.Size() && tree1.Size() != tree2.Size() {
+			log.Panic(e, s, tree1.Size(), size)
+		}
+
+		for i := 0; i < 200; i += rand.Intn(8) + 1 {
+			v := i
+			tree1.Put(v, v)
+			tree2.Put(v, v)
+		}
+
+		tree1.check()
+		tree2.check()
+	}
+}
+
+func TestSimpleForce(t *testing.T) {
+	rand := random.New(t.Name())
+	for n := 0; n < 2000; n++ {
+		tree1 := New[int, int](compare.AnyEx[int])
+		tree2 := make(map[int]int)
+
+		for i := 0; i < 40; i++ {
+			v := rand.Intn(100)
+			tree1.Put(v, v)
+			tree2[v] = v
+		}
+
+		for k, v2 := range tree2 {
+			if v1, ok := tree1.Get(k); !ok || v1 != v2 {
+				panic("")
+			}
+		}
+
+		for len(tree2) != 0 {
+			i := rand.Intn(int(tree1.Size()))
+
+			v1 := tree1.Index(i)
+			if v2, ok := tree2[v1]; !ok || v1 != v2 {
+				panic("")
+			}
+
+			if v3, ok := tree1.Get(v1); !ok || v1 != v3 {
+				panic("")
+			}
+
+			if rand.Intn(2) == 0 {
+				tree1.Remove(v1)
+				delete(tree2, v1)
+			} else {
+				tree1.RemoveIndex(i)
+				delete(tree2, v1)
+			}
+
+			if rand.Intn(2) == 0 {
+				v := rand.Intn(100)
+				if rand.Intn(2) == 0 {
+					tree1.Put(v, v)
+				} else {
+					tree1.Set(v, v)
+				}
+				tree2[v] = v
+			}
+
+			tree1.check()
+		}
+
+	}
+}
+
+func TestSplit(t *testing.T) {
+	rand := random.New(1684961987626654826)
+
+	for n := 0; n < 10000; n++ {
+
+		tree1 := New[int, int](compare.AnyEx[int])
+		var priority []int
+		for i := 0; i < 80; i++ {
+			v := rand.Intn(200)
+			if tree1.Put(v, v) {
+				priority = append(priority, v)
+			}
+
+		}
+
+		srcSize := tree1.Size()
+
+		sort.Ints(priority)
+
+		skey := rand.Intn(220)
+
+		// idx := sort.Search(len(priority), func(i int) bool {
+		// 	return priority[i] <= skey
+		// })
+		// if idx < len(priority) {
+		// 	if priority[idx] != skey {
+		// 		idx = idx + 1
+		// 	}
+		// }
+		// log.Println(priority[idx])
+
+		var idx = -1
+		for i, v := range priority {
+			if skey < v {
+				break
+			}
+			idx = i
+		}
+
+		// log.Println(skey, priority[idx])
+		tree2 := tree1.Split(skey)
+		tree1.check()
+		tree2.check()
+
+		if tree1.Size()+tree2.Size() != srcSize {
+			log.Println(tree1.view(), tree2.view(), skey)
+			panic("tree1 size != tree2 size")
+		}
+
+		// log.Println(tree1.Values(), tree2.Values(), skey, idx)
+		idx = idx + 1
+		for i, v := range priority[0:idx] {
+			if v1 := tree1.Index(i); v1 != v {
+				log.Println(priority[0:idx], tree1.Values())
+				log.Panicln(v1, v)
+			}
+		}
+		// log.Println(tree2.view())
+		for i, v := range priority[idx:] {
+			// log.Println(priority[idx])
+			if v2 := tree2.Index(i); v2 != v {
+				log.Println(tree2.Size())
+				log.Println(tree1.view(), tree2.view(), skey)
+				log.Println(priority[idx:], tree2.Values())
+				log.Panicln(v2, v)
+			}
+		}
+	}
+
 }
 
 func BenchmarkIndex(b *testing.B) {
