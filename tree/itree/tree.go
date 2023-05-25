@@ -109,17 +109,17 @@ func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
 func (tree *Tree[KEY, VALUE]) RemoveIndex(index int) VALUE {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Panicf("%v size: %d index: %d", errOutOfIndex, tree.Size(), index)
+			log.Panicf("%v size: %d index: %d", errOutOfIndex, tree.Size()+1, index)
 		}
 	}()
 
-	cur := tree.getRoot()
-	var idx int = cur.Children[0].getSize()
+	cur := tree.Center
+	var idx int = cur.Children[1].Children[0].getSize()
 
 	if idx < 0 {
-		return *tree.removeIndex(cur, 0, idx, tree.Size()+index)
+		return *tree.removeIndex(cur, 1, idx, tree.Size()+index)
 	}
-	return *tree.removeIndex(cur, 0, idx, index)
+	return *tree.removeIndex(cur, 1, idx, index)
 }
 
 // RemoveRange remove keys values by range. [low, high]
@@ -199,6 +199,65 @@ func (tree *Tree[KEY, VALUE]) RemoveRange(low, high KEY) {
 	}
 	tree.leftMegreRight(tree.Center, right)
 	// log.Println(tree.view())
+}
+
+// RemoveRangeByIndex 1.remove range [low:high]
+// 2.low and hight that the range must contain a value that exists. eg: [low: high+1] [low-1: high].  [low-1: hight+1]. error: [min-1:min-2] or [max+1:max+2]
+func (tree *Tree[KEY, VALUE]) RemoveRangeByIndex(low, high int) {
+	var lefts, rights []*Node[KEY, VALUE]
+	root := tree.getRoot()
+	if root == nil {
+		return
+	}
+	// log.Println(tree.view())
+	tree.removeCollectIndexLows(&lefts, root, root.Children[0].getSize(), low)
+	tree.removeCollectIndexHighs(&rights, root, root.Children[0].getSize(), high)
+	// log.Println(lefts, rights)
+
+	left := tree.megreThreshold(lefts, 0, 1)
+	right := tree.megreThreshold(rights, 0, 0)
+
+	if left == nil {
+		tree.Center.Children[1] = right
+		return
+	}
+
+	tree.Center.Children[1] = left
+	if right == nil {
+		return
+	}
+	tree.leftMegreRight(tree.Center, right)
+}
+
+// Split  original tree contain Key. return  the splited tree.
+// eg: 1.[1 4 5 7] -> Split(5) [1 4 5] [7]; 2.[1 4 5 7] -> Split(3) [1] [4 5 7]
+func (tree *Tree[KEY, VALUE]) Split(key KEY) *Tree[KEY, VALUE] {
+	root := tree.getRoot()
+	var lefts, rights []*Node[KEY, VALUE]
+	tree.split(&lefts, &rights, root, key)
+
+	left := tree.megreThreshold(lefts, 0, 1)
+	right := tree.megreThreshold(rights, 0, 0)
+
+	other := &Tree[KEY, VALUE]{
+		Center:  &Node[KEY, VALUE]{Size: 0},
+		Compare: tree.Compare,
+	}
+
+	other.Center.Children[0] = other.Center
+	other.Center.Children[1] = right
+	if right != nil {
+		other.rebalance(other.Center, 1)
+	}
+
+	tree.Center.Children[1] = left
+	if left != nil {
+		tree.rebalance(tree.Center, 1)
+	}
+
+	// log.Println(tree.view(), other.view())
+
+	return other
 }
 
 func (tree *Tree[KEY, VALUE]) Clear() {

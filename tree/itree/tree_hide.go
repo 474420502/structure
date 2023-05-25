@@ -70,9 +70,15 @@ func (tree *Tree[KEY, VALUE]) index(i int) *Node[KEY, VALUE] {
 	var idx int = cur.Children[0].getSize()
 	for {
 		if idx > i {
+			if cur.Children[0] == nil {
+				log.Println(tree.view(), cur.view())
+			}
 			cur = cur.Children[0]
 			idx -= cur.Children[1].getSize() + 1
 		} else if idx < i {
+			if cur.Children[1] == nil {
+				log.Println(tree.view(), cur.view())
+			}
 			cur = cur.Children[1]
 			idx += cur.Children[0].getSize() + 1
 		} else {
@@ -112,12 +118,12 @@ func (tree *Tree[KEY, VALUE]) removeIndex(parent *Node[KEY, VALUE], child, idx, 
 	}
 
 	if idx > i {
-		cur = cur.Children[0]
-		idx -= cur.Children[1].getSize() + 1
+		// cur = cur.Children[0]
+		idx -= cur.Children[0].Children[1].getSize() + 1
 		return tree.removeIndex(cur, 0, idx, i)
 	} else {
-		cur = cur.Children[1]
-		idx += cur.Children[0].getSize() + 1
+		// cur = cur.Children[1]
+		idx += cur.Children[1].Children[0].getSize() + 1
 		return tree.removeIndex(cur, 1, idx, i)
 	}
 
@@ -463,51 +469,63 @@ func (tree *Tree[KEY, VALUE]) leftMegreRight(parent *Node[KEY, VALUE], right *No
 	tree.rebalance(parent, 1)
 }
 
-// func (tree *Tree[KEY, VALUE]) removeRangeLow(cur *Node[KEY, VALUE], key KEY) *Node[KEY, VALUE] {
-// 	if cur == nil {
-// 		return nil
-// 	}
+func (tree *Tree[KEY, VALUE]) removeCollectIndexLows(collect *[]*Node[KEY, VALUE], cur *Node[KEY, VALUE], idx int, low int) {
 
-// 	cmp := tree.Compare(cur.Key, key)
-// 	if cmp < 0 {
-// 		cur.Children[1] = nil
-// 		cur.updateSize()
-// 		return cur
-// 	}
+	if idx < low {
+		*collect = append(*collect, cur)
+		cur = cur.Children[1]
+		if cur == nil {
+			return
+		}
+		tree.removeCollectIndexLows(collect, cur, idx+cur.Children[0].getSize()+1, low)
+	} else {
+		cur = cur.Children[0]
+		if cur == nil {
+			return
+		}
+		tree.removeCollectIndexLows(collect, cur, idx-cur.Children[1].getSize()-1, low)
+	}
 
-// 	if cmp == 1 {
-// 		cur.Children[1] = tree.removeRangeLow(cur.Children[1], key)
-// 	} else {
-// 		cur = tree.removeRangeLow(cur.Children[0], key)
-// 	}
-// 	if cur != nil {
-// 		cur.updateSize()
-// 	}
-// 	return cur
-// }
+}
 
-// func (tree *Tree[KEY, VALUE]) removeRangeHigh(cur *Node[KEY, VALUE], key KEY) *Node[KEY, VALUE] {
-// 	if cur == nil {
-// 		return nil
-// 	}
+func (tree *Tree[KEY, VALUE]) removeCollectIndexHighs(collect *[]*Node[KEY, VALUE], cur *Node[KEY, VALUE], idx int, high int) {
 
-// 	cmp := tree.Compare(cur.Key, key)
-// 	if cmp < 0 {
-// 		cur.Children[0] = nil
-// 		cur.updateSize()
-// 		return cur
-// 	}
+	if idx > high {
+		*collect = append(*collect, cur)
+		cur = cur.Children[0]
+		if cur == nil {
+			return
+		}
+		tree.removeCollectIndexHighs(collect, cur, idx-cur.Children[1].getSize()-1, high)
+	} else {
 
-// 	if cmp == 0 {
-// 		cur.Children[0] = tree.removeRangeHigh(cur.Children[0], key)
-// 	} else {
-// 		cur = tree.removeRangeHigh(cur.Children[1], key)
-// 	}
-// 	if cur != nil {
-// 		cur.updateSize()
-// 	}
-// 	return cur
-// }
+		cur = cur.Children[1]
+		if cur == nil {
+			return
+		}
+		tree.removeCollectIndexHighs(collect, cur, idx+cur.Children[0].getSize()+1, high)
+	}
+
+}
+
+func (tree *Tree[KEY, VALUE]) split(left, right *[]*Node[KEY, VALUE], cur *Node[KEY, VALUE], key KEY) {
+	if cur == nil {
+		return
+	}
+	cmp := tree.Compare(cur.Key, key)
+	if cmp < 0 {
+		*left = append(*left, cur)
+		tree.split(left, right, cur.Children[1], key)
+		return
+	}
+	if cmp == 0 {
+		*right = append(*right, cur)
+		tree.split(left, right, cur.Children[0], key)
+	} else {
+		*left = append(*left, cur)
+		tree.split(left, right, cur.Children[1], key)
+	}
+}
 
 func (tree *Tree[KEY, VALUE]) check() (result string) {
 	if errorNode := tree.checkSizeTree(tree.getRoot()); errorNode != nil {
