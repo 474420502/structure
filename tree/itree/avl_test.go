@@ -567,6 +567,31 @@ func TestSplit(t *testing.T) {
 
 }
 
+func TestRemove3(t *testing.T) {
+	rand := random.New(t.Name())
+	tree := New[int, int](compare.AnyEx[int])
+	for n := 0; n < 1000; n++ {
+		tree.Clear()
+		for i := 0; i < 100; i += rand.Intn(3) + 1 {
+			tree.Put(i, i)
+			// log.Println(tree.debugString(true))
+		}
+
+		for i := 0; i < 10; i += rand.Intn(3) + 1 {
+			v := rand.Intn(100)
+			if _, ok := tree.Get(v); ok {
+				if _, ok := tree.Remove(v); !ok {
+					t.Error("remove error")
+				}
+			} else {
+				if _, ok := tree.Remove(v); ok {
+					t.Error("remove error")
+				}
+			}
+		}
+	}
+}
+
 func BenchmarkIndex(b *testing.B) {
 	b.StopTimer()
 	tree := New[int, int](compare.AnyEx[int])
