@@ -33,7 +33,7 @@ func BenchmarkCase1(b *testing.B) {
 func BenchmarkCase2(b *testing.B) {
 	// var result = sort.IntSlice{}
 	r := random.New()
-	tree := avl.New(compare.Any[int])
+	tree := avl.New[int, int](compare.Any[int])
 	for i := 0; i < b.N; i++ {
 		v := r.Int()
 
