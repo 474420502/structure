@@ -17,9 +17,9 @@ func BenchmarkPut(b *testing.B) {
 }
 
 func BenchmarkAvlPut(b *testing.B) {
-	tree := avl.New(compare.Any[int64])
+	tree := avl.New[int, int](compare.AnyEx[int])
 	for i := 0; i < b.N; i++ {
-		v := rand.Int63()
+		v := rand.Int()
 		tree.Set(v, v)
 	}
 }

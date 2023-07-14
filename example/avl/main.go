@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	tree := avl.New(compare.Any[int]) // create a  object
+	tree := avl.New[int, int](compare.Any[int]) // create a  object
 
 	log.Println("Put Set")
 	tree.Put(0, 0) // put key value into the tree
@@ -18,17 +18,8 @@ func main() {
 	tree.Put(2, 2)
 	tree.Set(3, 3)
 
-	log.Println("String")
-	log.Println(tree.String())
-	//
-	// │       ┌── 4
-	// │   ┌── 3
-	// │   │   └── 2
-	// └── 1
-	//     └── 0
-
 	log.Println("Traverse")
-	tree.Traverse(func(k int, v interface{}) bool {
+	tree.Traverse(func(k, v int) bool {
 		log.Println(k, v) // 0 0 1 1 2 2 3 3 4 4
 		return true
 	})
@@ -58,12 +49,6 @@ func main() {
 	log.Println("Remove")
 	log.Println(tree.Remove(2)) // 2, true
 	log.Println(tree.Remove(2)) // <nil>, false
-
-	log.Println(tree.String())
-	// 	│       ┌── 4
-	// 	│   ┌── 3
-	// 	└── 1
-	// 		└── 0
 
 	iter.Next() // the pos of iter is before 0. so need call Next()
 	for iter.Vaild() {
