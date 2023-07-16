@@ -226,8 +226,8 @@ func (lhmap *LinkedHashmap) Empty() bool {
 }
 
 // Size returns number of elements in the map.
-func (lhmap *LinkedHashmap) Size() int {
-	return len(lhmap.hmap)
+func (lhmap *LinkedHashmap) Size() uint {
+	return uint(len(lhmap.hmap))
 }
 
 // Keys returns all keys left to right (head to tail)

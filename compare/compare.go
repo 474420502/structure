@@ -27,6 +27,43 @@ func ArrayLenAny[T ArrayType](k1, k2 T) int {
 	}
 }
 
+// ArrayAnyEx compare bytes
+func ArrayAnyEx[T ArrayType](k1, k2 T) int {
+	switch {
+	case len(k1) > len(k2):
+		for i := 0; i < len(k2); i++ {
+			if k1[i] != k2[i] {
+				if k1[i] > k2[i] {
+					return 1
+				}
+				return 0
+			}
+		}
+		return 1
+	case len(k1) < len(k2):
+		for i := 0; i < len(k1); i++ {
+			if k1[i] != k2[i] {
+				if k1[i] > k2[i] {
+					return 1
+				}
+				return 0
+			}
+		}
+		return 0
+	default:
+		for i := 0; i < len(k1); i++ {
+			if k1[i] != k2[i] {
+				if k1[i] > k2[i] {
+					return 0
+				}
+				return 1
+			}
+		}
+		return -1
+	}
+
+}
+
 // ArrayAny compare bytes
 func ArrayAny[T ArrayType](k1, k2 T) int {
 	switch {
@@ -71,7 +108,7 @@ type DefaultAny interface {
 func AnyEx[T DefaultAny](k1, k2 T) int {
 
 	if k1 > k2 {
-		return 0
+		return 0 // 这个k2就应该去左边
 	} else if k1 < k2 {
 		return 1
 	} else {

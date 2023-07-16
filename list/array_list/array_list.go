@@ -244,7 +244,7 @@ func (l *ArrayList[T]) Contains(values ...T) (count int) {
 
 	for _, element := range l.data[l.headidx+1 : l.tailidx] {
 		for _, searchValue := range values {
-			if l.comp(element, searchValue) == 0 {
+			if l.comp(element, searchValue) == -1 {
 				count++
 			}
 		}

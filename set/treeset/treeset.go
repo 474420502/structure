@@ -1,106 +1,68 @@
 package treeset
 
-import (
-	"fmt"
-	"strings"
-
-	"github.com/474420502/structure/compare"
-)
-
 // TreeSet
-type TreeSet[T any] struct {
-	tree *Tree[T]
-}
+// type TreeSet[KEY, VALUE any] struct {
+// 	tree *avl.Tree[KEY, VALUE]
+// }
 
-// New
-func New[T any](Compare compare.Compare[T]) *TreeSet[T] {
-	return &TreeSet[T]{tree: newAVL(Compare)}
-}
+// // New
+// func New[KEY, VALUE any](Compare compare.Compare[KEY]) *TreeSet[KEY, VALUE] {
+// 	return &TreeSet[KEY, VALUE]{tree: avl.New[KEY, VALUE](Compare)}
+// }
 
 // Add Not Cover the key of node. if item exists. return false
-func (set *TreeSet[T]) Add(item T) bool {
-	return set.tree.Put(item)
+// func (set *TreeSet[KEY, VALUE]) Add(item KEY, value VALUE) bool {
+// 	return set.tree.Put(item, value)
 
-}
+// }
 
 // Set   Set the key of node.
 //
 // like add(). if compare is special, will cover key.
 // eg. k1 = {a:1,b:2}. k2 = {a:1, b:3}.  k1.a == k2.a. the key will be covered by k2
-func (set *TreeSet[T]) Set(item T) bool {
-	return set.tree.Set(item)
-}
-
-// Sets   Cover the key of nodes
-func (set *TreeSet[T]) Sets(items ...T) {
-	for _, item := range items {
-		set.tree.Set(item)
-	}
-}
-
-// Adds
-func (set *TreeSet[T]) Adds(items ...T) {
-	for _, item := range items {
-		set.tree.Put(item)
-	}
-}
+// func (set *TreeSet[KEY, VALUE]) Set(item KEY, value VALUE) bool {
+// 	return set.tree.Set(item, value)
+// }
 
 // Remove
-func (set *TreeSet[T]) Remove(items ...T) {
-	for _, item := range items {
-		set.tree.Remove(item)
-	}
-}
+// func (set *TreeSet[KEY, VALUE]) Remove(item KEY) {
+// 	set.tree.Remove(item)
+// }
 
 // Values
-func (set *TreeSet[T]) Values() []interface{} {
-	return set.tree.Values()
-}
+// func (set *TreeSet[KEY, VALUE]) Values() []VALUE {
+// 	return set.tree.Values()
+// }
 
 // Contains
-func (set *TreeSet[T]) Contains(item T) bool {
-	if _, ok := set.tree.Get(item); ok {
-		return true
-	}
-	return false
-}
+// func (set *TreeSet[KEY, VALUE]) Contains(item KEY) bool {
+// 	if _, ok := set.tree.Get(item); ok {
+// 		return true
+// 	}
+// 	return false
+// }
 
 // Empty
-func (set *TreeSet[T]) Empty() bool {
-	return set.Size() == 0
-}
+// func (set *TreeSet[KEY, VALUE]) Empty() bool {
+// 	return set.Size() == 0
+// }
 
 // Clear
-func (set *TreeSet[T]) Clear() {
-	set.tree.Clear()
-}
+// func (set *TreeSet[KEY, VALUE]) Clear() {
+// 	set.tree.Clear()
+// }
 
 // Size
-func (set *TreeSet[T]) Size() int {
-	return set.tree.Size()
-}
+// func (set *TreeSet[KEY, VALUE]) Size() uint {
+// 	return set.tree.Size()
+// }
 
 // Iterator avl Iterator
-func (set *TreeSet[T]) Iterator() *Iterator[T] {
-	return newIterator(set.tree)
-}
+// func (set *TreeSet[KEY, VALUE]) Iterator() *Iterator[KEY] {
+// 	return set.tree.Iterator()
+// }
 
 // Traverse 从左到右遍历. left -> right
-func (set *TreeSet[T]) Traverse(tr func(v interface{}) bool) {
-	set.tree.Traverse(tr)
-}
-
-// String
-func (set *TreeSet[T]) String() string {
-	// content := "HashSet\n"
-	var content = ""
-	items := []string{}
-
-	set.tree.Traverse(func(v interface{}) bool {
-		items = append(items, fmt.Sprintf("%v", v))
-		return true
-	})
-
-	content += "(" + strings.Join(items, ", ") + ")"
-	return content
-}
+// func (set *TreeSet[KEY, VALUE]) Traverse(tr func(v interface{}) bool) {
+// 	set.tree.Traverse(tr)
+// }
