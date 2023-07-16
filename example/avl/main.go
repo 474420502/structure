@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	tree := avl.New[int, int](compare.Any[int]) // create a  object
+	tree := avl.New[int, int](compare.AnyEx[int]) // create a  object
 
 	log.Println("Put Set")
 	tree.Put(0, 0) // put key value into the tree

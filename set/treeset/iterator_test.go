@@ -12,17 +12,17 @@ import (
 func TestIteratorForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Any[int])
+		tree := New[int, int](compare.AnyEx[int])
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
-			if tree.Add(v) {
+			if tree.Add(v, v) {
 				priority = append(priority, v)
 			}
 
 		}
 		sort.Slice(priority, func(i, j int) bool {
-			return priority[i] < priority[j]
+			return priority[i] <= priority[j]
 		})
 
 		s := rand.Intn(100)
@@ -41,7 +41,7 @@ func TestIteratorForce(t *testing.T) {
 				log.Panicln(iter.Value(), priority)
 			}
 		} else {
-			for i := idx; i < tree.Size(); i++ {
+			for i := uint(idx); i < tree.Size(); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}
@@ -66,7 +66,7 @@ func TestIteratorForce(t *testing.T) {
 				log.Panicln(iter.Value(), priority, idx-1, s)
 			}
 		} else {
-			for i := idx - 1; i < tree.Size(); i++ {
+			for i := uint(idx - 1); i < tree.Size(); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}
@@ -103,17 +103,17 @@ func TestIteratorForce(t *testing.T) {
 func TestIteratorForce2(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New(compare.Any[int])
+		tree := New[int, int](compare.AnyEx[int])
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
-			if tree.Add(v) {
+			if tree.Add(v, v) {
 				priority = append(priority, v)
 			}
 
 		}
 		sort.Slice(priority, func(i, j int) bool {
-			return priority[i] < priority[j]
+			return priority[i] <= priority[j]
 		})
 
 		s := rand.Intn(100)
@@ -132,7 +132,7 @@ func TestIteratorForce2(t *testing.T) {
 				log.Panicln(iter.Value(), priority)
 			}
 		} else {
-			for i := idx; i < tree.Size(); i++ {
+			for i := uint(idx); i < tree.Size(); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}
@@ -157,7 +157,7 @@ func TestIteratorForce2(t *testing.T) {
 				log.Panicln(iter.Value(), priority, idx-1, s)
 			}
 		} else {
-			for i := idx - 1; i < tree.Size(); i++ {
+			for i := uint(idx - 1); i < tree.Size(); i++ {
 				if priority[i] != iter.Value() {
 					panic("")
 				}

@@ -8,13 +8,13 @@ import (
 )
 
 func main() {
-	set := treeset.New(compare.Any[int])
+	set := treeset.New[int, int](compare.AnyEx[int])
 
 	for _, v := range []int{5, 25, 4, 11, 0} {
-		set.Add(v) // return true
+		set.Add(v, v) // return true
 	}
-	log.Println(set.Add(5))  // false
-	log.Println(set.Add(10)) // true
+	log.Println(set.Add(5, 5))   // false
+	log.Println(set.Add(10, 10)) // true
 
 	log.Println(set.String()) // (0, 4, 5, 10, 11, 25)
 

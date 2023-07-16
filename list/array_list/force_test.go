@@ -14,7 +14,7 @@ func TestCasePushRemove(t *testing.T) {
 	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
-		l := New(compare.Any[int])
+		l := New(compare.AnyEx[int])
 		count := rand.Intn(50)
 		var carray []int
 		for i := 0; i < count; i++ {
@@ -55,7 +55,7 @@ func TestCasePushPop(t *testing.T) {
 	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
-		l := New(compare.Any[int])
+		l := New(compare.AnyEx[int])
 		count := rand.Intn(50)
 		var gl = list.New()
 		for i := 0; i < count; i++ {
@@ -114,7 +114,7 @@ func TestCaseContains(t *testing.T) {
 	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
-		l := New(compare.Any[int])
+		l := New(compare.AnyEx[int])
 		count := rand.Intn(50)
 		var temp map[int]bool = make(map[int]bool)
 		for i := 0; i < count; i++ {
@@ -138,7 +138,7 @@ func TestCaseCircularIterator(t *testing.T) {
 	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
-		l := New(compare.Any[int])
+		l := New(compare.AnyEx[int])
 		gl := list.New()
 		count := rand.Intn(50)
 
@@ -224,7 +224,7 @@ func TestIteratorGCompare(t *testing.T) {
 	r := random.New()
 
 	for i := 0; i < 100; i++ {
-		al := New(compare.Any[int])
+		al := New(compare.AnyEx[int])
 		l := list.New()
 
 		for i := 0; i < r.Intn(3)+2; i++ {
@@ -355,7 +355,7 @@ func TestCIteratorGCompare(t *testing.T) {
 	r := random.New()
 
 	for i := 0; i < 100; i++ {
-		al := New(compare.Any[int])
+		al := New(compare.AnyEx[int])
 		l := list.New()
 
 		for i := 0; i < r.Intn(3)+2; i++ {

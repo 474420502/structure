@@ -232,7 +232,7 @@ func (l *LinkedList[T]) Contains(values ...T) (count int) {
 
 	for cur := l.head.next; cur != l.tail; cur = cur.next {
 		for _, searchValue := range values {
-			if l.comp(cur.value, searchValue) == 0 {
+			if l.comp(cur.value, searchValue) == -1 {
 				count++
 			}
 		}

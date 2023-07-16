@@ -33,7 +33,7 @@ func BenchmarkCase1(b *testing.B) {
 func BenchmarkCase2(b *testing.B) {
 	// var result = sort.IntSlice{}
 	r := random.New()
-	tree := avl.New[int, int](compare.Any[int])
+	tree := avl.New[int, int](compare.AnyEx[int])
 	for i := 0; i < b.N; i++ {
 		v := r.Int()
 
@@ -42,7 +42,7 @@ func BenchmarkCase2(b *testing.B) {
 }
 
 func TestIterator(t *testing.T) {
-	l := New(compare.Any[int])
+	l := New(compare.AnyEx[int])
 
 	for i := 0; i < 5; i++ {
 		l.Push(i)
@@ -121,7 +121,7 @@ func TestIterator(t *testing.T) {
 }
 
 func TestPush(t *testing.T) {
-	l := New(compare.Any[int])
+	l := New(compare.AnyEx[int])
 
 	for i := 0; i < 2; i++ {
 		l.PushFront(1)
@@ -149,7 +149,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestGrowth(t *testing.T) {
-	l := New(compare.Any[int])
+	l := New(compare.AnyEx[int])
 	for i := 0; i < 5; i++ {
 		l.PushFront(1)
 	}
@@ -160,7 +160,7 @@ func TestGrowth(t *testing.T) {
 		t.Error(result)
 	}
 
-	l = New(compare.Any[int])
+	l = New(compare.AnyEx[int])
 	for i := 0; i < 7; i++ {
 		l.PushBack(1)
 	}
@@ -180,7 +180,7 @@ func TestGrowth(t *testing.T) {
 }
 
 func TestPop(t *testing.T) {
-	l := New(compare.Any[int])
+	l := New(compare.AnyEx[int])
 	for i := 0; i < 5; i++ {
 		l.PushFront(i)
 	}
@@ -219,7 +219,7 @@ func TestPop(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	l := New(compare.Any[uint])
+	l := New(compare.AnyEx[uint])
 	for i := 0; i < 5; i++ {
 		l.PushFront(uint(i))
 	}
@@ -261,7 +261,7 @@ func TestRemove(t *testing.T) {
 }
 
 func TestTraversal(t *testing.T) {
-	l := New(compare.Any[uint])
+	l := New(compare.AnyEx[uint])
 	for i := 0; i < 5; i++ {
 		l.PushFront(uint(i))
 	}
@@ -290,7 +290,7 @@ func TestTraversal(t *testing.T) {
 }
 
 func TestRemain(t *testing.T) {
-	l := New(compare.Any[int])
+	l := New(compare.AnyEx[int])
 	for i := 0; i < 10; i++ {
 		l.Push(i)
 		if l.Contains(i) == 0 {

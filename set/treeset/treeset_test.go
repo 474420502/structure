@@ -2,6 +2,7 @@ package treeset
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"testing"
 
@@ -11,7 +12,6 @@ import (
 
 func TestTreeSet_Add(t *testing.T) {
 	type fields struct {
-		tree *Tree[int]
 	}
 	type args struct {
 		items []int
@@ -22,13 +22,16 @@ func TestTreeSet_Add(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		{name: "add int", result: "(1, 3, 5)", args: args{items: []int{1, 5, 3, 3, 5}}},
-		{name: "add -int", result: "(-5, 1, 5, 3132)", args: args{items: []int{-5, -5, 3132, 3132, 5, 1, 1, 1}}},
+		{name: "add int", result: "[1 3 5]", args: args{items: []int{1, 5, 3, 3, 5}}},
+		{name: "add -int", result: "[-5 1 5 3132]", args: args{items: []int{-5, -5, 3132, 3132, 5, 1, 1, 1}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New(compare.Any[int])
-			set.Sets(tt.args.items...)
+			set := New[int, int](compare.AnyEx[int])
+			for _, item := range tt.args.items {
+				set.Set(item, item)
+			}
+			// log.Println(set.String(), tt.result)
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
 			}
@@ -45,16 +48,21 @@ func TestTreeSet_Add(t *testing.T) {
 		fields fields
 		args   argsstr
 	}{
-		{name: "add String 1", result: "(1, 3, 5)", args: argsstr{items: []string{"1", "5", "3", "3", "5"}}},
-		{name: "add String 2", result: "(-5, 1, 3132, 5)", args: argsstr{items: []string{"-5", "-5", "3132", "3132", "5", "1", "1", "1"}}},
-		{name: "add String 3", result: "(a, aa, b, bc)", args: argsstr{items: []string{"a", "b", "aa", "aa", "bc"}}},
-		{name: "add String 4", result: "(他, 你, 我, 我我)", args: argsstr{items: []string{"我", "你", "他", "我", "我我"}}},
+		{name: "add String 1", result: "[1 3 5]", args: argsstr{items: []string{"1", "5", "3", "3", "5"}}},
+		// 字符串的 - 字符 在其他序的后面
+		{name: "add String 2", result: "[5 3132 1 -5]", args: argsstr{items: []string{"-5", "-5", "3132", "3132", "5", "1", "1", "1"}}},
+		{name: "add String 3", result: "[aa bc a b]", args: argsstr{items: []string{"a", "b", "aa", "aa", "bc"}}},
+		{name: "add String 4", result: "[我我 他 你 我]", args: argsstr{items: []string{"我", "你", "他", "我", "我我"}}},
 	}
 	for _, tt := range tests2 {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New(compare.ArrayAny[string])
-			set.Sets(tt.args.items...)
+			set := New[string, string](compare.ArrayAnyEx[string])
+			for _, item := range tt.args.items {
+				set.Set(item, item)
+			}
+
 			if set.String() != tt.result {
+				log.Println(set.String(), tt.result)
 				t.Error(set.String(), " != ", tt.result)
 			}
 
@@ -69,7 +77,7 @@ func TestTreeSet_Add(t *testing.T) {
 
 func TestTreeSet_Remove(t *testing.T) {
 	type fields struct {
-		tree *Tree[int]
+		tree *Tree[int, int]
 	}
 	type args struct {
 		addItems    []int
@@ -81,13 +89,13 @@ func TestTreeSet_Remove(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		{name: "remove 1", result: "()",
+		{name: "remove 1", result: "[]",
 			args: args{
 				addItems:    []int{5, 7, 5, 3, 2},
 				removeItems: []int{5, 7, 3, 2}},
 		},
 
-		{name: "remove 2", result: "(5)",
+		{name: "remove 2", result: "[5]",
 			args: args{
 				addItems:    []int{5, 7, 5, 3, 2},
 				removeItems: []int{7, 3, 2}},
@@ -95,9 +103,14 @@ func TestTreeSet_Remove(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New(compare.Any[int])
-			set.Sets(tt.args.addItems...)
-			set.Remove(tt.args.removeItems...)
+			set := New[int, int](compare.AnyEx[int])
+			for _, item := range tt.args.addItems {
+				set.Set(item, item)
+			}
+
+			for _, item := range tt.args.removeItems {
+				set.Remove(item)
+			}
 
 			if set.String() != tt.result {
 				t.Error(set.String(), " != ", tt.result)
@@ -107,8 +120,12 @@ func TestTreeSet_Remove(t *testing.T) {
 }
 
 func TestTreeSet_Iterator(t *testing.T) {
-	set := New(compare.Any[int])
-	set.Sets(5, 4, 3, 5)
+	set := New[int, int](compare.AnyEx[int])
+
+	set.Set(5, 5)
+	set.Set(4, 4)
+	set.Set(3, 3)
+	set.Set(5, 5)
 
 	iter := set.Iterator()
 	iter.SeekToFirst()
@@ -169,11 +186,11 @@ func TestForce(t *testing.T) {
 	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
-		set := New(compare.Any[int])
+		set := New[int, int](compare.AnyEx[int])
 		var hashset map[int]bool = make(map[int]bool)
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)
-			set.Set(v)
+			set.Set(v, v)
 			hashset[v] = true
 		}
 
@@ -184,13 +201,13 @@ func TestForce(t *testing.T) {
 		}
 
 		for _, v := range set.Values() {
-			if ok := hashset[v.(int)]; !ok {
+			if ok := hashset[v]; !ok {
 				panic("")
 			}
 		}
 
-		set.Traverse(func(v interface{}) bool {
-			if ok := hashset[v.(int)]; !ok {
+		set.Traverse(func(k, v int) bool {
+			if ok := hashset[v]; !ok {
 				panic("")
 			}
 			return true
@@ -200,94 +217,5 @@ func TestForce(t *testing.T) {
 		if !set.Empty() {
 			panic("")
 		}
-	}
-}
-
-type specialItem struct {
-	Key   int
-	Value int
-}
-
-var specialCompare = func(a1, a2 interface{}) int {
-	key1 := a1.(*specialItem).Key
-	key2 := a2.(*specialItem).Key
-	if key1 > key2 {
-		return -1
-	} else if key1 < key2 {
-		return 1
-	} else {
-		return 0
-	}
-}
-
-func TestForce2(t *testing.T) {
-	rand := random.New(t.Name())
-
-	for n := 0; n < 2000; n++ {
-		set := New(specialCompare)
-		var hashset map[int]int = make(map[int]int)
-		for i := 0; i < 200; i++ {
-			k := rand.Intn(100)
-			v := rand.Intn(100)
-			if set.Add(&specialItem{
-				Key:   k,
-				Value: v,
-			}) {
-				hashset[k] = v
-			}
-		}
-
-		set.Traverse(func(v interface{}) bool {
-			s := v.(*specialItem)
-			if hashset[s.Key] != s.Value {
-				panic("")
-			}
-			return true
-		})
-
-		var ss []interface{}
-		for i := 0; i < 200; i++ {
-			k := rand.Intn(100)
-
-			ss = append(ss, &specialItem{
-				Key:   k,
-				Value: i,
-			})
-			hashset[k] = i
-		}
-
-		set.Adds(ss...)
-
-		var is bool = true
-		set.Traverse(func(v interface{}) bool {
-			s := v.(*specialItem)
-			if hashset[s.Key] != s.Value {
-				is = false
-				return false
-			}
-			return true
-		})
-
-		if is {
-			panic("")
-		}
-
-		iter := set.Iterator()
-		iter2 := set.Iterator()
-		iter.SeekGE(&specialItem{
-			Key: 50,
-		})
-		for iter.Vaild() {
-			s := iter.Value().(*specialItem)
-			if s.Key > 50 {
-				panic("")
-			}
-			iter2.SeekGE(s)
-			if !iter2.Vaild() {
-				panic("")
-			}
-			iter.Next()
-		}
-
 	}
 }

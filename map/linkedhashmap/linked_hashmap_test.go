@@ -108,7 +108,7 @@ func TestRemove(t *testing.T) {
 		}
 
 		lhm.Remove(i)
-		if lhm.Size() != 9-i {
+		if lhm.Size() != 9-uint(i) {
 			t.Error("why lhm Size != ", uint(9-i), ", check it")
 		}
 
@@ -141,7 +141,7 @@ func TestRemove(t *testing.T) {
 func TestForce(t *testing.T) {
 	rand := random.New()
 	hm := New()
-	set := treeset.New(compare.Any[int])
+	set := treeset.New[int, int](compare.AnyEx[int])
 	l := list.New()
 
 	for n := 0; n < 2000; n++ {
@@ -165,7 +165,7 @@ func TestForce(t *testing.T) {
 					l.PushFront(v)
 				}
 			}
-			set.Add(v)
+			set.Add(v, v)
 		}
 
 		for _, v := range set.Values() {
@@ -221,10 +221,10 @@ func TestForce(t *testing.T) {
 			if rand.OneOf64n(3) {
 				if rand.OneOf64n(2) {
 					hm.Put(k, k)
-					set.Add(k)
+					set.Add(k, k)
 				} else {
 					hm.PushFront(k, k)
-					set.Add(k)
+					set.Add(k, k)
 				}
 			}
 

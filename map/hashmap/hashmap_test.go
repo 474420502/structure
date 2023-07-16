@@ -13,7 +13,7 @@ func TestForce(t *testing.T) {
 
 	rand := random.New()
 	hm := New()
-	set := treeset.New(compare.Any[int])
+	set := treeset.New[int, int](compare.AnyEx[int])
 
 	for n := 0; n < 2000; n++ {
 
@@ -28,7 +28,7 @@ func TestForce(t *testing.T) {
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)
 			hm.Set(v, v)
-			set.Add(v)
+			set.Add(v, v)
 		}
 
 		for _, v := range set.Values() {
@@ -58,7 +58,7 @@ func TestForce(t *testing.T) {
 
 			if rand.OneOf64n(3) {
 				hm.Set(k, k)
-				set.Add(k)
+				set.Add(k, k)
 			}
 		}
 
