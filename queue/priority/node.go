@@ -1,4 +1,4 @@
-package itree
+package treequeue
 
 import (
 	"fmt"
@@ -123,7 +123,7 @@ func (root *Node[KEY, VALUE]) view() (result string) {
 		return
 	}
 	var nmap = make(map[*Node[KEY, VALUE]]int)
-	outputfordebug(nmap, root, "", true, &result)
+	outputfordebug(nmap, root, "", true, &result, nil)
 	return
 }
 
@@ -163,7 +163,7 @@ func (tree *Tree[KEY, VALUE]) checkSizeTree(root *Node[KEY, VALUE]) *Node[KEY, V
 	return check(root)
 }
 
-func outputfordebug[KEY, VALUE any](nmap map[*Node[KEY, VALUE]]int, node *Node[KEY, VALUE], prefix string, isTail bool, str *string) {
+func outputfordebug[KEY, VALUE any](nmap map[*Node[KEY, VALUE]]int, node *Node[KEY, VALUE], prefix string, isTail bool, str *string, target *Node[KEY, VALUE]) {
 	if v, ok := nmap[node]; ok {
 		if v > 2 {
 			return
@@ -180,7 +180,7 @@ func outputfordebug[KEY, VALUE any](nmap map[*Node[KEY, VALUE]]int, node *Node[K
 		} else {
 			newPrefix += "    "
 		}
-		outputfordebug(nmap, node.Children[1], newPrefix, false, str)
+		outputfordebug(nmap, node.Children[1], newPrefix, false, str, target)
 	}
 
 	*str += prefix
@@ -190,7 +190,11 @@ func outputfordebug[KEY, VALUE any](nmap map[*Node[KEY, VALUE]]int, node *Node[K
 		*str += "┌── "
 	}
 
-	*str += fmt.Sprintf("%v(%d)", node.Key, node.Size) + "\n"
+	if target != nil && target == node {
+		*str += fmt.Sprintf("%v(%d)*", node.Key, node.Size) + "\n"
+	} else {
+		*str += fmt.Sprintf("%v(%d)", node.Key, node.Size) + "\n"
+	}
 
 	if node.Children[0] != nil {
 		newPrefix := prefix
@@ -199,6 +203,6 @@ func outputfordebug[KEY, VALUE any](nmap map[*Node[KEY, VALUE]]int, node *Node[K
 		} else {
 			newPrefix += "│   "
 		}
-		outputfordebug(nmap, node.Children[0], newPrefix, true, str)
+		outputfordebug(nmap, node.Children[0], newPrefix, true, str, target)
 	}
 }

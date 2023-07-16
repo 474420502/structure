@@ -1,4 +1,4 @@
-package itree
+package treequeue
 
 // Iterator tree iterator
 type Iterator[KEY, VALUE any] struct {

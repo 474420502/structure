@@ -1,4 +1,4 @@
-package itree
+package treequeue
 
 import (
 	"log"
@@ -25,14 +25,13 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 	}
 
 	cmp := tree.Compare(cur.Key, key)
-
 	if cmp < 0 {
-		return cur, 1
-	} else {
-		target, isExists = tree.put(cur, cmp, key)
-		if isExists == 1 {
-			return target, isExists
-		}
+		cmp = 1
+	}
+
+	target, isExists = tree.put(cur, cmp, key)
+	if isExists == 1 {
+		return target, isExists
 	}
 
 	cur.Size++
@@ -40,28 +39,35 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 		tree.rebalance(parent, child)
 	}
 
-	// lastsize := maysize
-	// maysize = maysize << 1
-	// r := cur.view()
-	// if maysize-cur.Size-1 > lastsize {
-	// 	tree.rebalance(parent, child)
-	// 	log.Println(lastsize, maysize, cur.Size, r)
-	// 	log.Println()
-
-	// }
-
 	return target, isExists
 }
 
+// 获取到根节点后遍历
 func (tree *Tree[KEY, VALUE]) get(key KEY, cur *Node[KEY, VALUE]) *Node[KEY, VALUE] {
 	if cur == nil {
 		return nil
 	}
 	cmp := tree.Compare(cur.Key, key)
 	if cmp < 0 {
-		return cur
+		// cmp = 0
+		return tree.get(key, cur)
 	}
+
 	return tree.get(key, cur.Children[cmp])
+}
+
+func (tree *Tree[KEY, VALUE]) getfirst(key KEY, parent *Node[KEY, VALUE], child int, sel *Node[KEY, VALUE]) *Node[KEY, VALUE] {
+	cur := parent.Children[child]
+	if cur == nil {
+		return sel
+	}
+
+	cmp := tree.Compare(cur.Key, key)
+	if cmp < 0 {
+		cmp = 0
+		sel = cur
+	}
+	return tree.getfirst(key, cur, cmp, sel)
 }
 
 func (tree *Tree[KEY, VALUE]) index(i int) *Node[KEY, VALUE] {
@@ -543,6 +549,17 @@ func (tree *Tree[KEY, VALUE]) view() (result string) {
 		return
 	}
 	var nmap = make(map[*Node[KEY, VALUE]]int)
-	outputfordebug(nmap, tree.getRoot(), "", true, &result)
+	outputfordebug(nmap, tree.getRoot(), "", true, &result, nil)
+	return
+}
+
+func (tree *Tree[KEY, VALUE]) viewEx(taregt *Node[KEY, VALUE]) (result string) {
+	result = "\n"
+	if tree.getRoot() == nil {
+		result += "└── nil"
+		return
+	}
+	var nmap = make(map[*Node[KEY, VALUE]]int)
+	outputfordebug(nmap, tree.getRoot(), "", true, &result, taregt)
 	return
 }
