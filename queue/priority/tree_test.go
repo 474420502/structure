@@ -24,10 +24,13 @@ func TestMain(t *testing.T) {
 	}
 	log.Printf("%v len:%d", s, len(s))
 	// tree.check()
-	log.Println(tree.view())
-	log.Println()
+	// log.Println(tree.view())
+	// log.Println()
 	log.Println(tree.Get(5))
-
+	log.Println(tree.Gets(5))
+	tree.Remove(5)
+	tree.check()
+	log.Println(tree.Get(5))
 }
 
 // type dSlice[T any] struct {

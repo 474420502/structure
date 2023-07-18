@@ -43,17 +43,32 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 }
 
 // 获取到根节点后遍历
-func (tree *Tree[KEY, VALUE]) get(key KEY, cur *Node[KEY, VALUE]) *Node[KEY, VALUE] {
+func (tree *Tree[KEY, VALUE]) seekRoot(key KEY, cur *Node[KEY, VALUE]) *Node[KEY, VALUE] {
 	if cur == nil {
 		return nil
 	}
 	cmp := tree.Compare(cur.Key, key)
 	if cmp < 0 {
 		// cmp = 0
-		return tree.get(key, cur)
+		return cur
 	}
 
-	return tree.get(key, cur.Children[cmp])
+	return tree.seekRoot(key, cur.Children[cmp])
+}
+
+// traverse
+func (tree *Tree[KEY, VALUE]) traverse(key KEY, cur *Node[KEY, VALUE], result *[]VALUE) {
+	if cur == nil {
+		return
+	}
+	cmp := tree.Compare(cur.Key, key)
+	if cmp < 0 {
+		*result = append(*result, cur.Value)
+		tree.traverse(key, cur.Children[0], result)
+		tree.traverse(key, cur.Children[1], result)
+	} else {
+		tree.traverse(key, cur.Children[cmp], result)
+	}
 }
 
 func (tree *Tree[KEY, VALUE]) getfirst(key KEY, parent *Node[KEY, VALUE], child int, sel *Node[KEY, VALUE]) *Node[KEY, VALUE] {
@@ -135,7 +150,7 @@ func (tree *Tree[KEY, VALUE]) removeIndex(parent *Node[KEY, VALUE], child, idx, 
 
 }
 
-func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (target *VALUE) {
+func (tree *Tree[KEY, VALUE]) removeLeft(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (target *VALUE) {
 	parent := grandpa.Children[child2]
 	cur := parent.Children[child1]
 
@@ -145,6 +160,15 @@ func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2,
 
 	cmp := tree.Compare(cur.Key, key)
 	if cmp < 0 {
+
+		target := tree.removeLeft(key, parent, child1, 0)
+		if target != nil {
+			cur.Size--
+			if cur != tree.Center {
+				tree.rebalance(parent, child1)
+			}
+			return target
+		}
 
 		// remove 两种状态. 当前值不在底, 在底
 		if cur.Children[0] == nil {
@@ -168,7 +192,7 @@ func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2,
 		return target
 	}
 
-	target = tree.remove(key, parent, child1, cmp)
+	target = tree.removeLeft(key, parent, child1, cmp)
 	if target != nil {
 		cur.Size--
 		if cur != tree.Center {
