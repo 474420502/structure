@@ -35,8 +35,6 @@ func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 }
 
 func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
-
-	// cur := tree.get(key, tree.getRoot())
 	cur := tree.getfirst(key, tree.Center, 1, nil)
 	log.Println(tree.viewEx(cur))
 	if cur == nil {
@@ -44,6 +42,16 @@ func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	}
 
 	return cur.Value, true
+}
+
+// Gets get the key all values. contains the same key
+func (tree *Tree[KEY, VALUE]) Gets(key KEY) (result []VALUE) {
+	cur := tree.seekRoot(key, tree.getRoot())
+	if cur == nil {
+		return
+	}
+	tree.traverse(key, cur, &result)
+	return result
 }
 
 func (tree *Tree[KEY, VALUE]) Index(idx int) VALUE {
@@ -60,40 +68,9 @@ func (tree *Tree[KEY, VALUE]) Index(idx int) VALUE {
 	return tree.index(idx).Value
 }
 
-func (tree *Tree[KEY, VALUE]) IndexOf(key KEY) int {
-
-	cur := tree.getRoot()
-	if cur == nil {
-		return -1
-	}
-
-	var offset int = cur.Children[0].getSize()
-	for {
-		cmp := tree.Compare(cur.Key, key)
-		if cmp < 0 {
-			return offset
-		} else {
-			if cmp == 0 {
-				cur = cur.Children[0]
-				if cur == nil {
-					return -1
-				}
-				offset -= getSize(cur.Children[1]) + 1
-			} else {
-				cur = cur.Children[1]
-				if cur == nil {
-					return -1
-				}
-				offset += getSize(cur.Children[0]) + 1
-			}
-
-		}
-
-	}
-}
-
 func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
-	target := tree.remove(key, tree.Center, 0, 1)
+
+	target := tree.removeLeft(key, tree.Center, 0, 1)
 	if target != nil {
 		return *target, true
 	}
