@@ -91,15 +91,11 @@ func (tree *Tree[KEY, VALUE]) index(i int) *Node[KEY, VALUE] {
 	var idx int = cur.Children[0].getSize()
 	for {
 		if idx > i {
-			if cur.Children[0] == nil {
-				log.Println(tree.view(), cur.view())
-			}
+
 			cur = cur.Children[0]
 			idx -= cur.Children[1].getSize() + 1
 		} else if idx < i {
-			if cur.Children[1] == nil {
-				log.Println(tree.view(), cur.view())
-			}
+
 			cur = cur.Children[1]
 			idx += cur.Children[0].getSize() + 1
 		} else {
@@ -116,6 +112,7 @@ func (tree *Tree[KEY, VALUE]) removeIndex(parent *Node[KEY, VALUE], child, idx, 
 	parent.Size--
 	cur := parent.Children[child]
 	if idx == i {
+
 		if cur.Children[0] == nil {
 			parent.Children[child] = cur.Children[1]
 			return &cur.Value
