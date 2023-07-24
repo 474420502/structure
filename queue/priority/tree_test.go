@@ -1,7 +1,9 @@
 package treequeue
 
 import (
+	"fmt"
 	"log"
+	"sort"
 	"testing"
 
 	"github.com/474420502/random"
@@ -31,104 +33,94 @@ func TestMain(t *testing.T) {
 	tree.Remove(5)
 	tree.check()
 	log.Println(tree.Get(5))
+
+	for tree.Size() != 0 {
+		tree.PopTail()
+		log.Println(tree.view())
+		tree.check()
+	}
 }
 
-// type dSlice[T any] struct {
-// 	key   T
-// 	value interface{}
-// }
+type dSlice[T any] struct {
+	key   T
+	value interface{}
+}
 
-// func (s *dSlice[T]) String() string {
-// 	return fmt.Sprintf("(%v,%v)", s.key, s.value)
-// }
+func (s *dSlice[T]) String() string {
+	return fmt.Sprintf("(%v,%v)", s.key, s.value)
+}
 
-// func (s *dSlice[T]) Key() T {
-// 	return s.key
-// }
+func (s *dSlice[T]) Key() T {
+	return s.key
+}
 
-// func (s *dSlice[T]) Value() interface{} {
-// 	return s.value
-// }
+func (s *dSlice[T]) Value() interface{} {
+	return s.value
+}
 
-// func (s *dSlice[T]) SetValue(v interface{}) {
-// 	s.value = v
-// }
+func (s *dSlice[T]) SetValue(v interface{}) {
+	s.value = v
+}
 
-// func TestCase1(t *testing.T) {
-// 	rand := random.New(t.Name())
-// 	q := New(compare.Any[int])
+func TestCase1(t *testing.T) {
+	rand := random.New(t.Name())
+	q := New[int, int](compare.AnyEx[int])
 
-// 	for i := 0; i < 20; i++ {
-// 		v := rand.Intn(10)
-// 		q.Put(v, i)
-// 		// log.Println(q.debugStringWithValue())
-// 	}
+	for i := 0; i < 20; i++ {
+		v := rand.Intn(10)
+		q.Put(v, i)
+		q.check()
+		// log.Println(q.debugStringWithValue())
+	}
 
-// 	q.Remove(2)
-// 	q.check()
+	q.Remove(2)
+	q.check()
 
-// }
+}
 
-// func TestExtractForce(t *testing.T) {
-// 	rand := random.New(t.Name())
-// 	for n := 0; n < 2000; n++ {
-// 		queue := New(compare.Any[int])
-// 		var priority []*dSlice[float64]
-// 		var offset = 0.00001
-// 		for i := 0; i < 200; i++ {
-// 			v := rand.Intn(1000)
-// 			queue.Put(v, i)
-// 			priority = append(priority, &dSlice[float64]{float64(v) + offset, i})
-// 			offset += 0.00001
-// 		}
+func TestExtractForce(t *testing.T) {
+	rand := random.New(t.Name())
+	for n := 0; n < 2000; n++ {
+		queue := New[int, int](compare.AnyEx[int])
+		var priority []*dSlice[float64]
+		var offset = 0.00001
+		for i := 0; i < 200; i++ {
+			v := rand.Intn(1000)
+			queue.Put(v, i)
+			priority = append(priority, &dSlice[float64]{float64(v) + offset, i})
+			offset += 0.00001
+		}
 
-// 		sort.Slice(priority, func(i, j int) bool {
-// 			return priority[i].Key() < priority[j].Key()
-// 		})
+		sort.Slice(priority, func(i, j int) bool {
+			return priority[i].Key() < priority[j].Key()
+		})
 
-// 		var start = rand.Intn(100)
-// 		var end = rand.Intn(110)
-// 		if start > end {
-// 			start, end = end, start
-// 		}
+		var start = rand.Intn(100)
+		var end = rand.Intn(110)
+		if start > end {
+			start, end = end, start
+		}
 
-// 		var selects []int
-// 		var s int = -1
-// 		for i, v := range priority {
-// 			if int(v.Key()) >= start {
-// 				s = i
-// 				break
-// 			}
-// 		}
+		var selects []int
+		var s int = -1
+		for i, v := range priority {
+			if int(v.Key()) >= start {
+				s = i
+				break
+			}
+		}
 
-// 		if s >= 0 {
-// 			for _, v := range priority[s:] {
-// 				if int(v.Key()) > end {
-// 					break
-// 				}
-// 				selects = append(selects, v.Value().(int))
-// 			}
-// 		}
+		if s >= 0 {
+			for _, v := range priority[s:] {
+				if int(v.Key()) > end {
+					break
+				}
+				selects = append(selects, v.Value().(int))
+			}
+		}
 
-// 		queue.Extract(start, end)
-// 		queue.check()
-
-// 		r1 := fmt.Sprintf("%v", queue.Values())
-// 		r2 := fmt.Sprintf("%v", selects)
-// 		if r1 != r2 {
-// 			log.Println(n, start, end)
-// 			log.Println(priority)
-// 			log.Panicln(r1, r2)
-// 		}
-
-// 		for i := 0; i < 10; i++ {
-// 			v := rand.Intn(1000)
-// 			queue.Put(v, i)
-// 		}
-
-// 		queue.check()
-// 	}
-// }
+	}
+}
 
 // func TestExtractIndexForce(t *testing.T) {
 // 	rand := random.New(t.Name())
@@ -178,92 +170,51 @@ func TestMain(t *testing.T) {
 // 	}
 // }
 
-// func TestRemoveForce(t *testing.T) {
-// 	rand := random.New(t.Name())
-// 	for n := 0; n < 2000; n++ {
-// 		queue := New(compare.Any[int])
-// 		var priority []*dSlice[float64]
-// 		var offset = 0.00001
-// 		for i := 0; i < 40; i++ {
-// 			v := rand.Intn(100)
-// 			queue.Put(v, i)
-// 			priority = append(priority, &dSlice[float64]{float64(v) + offset, i})
-// 			offset += 0.00001
-// 		}
+func TestRemoveForce(t *testing.T) {
+	rand := random.New(t.Name())
+	for n := 0; n < 2000; n++ {
+		queue := New[int, int](compare.AnyEx[int])
+		var priority []*dSlice[float64]
+		var offset = 0.00001
+		for i := 0; i < 40; i++ {
+			v := rand.Intn(100)
+			queue.Put(v, i)
+			priority = append(priority, &dSlice[float64]{float64(v) + offset, i})
+			offset += 0.00001
+		}
 
-// 		sort.Slice(priority, func(i, j int) bool {
-// 			return priority[i].Key() < priority[j].Key()
-// 		})
+		sort.Slice(priority, func(i, j int) bool {
+			return priority[i].Key() < priority[j].Key()
+		})
 
-// 		for queue.Size() > 15 {
+		for queue.Size() > 15 {
 
-// 			ridx := rand.Intn(len(priority))
-// 			k := priority[ridx].Key() //TODO: 必须选择第一个.
+			ridx := rand.Intn(len(priority))
+			k := priority[ridx].Key() //TODO: 必须选择第一个.
 
-// 			for ridx > 0 {
-// 				ridx--
-// 				if float64(int(k)) != float64(int(priority[ridx].Key())) {
-// 					ridx++
-// 					break
-// 				}
-// 			}
+			for ridx > 0 {
+				ridx--
+				if float64(int(k)) != float64(int(priority[ridx].Key())) {
+					ridx++
+					break
+				}
+			}
 
-// 			priority = append(priority[0:ridx], priority[ridx+1:]...)
+			priority = append(priority[0:ridx], priority[ridx+1:]...)
 
-// 			queue.Remove(int(k))
-// 			queue.check()
+			queue.Remove(int(k))
+			queue.check()
 
-// 			var selectValues []int
-// 			var selectKeys []float64
-// 			for i, v := range priority {
-// 				selectValues = append(selectValues, v.Value().(int))
-// 				selectKeys = append(selectKeys, v.Key())
-// 				s := queue.Index(int64(i))
-// 				if s.Value() != v.Value() || s.Key() != int(v.Key()) {
-// 					panic("")
-// 				}
-// 			}
+		}
 
-// 			for i := 0; i < 5; i++ {
-// 				idx := int64(rand.Intn(len(selectKeys)))
-// 				k := selectKeys[idx]
-// 				qidx := queue.IndexOf(int(k))
+		for i := 0; i < 5; i++ {
+			v := rand.Intn(1000)
+			queue.Put(v, i)
+		}
 
-// 				if qidx != idx {
-// 					if int(k) != int(selectKeys[idx-1]) {
-// 						log.Println(queue.debugStringWithValue())
-// 						log.Panicln(k, selectKeys[idx-1], idx, qidx, selectKeys)
-// 					}
-// 				}
-
-// 				if int(selectKeys[qidx]) != int(k) {
-// 					panic("")
-// 				}
-
-// 			}
-
-// 			queue.check()
-
-// 			r1 := fmt.Sprintf("%v", queue.Values())
-// 			r2 := fmt.Sprintf("%v", selectValues)
-// 			if r1 != r2 {
-// 				log.Println(priority, ridx, int(k))
-// 				log.Println(queue.debugStringWithValue())
-// 				log.Println(r1)
-// 				log.Println(r2)
-// 				log.Panicln()
-// 			}
-
-// 		}
-
-// 		for i := 0; i < 5; i++ {
-// 			v := rand.Intn(1000)
-// 			queue.Put(v, i)
-// 		}
-
-// 		queue.check()
-// 	}
-// }
+		queue.check()
+	}
+}
 
 // func TestRemoveRangeForce(t *testing.T) {
 // 	rand := random.New(t.Name())
