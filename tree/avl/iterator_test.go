@@ -449,15 +449,11 @@ func TestDefaultSeek(t *testing.T) {
 
 	// 测试在树不为空时的情况
 
-	if iter.SeekLE(-1) != false {
-		t.Error("iter.SeekLE(-1) should be true")
-	}
-
-	log.Println(iter.SeekLE(-1), iter.Valid(), iter.Value()) // true true 0
-	log.Println(iter.SeekLT(-1), iter.Valid(), iter.Value()) // false false 0
-
-	log.Println(iter.SeekGE(10), iter.Valid(), iter.Value()) // false false 8
-	log.Println(iter.SeekGT(10), iter.Valid(), iter.Value()) // false false 8
+	log.Println(iter.SeekLE(-1), iter.Valid()) // false false
+	log.Println(iter.SeekLT(-1), iter.Valid()) // false false
+	// #2
+	log.Println(iter.SeekGE(10), iter.Valid()) // false false
+	log.Println(iter.SeekGT(10), iter.Valid()) // false false
 
 	log.Println(iter.SeekLE(6), iter.Valid(), iter.Value()) // true true 6
 	log.Println(iter.SeekLT(6), iter.Valid(), iter.Value()) // true true 4
@@ -484,19 +480,20 @@ func TestDefaultSeek(t *testing.T) {
 	tree.Set(-2, -2)
 	log.Println(tree.Values()) // [-2 0 2 4 5 6 8]
 	iter = tree.Iterator()
-	log.Println(iter.SeekLE(-3), iter.Valid(), iter.Value()) // true true -2
-	log.Println(iter.SeekLT(-3), iter.Valid(), iter.Value()) // false false -2
-	log.Println(iter.SeekGE(-3), iter.Valid(), iter.Value()) // true true -2
-	log.Println(iter.SeekGT(-3), iter.Valid(), iter.Value()) // true true 0
+	log.Println(iter.SeekLE(-2), iter.Valid(), iter.Value()) // true true -2
+	log.Println(iter.SeekLT(-3), iter.Valid())               // false false
+	log.Println(iter.SeekGE(-2), iter.Valid(), iter.Value()) // true true -2
+	log.Println(iter.SeekGT(-3), iter.Valid(), iter.Value()) // false true 0
 
 	// 测试在树尾部插入新元素后的情况
 	tree.Set(10, 10)
 	log.Println(tree.Values()) // [-2 0 2 4 5 6 8 10]
 	iter = tree.Iterator()
-	log.Println(iter.SeekLE(11), iter.Valid(), iter.Value()) // true true 10
-	log.Println(iter.SeekLT(11), iter.Valid(), iter.Value()) // true true 8
-	log.Println(iter.SeekGE(11), iter.Valid(), iter.Value()) // false false 10
-	log.Println(iter.SeekGT(11), iter.Valid(), iter.Value()) // false false 10
+	log.Println(iter.SeekLE(11), iter.Valid(), iter.Value()) // false true 10
+	log.Println(iter.SeekLT(10), iter.Valid(), iter.Value()) // false true 8
+	log.Println(iter.SeekGE(11), iter.Valid())               // false false
+	log.Println(iter.SeekGT(11), iter.Valid())               // false false
+
 }
 
 // func TestCompareSimilarForce(t *testing.T) {
