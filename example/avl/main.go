@@ -33,7 +33,7 @@ func main() {
 	log.Println("SeekToFirst")
 	iter.SeekToFirst() // seek to the first item
 	// range first to last
-	for iter.Vaild() {
+	for iter.Valid() {
 		log.Println(iter.Value()) // 0 1 2 3 4
 		iter.Next()
 	}
@@ -41,7 +41,7 @@ func main() {
 	log.Println("SeekToLast")
 	iter.SeekToLast() // seek to the last item
 	// range last to first
-	for iter.Vaild() {
+	for iter.Valid() {
 		log.Println(iter.Value()) // 4 3 2 1 0
 		iter.Prev()
 	}
@@ -51,7 +51,7 @@ func main() {
 	log.Println(tree.Remove(2)) // <nil>, false
 
 	iter.Next() // the pos of iter is before 0. so need call Next()
-	for iter.Vaild() {
+	for iter.Valid() {
 		log.Println(iter.Value()) // 0 1 3 4
 		iter.Next()
 	}
@@ -59,7 +59,7 @@ func main() {
 	log.Println("SeekGE")
 	iter.SeekGE(3) // seek to the iterator value >= 3
 	// range 3 to 4
-	for iter.Vaild() {
+	for iter.Valid() {
 		log.Println(iter.Value()) // 3 4
 		iter.Next()
 	}
@@ -67,7 +67,7 @@ func main() {
 	log.Println("SeekLE")
 	iter.SeekLE(2) // seek to the iterator value >= 3
 	// range 1 to 0
-	for iter.Vaild() {
+	for iter.Valid() {
 		log.Println(iter.Value()) // 1 0
 		iter.Prev()
 	}

@@ -17,7 +17,7 @@ func TestNextPrev(t *testing.T) {
 
 	iter := tree.Iterator()
 	iter.SeekToFirst()
-	if !iter.Vaild() {
+	if !iter.Valid() {
 		panic("")
 	}
 
@@ -27,7 +27,7 @@ func TestNextPrev(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 
-		if !iter.Vaild() || iter.Value() != i {
+		if !iter.Valid() || iter.Value() != i {
 			panic("")
 		}
 		log.Println(iter.view())
@@ -35,8 +35,8 @@ func TestNextPrev(t *testing.T) {
 	}
 
 	iter.Prev()
-	log.Println(iter.Vaild(), iter.Key())
-	if !iter.Vaild() && iter.Value() != 9 {
+	log.Println(iter.Valid(), iter.Key())
+	if !iter.Valid() && iter.Value() != 9 {
 		panic("")
 	}
 
@@ -103,74 +103,74 @@ func TestDefault(t *testing.T) {
 	iter := tree.Iterator()
 
 	iter.SeekLE(93) //
-	if !iter.Vaild() && iter.Key() != 92 {
+	if !iter.Valid() && iter.Key() != 92 {
 		panic("SeekLE 93")
 	}
 
 	iter.Prev()
-	if !iter.Vaild() && iter.Key() != 85 {
+	if !iter.Valid() && iter.Key() != 85 {
 		panic("Prev 85")
 	}
 
 	iter.SeekLT(27)
-	if !iter.Vaild() && iter.Key() != 20 {
+	if !iter.Valid() && iter.Key() != 20 {
 		panic("SeekLT 27")
 	}
 	a := iter.Clone()
 
 	iter.SeekGE(65)
-	if !iter.Vaild() && iter.Key() != 69 {
+	if !iter.Valid() && iter.Key() != 69 {
 		panic("SeekGE 69")
 	}
 
 	a.Next()
-	if !a.Vaild() && a.Key() != 27 {
+	if !a.Valid() && a.Key() != 27 {
 		panic("a.Next() 20 -> 27")
 	}
 
 	a.Prev()
-	if !a.Vaild() && a.Key() != 20 {
+	if !a.Valid() && a.Key() != 20 {
 		panic("a.Prev() 20 <- 27")
 	}
 
-	if !iter.Vaild() && iter.Key() != 69 {
+	if !iter.Valid() && iter.Key() != 69 {
 		panic("SeekGE 69")
 	}
 
 	iter.SeekToFirst()
-	if !iter.Vaild() && iter.Key() != 0 {
+	if !iter.Valid() && iter.Key() != 0 {
 		panic("SeekToFirst")
 	}
 	iter.Prev() // 0 ->  无穷小
-	if iter.Vaild() {
+	if iter.Valid() {
 		panic("0 ->>>> min")
 	}
 	iter.Prev()
-	if iter.Vaild() {
+	if iter.Valid() {
 		log.Println(iter.Key())
 		panic("min ->>>> min")
 	}
 	iter.Next()
-	if !iter.Vaild() {
+	if !iter.Valid() {
 		panic("min ->>>> 0")
 	}
 
 	iter.SeekToLast()
-	if !iter.Vaild() && iter.Key() != 92 {
+	if !iter.Valid() && iter.Key() != 92 {
 		panic("SeekToFirst")
 	}
 
 	iter.Next()
-	if iter.Vaild() {
+	if iter.Valid() {
 		panic("92 ->>>> max")
 	}
 	iter.Next()
-	if iter.Vaild() {
+	if iter.Valid() {
 		panic("max ->>>> max")
 	}
 
 	iter.Prev()
-	if !iter.Vaild() {
+	if !iter.Valid() {
 		panic("max ->>>> 92")
 	}
 
@@ -186,7 +186,7 @@ func TestSeekFor(t *testing.T) {
 
 	iter := tree.Iterator()
 	iter.SeekLE(7)
-	if !iter.Vaild() { // Key == 6
+	if !iter.Valid() { // Key == 6
 		t.Error("SeekLE return is error")
 	}
 	for i := 6; i >= 0; i -= 2 {
@@ -197,7 +197,7 @@ func TestSeekFor(t *testing.T) {
 	}
 
 	iter.SeekLE(7)
-	if !iter.Vaild() {
+	if !iter.Valid() {
 		t.Error("SeekLE return is error")
 	}
 	for i := 6; i < 20; i += 2 {
@@ -208,7 +208,7 @@ func TestSeekFor(t *testing.T) {
 	}
 
 	iter.SeekLE(6)
-	if !iter.Vaild() { // key == 6
+	if !iter.Valid() { // key == 6
 		t.Error("SeekLE return is error")
 	}
 	for i := 6; i < 20; i += 2 {
@@ -219,7 +219,7 @@ func TestSeekFor(t *testing.T) {
 	}
 
 	iter.SeekGE(7)
-	if !iter.Vaild() { // Key == 8
+	if !iter.Valid() { // Key == 8
 		t.Error("SeekGE return is error")
 	}
 	for i := 8; i < 20; i += 2 {
@@ -230,7 +230,7 @@ func TestSeekFor(t *testing.T) {
 	}
 
 	iter.SeekGE(8)
-	if !iter.Vaild() { // Key == 8
+	if !iter.Valid() { // Key == 8
 		t.Error("SeekGE return is error")
 	}
 	for i := 8; i < 20; i += 2 {
@@ -269,7 +269,7 @@ func TestIteratorForce(t *testing.T) {
 		})
 
 		if idx == len(priority) {
-			if iter.Vaild() {
+			if iter.Valid() {
 				log.Panicln(iter.Value(), priority)
 			}
 		} else {
@@ -294,7 +294,7 @@ func TestIteratorForce(t *testing.T) {
 		})
 
 		if idx-1 < 0 {
-			if iter.Vaild() {
+			if iter.Valid() {
 				log.Panicln(iter.Value(), priority, idx-1, s)
 			}
 		} else {
@@ -360,7 +360,7 @@ func TestIteratorForce2(t *testing.T) {
 		})
 
 		if idx == len(priority) {
-			if iter.Vaild() {
+			if iter.Valid() {
 				log.Panicln(iter.Value(), priority)
 			}
 		} else {
@@ -389,7 +389,7 @@ func TestIteratorForce2(t *testing.T) {
 		// }
 
 		if idx-1 < 0 {
-			if iter.Vaild() {
+			if iter.Valid() {
 				log.Panicln(iter.Value(), priority, idx-1, s)
 			}
 		} else {
@@ -425,6 +425,78 @@ func TestIteratorForce2(t *testing.T) {
 		}
 
 	}
+}
+
+func TestDefaultSeek(t *testing.T) {
+	tree := New[int, int](compare.AnyEx[int])
+	for i := 0; i < 10; i += 2 {
+		tree.Set(i, i)
+	}
+	log.Println(tree.Values()) // [0 2 4 6 8]
+
+	iter := tree.Iterator()
+
+	// 测试 SeekLE 和 SeekLT 在树为空时的情况
+	emptyTree := New[int, int](compare.AnyEx[int])
+	emptyIter := emptyTree.Iterator()
+
+	log.Println(emptyIter.SeekLE(-1), emptyIter.Valid()) // false false
+	log.Println(emptyIter.SeekLT(-1), emptyIter.Valid()) // false false
+
+	// 测试 SeekGE 和 SeekGT 在树为空时的情况
+	log.Println(emptyIter.SeekGE(10), emptyIter.Valid()) // false false
+	log.Println(emptyIter.SeekGT(10), emptyIter.Valid()) // false false
+
+	// 测试在树不为空时的情况
+
+	if iter.SeekLE(-1) != false {
+		t.Error("iter.SeekLE(-1) should be true")
+	}
+
+	log.Println(iter.SeekLE(-1), iter.Valid(), iter.Value()) // true true 0
+	log.Println(iter.SeekLT(-1), iter.Valid(), iter.Value()) // false false 0
+
+	log.Println(iter.SeekGE(10), iter.Valid(), iter.Value()) // false false 8
+	log.Println(iter.SeekGT(10), iter.Valid(), iter.Value()) // false false 8
+
+	log.Println(iter.SeekLE(6), iter.Valid(), iter.Value()) // true true 6
+	log.Println(iter.SeekLT(6), iter.Valid(), iter.Value()) // true true 4
+
+	log.Println(iter.SeekLE(5), iter.Valid(), iter.Value()) // false true 4
+	log.Println(iter.SeekLT(5), iter.Valid(), iter.Value()) // false true 4
+
+	log.Println(iter.SeekGE(6), iter.Valid(), iter.Value()) // true true 6
+	log.Println(iter.SeekGT(6), iter.Valid(), iter.Value()) // true true 8
+
+	log.Println(iter.SeekGE(5), iter.Valid(), iter.Value()) // false true 6
+	log.Println(iter.SeekGT(5), iter.Valid(), iter.Value()) // false true 6
+
+	// 测试在树中间插入新元素后的情况
+	tree.Set(5, 5)
+	log.Println(tree.Values()) // [0 2 4 5 6 8]
+	iter = tree.Iterator()
+	log.Println(iter.SeekLE(5), iter.Valid(), iter.Value()) // true true 5
+	log.Println(iter.SeekLT(5), iter.Valid(), iter.Value()) // true true 4
+	log.Println(iter.SeekGE(5), iter.Valid(), iter.Value()) // true true 5
+	log.Println(iter.SeekGT(5), iter.Valid(), iter.Value()) // true true 6
+
+	// 测试在树头部插入新元素后的情况
+	tree.Set(-2, -2)
+	log.Println(tree.Values()) // [-2 0 2 4 5 6 8]
+	iter = tree.Iterator()
+	log.Println(iter.SeekLE(-3), iter.Valid(), iter.Value()) // true true -2
+	log.Println(iter.SeekLT(-3), iter.Valid(), iter.Value()) // false false -2
+	log.Println(iter.SeekGE(-3), iter.Valid(), iter.Value()) // true true -2
+	log.Println(iter.SeekGT(-3), iter.Valid(), iter.Value()) // true true 0
+
+	// 测试在树尾部插入新元素后的情况
+	tree.Set(10, 10)
+	log.Println(tree.Values()) // [-2 0 2 4 5 6 8 10]
+	iter = tree.Iterator()
+	log.Println(iter.SeekLE(11), iter.Valid(), iter.Value()) // true true 10
+	log.Println(iter.SeekLT(11), iter.Valid(), iter.Value()) // true true 8
+	log.Println(iter.SeekGE(11), iter.Valid(), iter.Value()) // false false 10
+	log.Println(iter.SeekGT(11), iter.Valid(), iter.Value()) // false false 10
 }
 
 // func TestCompareSimilarForce(t *testing.T) {

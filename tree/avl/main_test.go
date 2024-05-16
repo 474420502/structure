@@ -8,6 +8,10 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
+func init() {
+	// log.SetFlags(log.Llongfile)
+}
+
 func TestCase(t *testing.T) {
 
 	r := random.New(1684012134704818399)

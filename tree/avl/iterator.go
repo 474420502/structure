@@ -25,8 +25,8 @@ func (iter *Iterator[KEY, VALUE]) Value() VALUE {
 	return iter.cur.Value
 }
 
-// Vaild if current value is not nil return true. else return false. for use with Seek
-func (iter *Iterator[KEY, VALUE]) Vaild() bool {
+// Valid if current value is not nil return true. else return false. for use with Seek
+func (iter *Iterator[KEY, VALUE]) Valid() bool {
 	return iter.cur != nil
 }
 
@@ -51,23 +51,23 @@ func (iter *Iterator[KEY, VALUE]) SeekToLast() {
 }
 
 // SeekLE seek to the key that less than or equal to
-func (iter *Iterator[KEY, VALUE]) SeekLE(key KEY) {
-	iter.seekEqual(key, 0)
+func (iter *Iterator[KEY, VALUE]) SeekLE(key KEY) bool {
+	return iter.seekEqual(key, 0)
 }
 
 // SeekLT seek to the key that less than
-func (iter *Iterator[KEY, VALUE]) SeekLT(key KEY) {
-	iter.seekThan(key, 0)
+func (iter *Iterator[KEY, VALUE]) SeekLT(key KEY) bool {
+	return iter.seekThan(key, 0)
 }
 
 // SeekGE seek to the key that greater than or equal to
-func (iter *Iterator[KEY, VALUE]) SeekGE(key KEY) {
-	iter.seekEqual(key, 1)
+func (iter *Iterator[KEY, VALUE]) SeekGE(key KEY) bool {
+	return iter.seekEqual(key, 1)
 }
 
 // SeekGT seek to the key that greater than
-func (iter *Iterator[KEY, VALUE]) SeekGT(key KEY) {
-	iter.seekThan(key, 1)
+func (iter *Iterator[KEY, VALUE]) SeekGT(key KEY) bool {
+	return iter.seekThan(key, 1)
 }
 
 // Prev the current iterator move to the prev. before call it must call Vaild() and return true.
