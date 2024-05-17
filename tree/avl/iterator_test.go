@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/474420502/random"
+	utils "github.com/474420502/structure"
 	"github.com/474420502/structure/compare"
 )
 
@@ -432,68 +433,101 @@ func TestDefaultSeek(t *testing.T) {
 	for i := 0; i < 10; i += 2 {
 		tree.Set(i, i)
 	}
-	log.Println(tree.Values()) // [0 2 4 6 8]
-
+	utils.Expect("[0 2 4 6 8]", tree.Values())
 	iter := tree.Iterator()
 
 	// 测试 SeekLE 和 SeekLT 在树为空时的情况
 	emptyTree := New[int, int](compare.AnyEx[int])
 	emptyIter := emptyTree.Iterator()
 
-	log.Println(emptyIter.SeekLE(-1), emptyIter.Valid()) // false false
-	log.Println(emptyIter.SeekLT(-1), emptyIter.Valid()) // false false
+	utils.Expect("false false", emptyIter.SeekLE(-1), emptyIter.Valid())
+	utils.Expect("false false", emptyIter.SeekLT(-1), emptyIter.Valid())
 
 	// 测试 SeekGE 和 SeekGT 在树为空时的情况
-	log.Println(emptyIter.SeekGE(10), emptyIter.Valid()) // false false
-	log.Println(emptyIter.SeekGT(10), emptyIter.Valid()) // false false
+	utils.Expect("false false", emptyIter.SeekGE(10), emptyIter.Valid())
+	utils.Expect("false false", emptyIter.SeekGT(10), emptyIter.Valid())
 
 	// 测试在树不为空时的情况
+	utils.Expect("false false", iter.SeekLE(-1), iter.Valid())
+	utils.Expect("false false", iter.SeekLT(-1), iter.Valid())
 
-	log.Println(iter.SeekLE(-1), iter.Valid()) // false false
-	log.Println(iter.SeekLT(-1), iter.Valid()) // false false
-	// #2
-	log.Println(iter.SeekGE(10), iter.Valid()) // false false
-	log.Println(iter.SeekGT(10), iter.Valid()) // false false
+	utils.Expect("false false", iter.SeekGE(10), iter.Valid())
+	utils.Expect("false false", iter.SeekGT(10), iter.Valid())
 
-	log.Println(iter.SeekLE(6), iter.Valid(), iter.Value()) // true true 6
-	log.Println(iter.SeekLT(6), iter.Valid(), iter.Value()) // true true 4
-
-	log.Println(iter.SeekLE(5), iter.Valid(), iter.Value()) // false true 4
-	log.Println(iter.SeekLT(5), iter.Valid(), iter.Value()) // false true 4
-
-	log.Println(iter.SeekGE(6), iter.Valid(), iter.Value()) // true true 6
-	log.Println(iter.SeekGT(6), iter.Valid(), iter.Value()) // true true 8
-
-	log.Println(iter.SeekGE(5), iter.Valid(), iter.Value()) // false true 6
-	log.Println(iter.SeekGT(5), iter.Valid(), iter.Value()) // false true 6
+	utils.Expect("true true 6", iter.SeekLE(6), iter.Valid(), iter.Value())
+	utils.Expect("true true 4", iter.SeekLT(6), iter.Valid(), iter.Value())
+	utils.Expect("false true 4", iter.SeekLE(5), iter.Valid(), iter.Value())
+	utils.Expect("false true 4", iter.SeekLT(5), iter.Valid(), iter.Value())
+	utils.Expect("true true 6", iter.SeekGE(6), iter.Valid(), iter.Value())
+	utils.Expect("true true 8", iter.SeekGT(6), iter.Valid(), iter.Value())
+	utils.Expect("false true 6", iter.SeekGE(5), iter.Valid(), iter.Value())
+	utils.Expect("false true 6", iter.SeekGT(5), iter.Valid(), iter.Value())
 
 	// 测试在树中间插入新元素后的情况
 	tree.Set(5, 5)
-	log.Println(tree.Values()) // [0 2 4 5 6 8]
+	utils.Expect("[0 2 4 5 6 8]", tree.Values())
 	iter = tree.Iterator()
-	log.Println(iter.SeekLE(5), iter.Valid(), iter.Value()) // true true 5
-	log.Println(iter.SeekLT(5), iter.Valid(), iter.Value()) // true true 4
-	log.Println(iter.SeekGE(5), iter.Valid(), iter.Value()) // true true 5
-	log.Println(iter.SeekGT(5), iter.Valid(), iter.Value()) // true true 6
+	utils.Expect("true true 5", iter.SeekLE(5), iter.Valid(), iter.Value())
+	utils.Expect("true true 4", iter.SeekLT(5), iter.Valid(), iter.Value())
+	utils.Expect("true true 5", iter.SeekGE(5), iter.Valid(), iter.Value())
+	utils.Expect("true true 6", iter.SeekGT(5), iter.Valid(), iter.Value())
 
 	// 测试在树头部插入新元素后的情况
 	tree.Set(-2, -2)
-	log.Println(tree.Values()) // [-2 0 2 4 5 6 8]
+	utils.Expect("[-2 0 2 4 5 6 8]", tree.Values())
 	iter = tree.Iterator()
-	log.Println(iter.SeekLE(-2), iter.Valid(), iter.Value()) // true true -2
-	log.Println(iter.SeekLT(-3), iter.Valid())               // false false
-	log.Println(iter.SeekGE(-2), iter.Valid(), iter.Value()) // true true -2
-	log.Println(iter.SeekGT(-3), iter.Valid(), iter.Value()) // false true 0
+	utils.Expect("true true -2", iter.SeekLE(-2), iter.Valid(), iter.Value())
+	utils.Expect("false false", iter.SeekLT(-3), iter.Valid())
+	utils.Expect("true true -2", iter.SeekGE(-2), iter.Valid(), iter.Value())
+	utils.Expect("false true -2", iter.SeekGT(-3), iter.Valid(), iter.Value())
 
 	// 测试在树尾部插入新元素后的情况
 	tree.Set(10, 10)
-	log.Println(tree.Values()) // [-2 0 2 4 5 6 8 10]
+	utils.Expect("[-2 0 2 4 5 6 8 10]", tree.Values())
 	iter = tree.Iterator()
-	log.Println(iter.SeekLE(11), iter.Valid(), iter.Value()) // false true 10
-	log.Println(iter.SeekLT(10), iter.Valid(), iter.Value()) // false true 8
-	log.Println(iter.SeekGE(11), iter.Valid())               // false false
-	log.Println(iter.SeekGT(11), iter.Valid())               // false false
+	utils.Expect("false true 10", iter.SeekLE(11), iter.Valid(), iter.Value())
+	utils.Expect("true true 8", iter.SeekLT(10), iter.Valid(), iter.Value())
+	utils.Expect("false false", iter.SeekGE(11), iter.Valid())
+	utils.Expect("false false", iter.SeekGT(11), iter.Valid())
 
+	// 测试从中间删除元素后的情况
+	tree.Remove(4)
+	utils.Expect("[-2 0 2 5 6 8 10]", tree.Values())
+	iter = tree.Iterator()
+	utils.Expect("true true 5", iter.SeekLE(5), iter.Valid(), iter.Value())
+	utils.Expect("true true 2", iter.SeekLT(5), iter.Valid(), iter.Value())
+	utils.Expect("true true 5", iter.SeekGE(5), iter.Valid(), iter.Value())
+	utils.Expect("true true 6", iter.SeekGT(5), iter.Valid(), iter.Value())
+
+	// 测试从头部删除元素后的情况
+	tree.Remove(-2)
+	utils.Expect("[0 2 5 6 8 10]", tree.Values())
+	iter = tree.Iterator()
+	utils.Expect("false false", iter.SeekLE(-1), iter.Valid())
+	utils.Expect("false false", iter.SeekLT(-1), iter.Valid())
+	utils.Expect("true true 0", iter.SeekGE(0), iter.Valid(), iter.Value())
+	utils.Expect("true true 2", iter.SeekGT(0), iter.Valid(), iter.Value())
+
+	// 插入重复元素
+	tree.Set(5, 5)
+	utils.Expect("[0 2 5 6 8 10]", tree.Values())
+	iter = tree.Iterator()
+	utils.Expect("true true 5", iter.SeekLE(5), iter.Valid(), iter.Value())
+	utils.Expect("true true 2", iter.SeekLT(5), iter.Valid(), iter.Value())
+	utils.Expect("true true 5", iter.SeekGE(5), iter.Valid(), iter.Value())
+	utils.Expect("true true 6", iter.SeekGT(5), iter.Valid(), iter.Value())
+
+	// 测试查找比最大值更大的元素
+	utils.Expect("false true 10", iter.SeekLE(11), iter.Valid(), iter.Value())
+	utils.Expect("false true 10", iter.SeekLT(11), iter.Valid(), iter.Value())
+	utils.Expect("false false", iter.SeekGE(11), iter.Valid())
+	utils.Expect("false false", iter.SeekGT(11), iter.Valid())
+
+	// 测试查找比最小值更小的元素
+	utils.Expect("false false", iter.SeekLE(-1), iter.Valid())
+	utils.Expect("false false", iter.SeekLT(-1), iter.Valid())
+	utils.Expect("false true 0", iter.SeekGE(-1), iter.Valid(), iter.Value())
+	utils.Expect("false true 0", iter.SeekGT(-1), iter.Valid(), iter.Value())
 }
 
 // func TestCompareSimilarForce(t *testing.T) {

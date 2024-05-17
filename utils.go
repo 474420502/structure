@@ -1,6 +1,11 @@
 package utils
 
-import "github.com/474420502/random"
+import (
+	"fmt"
+	"log"
+
+	"github.com/474420502/random"
+)
 
 func TryPanic(do func()) (err error) {
 	defer func() {
@@ -28,4 +33,11 @@ func Rangdom(s, e int, seeds ...interface{}) []byte {
 	}
 
 	return result
+}
+
+func Expect(exceptValid string, inputs ...any) {
+	result := fmt.Sprint(inputs...)
+	if result != exceptValid {
+		log.Panicf("inputs != except: %s != %s", result, exceptValid)
+	}
 }
