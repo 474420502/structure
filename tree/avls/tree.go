@@ -10,31 +10,26 @@ type Tree[KEY, VALUE any] struct {
 	size             uint
 	zero             VALUE
 	differenceHeight int8
-	// rotateCount      int
 }
 
 func New[KEY, VALUE any](Compare compare.Compare[KEY]) *Tree[KEY, VALUE] {
-
 	tree := &Tree[KEY, VALUE]{
 		Center:           &Node[KEY, VALUE]{Height: 0},
 		Compare:          Compare,
 		size:             0,
 		differenceHeight: 2,
 	}
-
 	tree.Center.Children[0] = tree.Center
 	return tree
 }
 
 func NewEx[KEY, VALUE any](Compare compare.Compare[KEY], differenceHeight int8) *Tree[KEY, VALUE] {
-
 	tree := &Tree[KEY, VALUE]{
 		Center:           &Node[KEY, VALUE]{Height: 0},
 		Compare:          Compare,
 		size:             0,
 		differenceHeight: differenceHeight,
 	}
-
 	tree.Center.Children[0] = tree.Center
 	return tree
 }
@@ -58,12 +53,12 @@ func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 	return !isExists
 }
 
+// 修复的 Get 方法
 func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	cur := tree.get(key, tree.getRoot())
 	if cur == nil {
 		return tree.zero, false
 	}
-
 	return cur.Value, true
 }
 
@@ -86,7 +81,6 @@ func (tree *Tree[KEY, VALUE]) Size() uint {
 }
 
 func (tree *Tree[KEY, VALUE]) Traverse(every func(KEY, VALUE) bool) {
-
 	var traverse func(cur *Node[KEY, VALUE]) bool
 	traverse = func(cur *Node[KEY, VALUE]) bool {
 		if cur == nil {

@@ -15,66 +15,9 @@ func (node *Node[KEY, VALUE]) String() string {
 	return fmt.Sprintf("%v(%v)", node.Key, node.Value)
 }
 
-// func (node *Node[KEY, VALUE]) updateHeight() bool {
-// 	lh, rh := getHeight(node.Children[0])+1, getHeight(node.Children[1])+1
-// 	if lh > rh {
-// 		if node.Height != lh {
-// 			node.Height = lh
-// 			return true
-// 		}
-// 	} else {
-// 		if node.Height != rh {
-// 			node.Height = rh
-// 			return true
-// 		}
-// 	}
-
-// 	return false
-// }
-
 func (node *Node[KEY, VALUE]) updateHeightOneChild(child int) {
 	node.Height = getHeight(node.Children[child]) + 1
 }
-
-// func (node *Node[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) bool {
-
-// 	lh, rh := getHeight(node.Children[0]), getHeight(node.Children[1])
-
-// 	diff := lh - rh
-
-// 	if diff > 1 {
-// 		sub := node.Children[0]
-// 		if getHeight(sub.Children[1]) > getHeight(sub.Children[0]) {
-// 			rightRotateWithLeft(parent, child)
-// 		} else {
-// 			rightRotate(parent, child)
-// 		}
-// 		return true
-// 	} else if diff < -1 {
-// 		sub := node.Children[1]
-// 		if getHeight(sub.Children[0]) > getHeight(sub.Children[1]) {
-// 			leftRotateWithRight(parent, child)
-// 		} else {
-// 			leftRotate(parent, child)
-// 		}
-// 		return true
-// 	} else {
-// 		if lh > rh {
-// 			if node.Height != lh+1 {
-// 				node.Height = lh + 1
-// 				return true
-// 			}
-// 		} else {
-// 			if node.Height != rh+1 {
-// 				node.Height = rh + 1
-// 				return true
-// 			}
-// 		}
-
-// 	}
-
-// 	return false
-// }
 
 func newNode[KEY any, VALUE any]() *Node[KEY, VALUE] {
 	return &Node[KEY, VALUE]{
@@ -88,15 +31,6 @@ func getHeight[KEY, VALUE any](cur *Node[KEY, VALUE]) int8 {
 	}
 	return cur.Height
 }
-
-// func updateHeight[KEY, VALUE any](cur *Node[KEY, VALUE]) {
-// 	lh, rh := getHeight(cur.Children[0]), getHeight(cur.Children[1])
-// 	if lh > rh {
-// 		cur.Height = lh + 1
-// 	} else {
-// 		cur.Height = rh + 1
-// 	}
-// }
 
 func leftRotateWithRight[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
 	cur := parent.Children[child] //

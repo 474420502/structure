@@ -13,21 +13,18 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 		target = newNode[KEY, VALUE]()
 		target.Key = key
 		parent.Children[child] = target
-		if parent.Children[^child+2] == nil {
-			return target, false, true
-		}
-		return target, false, false
+		// if parent.Children[^child+2] == nil {
+		// 	return target, false, true
+		// }
+		return target, false, true
 	}
 
 	cmp := tree.Compare(cur.Key, key)
 
-	if cmp < 0 {
-		return cur, true, false
+	if cmp <= 0 { // 修改为<=0，使相等键向右插入
+		target, isExists, isRebalance = tree.put(cur, 1, key) // 总是向右
 	} else {
-		target, isExists, isRebalance = tree.put(cur, cmp, key)
-		if isExists || !isRebalance {
-			return target, isExists, isRebalance
-		}
+		target, isExists, isRebalance = tree.put(cur, 0, key)
 	}
 
 	if isRebalance {
@@ -37,14 +34,16 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 	return target, isExists, isRebalance
 }
 
+// 修复的 get 函数
 func (tree *Tree[KEY, VALUE]) get(key KEY, cur *Node[KEY, VALUE]) *Node[KEY, VALUE] {
 	if cur == nil {
 		return nil
 	}
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
+	if cmp == -1 {
 		return cur
 	}
+
 	return tree.get(key, cur.Children[cmp])
 }
 

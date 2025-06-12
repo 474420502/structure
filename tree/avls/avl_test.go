@@ -10,6 +10,15 @@ import (
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
+func TestPut(t *testing.T) {
+	tree := New[int, int](compare.AnyEx[int])
+	for _, i := range []int{5, 8, 11, 10, 11, 50, 1, 99} {
+		tree.Put(i, i)
+	}
+
+	log.Println(tree.view())
+}
+
 func TestPutGet(t *testing.T) {
 	tree := New[int, int](compare.AnyEx[int])
 	for i := 0; i < 100; i++ {
@@ -21,6 +30,7 @@ func TestPutGet(t *testing.T) {
 	for i := 0; i < int(tree.Size()); i++ {
 		if v, b := tree.Get(i); !b || v != i {
 			t.Error("error", b, v)
+			log.Println(b, v)
 		}
 	}
 
@@ -31,11 +41,14 @@ func TestPutGet(t *testing.T) {
 
 	if int(tree.Size()) != len(testutils.TestedArray) {
 		t.Error(tree.Values())
+		log.Println(tree.view())
 	}
 
 	vs := tree.Values()
 	if vs[0] != 1 || vs[int(tree.Size())-1] != 99 {
 		t.Error(tree.Values())
+		log.Println(tree.view())
+		log.Println(tree.Values())
 	}
 }
 
