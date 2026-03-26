@@ -35,25 +35,26 @@ func NewEx[KEY, VALUE any](Compare compare.Compare[KEY], differenceHeight int8) 
 }
 
 func (tree *Tree[KEY, VALUE]) Set(key KEY, value VALUE) bool {
-	target, isExists, _ := tree.put(tree.Center, 1, key)
+	if cur := tree.get(key, tree.getRoot()); cur != nil {
+		cur.Value = value
+		return false
+	}
+
+	target, _ := tree.put(tree.Center, 1, key)
 	target.Key = key
 	target.Value = value
-	if !isExists {
-		tree.size += 1
-	}
-	return !isExists
+	tree.size += 1
+	return true
 }
 
 func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
-	target, isExists, _ := tree.put(tree.Center, 1, key)
-	if !isExists {
-		target.Value = value
-		tree.size += 1
-	}
-	return !isExists
+	target, _ := tree.put(tree.Center, 1, key)
+	target.Key = key
+	target.Value = value
+	tree.size += 1
+	return true
 }
 
-// 修复的 Get 方法
 func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	cur := tree.get(key, tree.getRoot())
 	if cur == nil {
@@ -63,7 +64,7 @@ func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 }
 
 func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
-	target, _ := tree.remove(key, tree.Center, 0, 1)
+	target, _ := tree.removeLeft(key, tree.Center, 0, 1)
 	if target != nil {
 		tree.size -= 1
 		return *target, true

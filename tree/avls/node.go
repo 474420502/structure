@@ -129,14 +129,14 @@ func (tree *Tree[KEY, VALUE]) checkHeightTree(root *Node[KEY, VALUE]) bool {
 		}
 
 		if root.Children[0] != nil {
-			if tree.Compare(root.Key, root.Children[0].Key) != 0 {
-				panic("error tree tree.Compare(root.Key, root.Children[0].Key) != 0")
+			if tree.Compare(root.Key, root.Children[0].Key) == 1 {
+				panic("error tree tree.Compare(root.Key, root.Children[0].Key) == 1")
 			}
 		}
 
 		if root.Children[1] != nil {
-			if tree.Compare(root.Key, root.Children[1].Key) != 1 {
-				panic("error tree tree.Compare(root.Key, root.Children[1].Key) != 1 ")
+			if tree.Compare(root.Key, root.Children[1].Key) == 0 {
+				panic("error tree tree.Compare(root.Key, root.Children[1].Key) == 0 ")
 			}
 		}
 

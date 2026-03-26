@@ -68,57 +68,95 @@ func (iter *Iterator[KEY, VALUE]) up(cmp int8) bool {
 
 }
 
-// seekE seek to the key that (less or greater) than or equal to
-func (iter *Iterator[KEY, VALUE]) seekEqual(key KEY, LessAndGreater int8) bool {
 
-	iter.cur = iter.tree.getRoot()
-	if iter.cur == nil {
-		return false
-	}
-
-	iter.idx = -1
-
-	for {
-		cmp := iter.tree.Compare(iter.cur.Key, key)
-		if cmp < 0 {
-			return true
-		}
-
-		if !iter.down(int8(cmp)) {
-			if int8(cmp) == LessAndGreater {
-				iter.up(LessAndGreater)
-			}
-			return false
-		}
-	}
+func (iter *Iterator[KEY, VALUE]) seekEqual(key KEY, lessAndGreater int8) bool {
+	return iter.seekBound(key, lessAndGreater, false)
 }
 
-// SeekLT seek to the key that (less or greater) than
-func (iter *Iterator[KEY, VALUE]) seekThan(key KEY, LessAndGreater int8) bool {
+func (iter *Iterator[KEY, VALUE]) seekThan(key KEY, lessAndGreater int8) bool {
+	return iter.seekBound(key, lessAndGreater, true)
+}
 
-	iter.cur = iter.tree.getRoot()
-	if iter.cur == nil {
+func (iter *Iterator[KEY, VALUE]) seekBound(key KEY, lessAndGreater int8, strict bool) bool {
+	cur := iter.tree.getRoot()
+	if cur == nil {
+		iter.cur = nil
+		iter.idx = -1
 		return false
 	}
 
 	iter.idx = -1
+	pathIdx := int8(-1)
+	exact := false
 
-	for {
+	var candidate *Node[KEY, VALUE]
+	candidateIdx := int8(-1)
+	candidateStack := make([]NodeDir[KEY, VALUE], len(iter.stack))
 
-		cmp := iter.tree.Compare(iter.cur.Key, key)
+	for cur != nil {
+		cmp := iter.tree.Compare(cur.Key, key)
 
-		if cmp < 0 {
-			iter.move(LessAndGreater)
-			return true
-		}
+		satisfies := false
+		moveDir := int8(0)
 
-		if !iter.down(int8(cmp)) {
-			if int8(cmp) == LessAndGreater {
-				iter.up(LessAndGreater)
+		switch lessAndGreater {
+		case 1:
+			switch {
+			case cmp == 0:
+				satisfies = true
+				moveDir = 0
+			case cmp < 0:
+				exact = true
+				if !strict {
+					satisfies = true
+					moveDir = 0
+				} else {
+					moveDir = 1
+				}
+			default:
+				moveDir = 1
 			}
-			return false
+		case 0:
+			switch {
+			case cmp == 1:
+				satisfies = true
+				moveDir = 1
+			case cmp < 0:
+				exact = true
+				if !strict {
+					satisfies = true
+					moveDir = 1
+				} else {
+					moveDir = 0
+				}
+			default:
+				moveDir = 0
+			}
 		}
+
+		if satisfies {
+			candidate = cur
+			candidateIdx = pathIdx
+			copy(candidateStack, iter.stack)
+		}
+
+		next := cur.Children[moveDir]
+		if next == nil {
+			break
+		}
+
+		pathIdx++
+		iter.stack[pathIdx] = NodeDir[KEY, VALUE]{N: cur, D: moveDir}
+		cur = next
 	}
+
+	iter.cur = candidate
+	iter.idx = candidateIdx
+	if candidate != nil {
+		copy(iter.stack, candidateStack)
+	}
+
+	return exact
 }
 
 // move move to (left or right) cmp == 0 or 1 , 0 == left , 1 == right

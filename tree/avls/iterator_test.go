@@ -10,6 +10,11 @@ import (
 	"github.com/474420502/structure/compare"
 )
 
+type iteratorEntry struct {
+	key   int
+	value int
+}
+
 func TestNextPrev(t *testing.T) {
 	tree := New[int, int](compare.AnyEx[int])
 	for i := 0; i < 10; i++ {
@@ -249,9 +254,8 @@ func TestIteratorForce(t *testing.T) {
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
-			if tree.Put(v, v) {
-				priority = append(priority, v)
-			}
+			tree.Put(v, v)
+			priority = append(priority, v)
 
 		}
 		sort.Slice(priority, func(i, j int) bool {
@@ -340,9 +344,8 @@ func TestIteratorForce2(t *testing.T) {
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
-			if tree.Put(v, v) {
-				priority = append(priority, v)
-			}
+			tree.Put(v, v)
+			priority = append(priority, v)
 
 		}
 		sort.Slice(priority, func(i, j int) bool {
@@ -528,6 +531,228 @@ func TestDefaultSeek(t *testing.T) {
 	utils.Expect("false false", iter.SeekLT(-1), iter.Valid())
 	utils.Expect("false true 0", iter.SeekGE(-1), iter.Valid(), iter.Value())
 	utils.Expect("false true 0", iter.SeekGT(-1), iter.Valid(), iter.Value())
+}
+
+func TestDuplicateSeekBounds(t *testing.T) {
+	tree := New[int, int](compare.AnyEx[int])
+	for _, value := range []int{4, 5, 5, 5, 6} {
+		tree.Put(value, value)
+	}
+
+	utils.Expect("[4 5 5 5 6]", tree.Values())
+
+	iter := tree.Iterator()
+	utils.Expect("true true 5", iter.SeekGE(5), iter.Valid(), iter.Key())
+	utils.Expect("true true 4", iter.SeekLT(5), iter.Valid(), iter.Key())
+	utils.Expect("true true 5", iter.SeekLE(5), iter.Valid(), iter.Key())
+	utils.Expect("true true 6", iter.SeekGT(5), iter.Valid(), iter.Key())
+
+	iter.SeekGE(5)
+	utils.Expect("5", iter.Key())
+	iter.Next()
+	utils.Expect("5", iter.Key())
+	iter.Next()
+	utils.Expect("5", iter.Key())
+	iter.Next()
+	utils.Expect("6", iter.Key())
+
+	iter.SeekLE(5)
+	utils.Expect("5", iter.Key())
+	iter.Prev()
+	utils.Expect("5", iter.Key())
+	iter.Prev()
+	utils.Expect("5", iter.Key())
+	iter.Prev()
+	utils.Expect("4", iter.Key())
+}
+
+func TestDuplicateSeekRangeWindows(t *testing.T) {
+	tree := New[int, int](compare.AnyEx[int])
+	for _, item := range []iteratorEntry{{4, 40}, {5, 100}, {5, 200}, {5, 300}, {6, 60}, {7, 70}} {
+		tree.Put(item.key, item.value)
+	}
+
+	iter := tree.Iterator()
+	utils.Expect("true true 5 100", iter.SeekGE(5), iter.Valid(), iter.Key(), iter.Value())
+	iter.Next()
+	utils.Expect("5 200", iter.Key(), iter.Value())
+	iter.Next()
+	utils.Expect("5 300", iter.Key(), iter.Value())
+	iter.Next()
+	utils.Expect("6 60", iter.Key(), iter.Value())
+
+	utils.Expect("true true 5 300", iter.SeekLE(5), iter.Valid(), iter.Key(), iter.Value())
+	iter.Prev()
+	utils.Expect("5 200", iter.Key(), iter.Value())
+	iter.Prev()
+	utils.Expect("5 100", iter.Key(), iter.Value())
+	iter.Prev()
+	utils.Expect("4 40", iter.Key(), iter.Value())
+
+	utils.Expect("true true 6 60", iter.SeekGT(5), iter.Valid(), iter.Key(), iter.Value())
+	utils.Expect("true true 4 40", iter.SeekLT(5), iter.Valid(), iter.Key(), iter.Value())
+
+	utils.Expect("true true 4 40", iter.SeekGE(4), iter.Valid(), iter.Key(), iter.Value())
+	utils.Expect("true true 4 40", iter.SeekLE(4), iter.Valid(), iter.Key(), iter.Value())
+	utils.Expect("true true 5 100", iter.SeekGT(4), iter.Valid(), iter.Key(), iter.Value())
+	utils.Expect("true false", iter.SeekLT(4), iter.Valid())
+
+	utils.Expect("false true 7 70", iter.SeekLE(8), iter.Valid(), iter.Key(), iter.Value())
+	utils.Expect("false false", iter.SeekGE(8), iter.Valid())
+}
+
+func TestIteratorDuplicateReferenceForce(t *testing.T) {
+	rand := random.New(t.Name())
+
+	for round := 0; round < 400; round++ {
+		tree := New[int, int](compare.AnyEx[int])
+		reference := make([]iteratorEntry, 0, 120)
+
+		for step := 0; step < 120; step++ {
+			key := rand.Intn(16)
+			value := round*1000 + step
+			tree.Put(key, value)
+			reference = append(reference, iteratorEntry{key: key, value: value})
+		}
+
+		sorted := sortedIteratorEntries(reference)
+		assertIteratorWholeOrder(t, tree, sorted)
+
+		for probe := 0; probe < 24; probe++ {
+			target := rand.Intn(20) - 2
+			assertIteratorSeekMatch(t, tree, sorted, target, "SeekGE")
+			assertIteratorSeekMatch(t, tree, sorted, target, "SeekGT")
+			assertIteratorSeekMatch(t, tree, sorted, target, "SeekLE")
+			assertIteratorSeekMatch(t, tree, sorted, target, "SeekLT")
+		}
+	}
+}
+
+func sortedIteratorEntries(reference []iteratorEntry) []iteratorEntry {
+	sorted := append([]iteratorEntry(nil), reference...)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		return sorted[i].key < sorted[j].key
+	})
+	return sorted
+}
+
+func assertIteratorWholeOrder(t *testing.T, tree *Tree[int, int], sorted []iteratorEntry) {
+	t.Helper()
+
+	iter := tree.Iterator()
+	iter.SeekToFirst()
+	for idx, entry := range sorted {
+		if !iter.Valid() {
+			t.Fatalf("iterator ended early at %d/%d", idx, len(sorted))
+		}
+		if iter.Key() != entry.key || iter.Value() != entry.value {
+			t.Fatalf("forward order mismatch at %d: got=(%d,%d) want=(%d,%d)", idx, iter.Key(), iter.Value(), entry.key, entry.value)
+		}
+		iter.Next()
+	}
+	if iter.Valid() {
+		t.Fatalf("iterator should be exhausted after forward walk: key=%d value=%d", iter.Key(), iter.Value())
+	}
+
+	iter.SeekToLast()
+	for idx := len(sorted) - 1; idx >= 0; idx-- {
+		entry := sorted[idx]
+		if !iter.Valid() {
+			t.Fatalf("iterator ended early on reverse walk at %d/%d", idx, len(sorted))
+		}
+		if iter.Key() != entry.key || iter.Value() != entry.value {
+			t.Fatalf("reverse order mismatch at %d: got=(%d,%d) want=(%d,%d)", idx, iter.Key(), iter.Value(), entry.key, entry.value)
+		}
+		iter.Prev()
+	}
+	if iter.Valid() {
+		t.Fatalf("iterator should be exhausted after reverse walk: key=%d value=%d", iter.Key(), iter.Value())
+	}
+}
+
+func assertIteratorSeekMatch(t *testing.T, tree *Tree[int, int], sorted []iteratorEntry, target int, mode string) {
+	t.Helper()
+
+	exact := false
+	for _, entry := range sorted {
+		if entry.key == target {
+			exact = true
+			break
+		}
+	}
+
+	idx := -1
+	switch mode {
+	case "SeekGE":
+		idx = sort.Search(len(sorted), func(i int) bool { return sorted[i].key >= target })
+		if idx == len(sorted) {
+			idx = -1
+		}
+	case "SeekGT":
+		idx = sort.Search(len(sorted), func(i int) bool { return sorted[i].key > target })
+		if idx == len(sorted) {
+			idx = -1
+		}
+	case "SeekLE":
+		idx = sort.Search(len(sorted), func(i int) bool { return sorted[i].key > target }) - 1
+	case "SeekLT":
+		idx = sort.Search(len(sorted), func(i int) bool { return sorted[i].key >= target }) - 1
+	default:
+		t.Fatalf("unknown seek mode: %s", mode)
+	}
+
+	iter := tree.Iterator()
+	var gotExact bool
+	switch mode {
+	case "SeekGE":
+		gotExact = iter.SeekGE(target)
+	case "SeekGT":
+		gotExact = iter.SeekGT(target)
+	case "SeekLE":
+		gotExact = iter.SeekLE(target)
+	case "SeekLT":
+		gotExact = iter.SeekLT(target)
+	}
+
+	if gotExact != exact {
+		t.Fatalf("%s exact mismatch for %d: got=%v want=%v sorted=%v", mode, target, gotExact, exact, sorted)
+	}
+
+	if idx < 0 {
+		if iter.Valid() {
+			t.Fatalf("%s should be invalid for %d, got=(%d,%d)", mode, target, iter.Key(), iter.Value())
+		}
+		return
+	}
+
+	if !iter.Valid() {
+		t.Fatalf("%s should be valid for %d: want=(%d,%d)", mode, target, sorted[idx].key, sorted[idx].value)
+	}
+	if iter.Key() != sorted[idx].key || iter.Value() != sorted[idx].value {
+		t.Fatalf("%s mismatch for %d: got=(%d,%d) want=(%d,%d)", mode, target, iter.Key(), iter.Value(), sorted[idx].key, sorted[idx].value)
+	}
+
+	forward := iter.Clone()
+	for i := idx; i < len(sorted); i++ {
+		if !forward.Valid() || forward.Key() != sorted[i].key || forward.Value() != sorted[i].value {
+			t.Fatalf("%s forward walk mismatch from %d at %d: got valid=%v pair=(%d,%d) want=(%d,%d)", mode, target, i, forward.Valid(), forward.Key(), forward.Value(), sorted[i].key, sorted[i].value)
+		}
+		forward.Next()
+	}
+	if forward.Valid() {
+		t.Fatalf("%s forward walk should end invalid for %d, got=(%d,%d)", mode, target, forward.Key(), forward.Value())
+	}
+
+	backward := iter.Clone()
+	for i := idx; i >= 0; i-- {
+		if !backward.Valid() || backward.Key() != sorted[i].key || backward.Value() != sorted[i].value {
+			t.Fatalf("%s reverse walk mismatch from %d at %d: got valid=%v pair=(%d,%d) want=(%d,%d)", mode, target, i, backward.Valid(), backward.Key(), backward.Value(), sorted[i].key, sorted[i].value)
+		}
+		backward.Prev()
+	}
+	if backward.Valid() {
+		t.Fatalf("%s reverse walk should end invalid for %d, got=(%d,%d)", mode, target, backward.Key(), backward.Value())
+	}
 }
 
 // func TestCompareSimilarForce(t *testing.T) {

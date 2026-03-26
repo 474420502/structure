@@ -6,48 +6,50 @@ func (tree *Tree[KEY, VALUE]) getRoot() *Node[KEY, VALUE] {
 	return tree.Center.Children[1]
 }
 
-func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) (target *Node[KEY, VALUE], isExists bool, isRebalance bool) {
+func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) (target *Node[KEY, VALUE], isRebalance bool) {
 
 	cur := parent.Children[child]
 	if cur == nil {
 		target = newNode[KEY, VALUE]()
 		target.Key = key
 		parent.Children[child] = target
-		// if parent.Children[^child+2] == nil {
-		// 	return target, false, true
-		// }
-		return target, false, true
+		if parent.Children[^child+2] == nil {
+			return target, true
+		}
+		return target, false
 	}
 
 	cmp := tree.Compare(cur.Key, key)
-
-	if cmp <= 0 { // 修改为<=0，使相等键向右插入
-		target, isExists, isRebalance = tree.put(cur, 1, key) // 总是向右
-	} else {
-		target, isExists, isRebalance = tree.put(cur, 0, key)
+	if cmp < 0 {
+		cmp = 1
 	}
+
+	target, isRebalance = tree.put(cur, cmp, key)
 
 	if isRebalance {
 		isRebalance = tree.rebalance(parent, child)
 	}
 
-	return target, isExists, isRebalance
+	return target, isRebalance
 }
 
-// 修复的 get 函数
 func (tree *Tree[KEY, VALUE]) get(key KEY, cur *Node[KEY, VALUE]) *Node[KEY, VALUE] {
 	if cur == nil {
 		return nil
 	}
+
 	cmp := tree.Compare(cur.Key, key)
-	if cmp == -1 {
+	if cmp < 0 {
+		if left := tree.get(key, cur.Children[0]); left != nil {
+			return left
+		}
 		return cur
 	}
 
 	return tree.get(key, cur.Children[cmp])
 }
 
-func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (target *VALUE, isRebalance bool) {
+func (tree *Tree[KEY, VALUE]) removeLeft(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (target *VALUE, isRebalance bool) {
 	parent := grandpa.Children[child2]
 	cur := parent.Children[child1]
 
@@ -57,8 +59,14 @@ func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2,
 
 	cmp := tree.Compare(cur.Key, key)
 	if cmp < 0 {
+		target, isRebalance = tree.removeLeft(key, parent, child1, 0)
+		if target != nil {
+			if cur != tree.Center && isRebalance {
+				isRebalance = tree.rebalance(parent, child1)
+			}
+			return target, isRebalance
+		}
 
-		// remove 两种状态. 当前值不在底, 在底
 		if cur.Children[0] == nil {
 			parent.Children[child1] = cur.Children[1]
 			return &cur.Value, true
@@ -79,7 +87,7 @@ func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2,
 		return target, tree.rebalance(parent, child1)
 	}
 
-	target, isRebalance = tree.remove(key, parent, child1, cmp)
+	target, isRebalance = tree.removeLeft(key, parent, child1, cmp)
 	if cur != tree.Center && isRebalance {
 		isRebalance = tree.rebalance(parent, child1)
 	}
