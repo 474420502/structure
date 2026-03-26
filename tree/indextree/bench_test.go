@@ -1,190 +1,181 @@
 package indextree
 
 import (
-	"log"
-	"math"
 	"math/rand"
-	"strconv"
 	"testing"
-	"time"
 
-	"github.com/474420502/random"
 	"github.com/474420502/structure/compare"
 	"github.com/474420502/structure/tree/avl"
 	testutils "github.com/474420502/structure/tree/test_utils"
 )
 
-// var data []int64 = func() []int64 {
-// 	var r []int64
-// 	for i := 0; i < 2000000; i++ {
-// 		r = append(r, rand.Int63())
-// 	}
-// 	return r
-// }()
-
-type DefaultCompareType interface {
-	int | int64 | int32 | int8 | float32 | float64 | uint8 | uint | uint32 | uint64
-}
-
-func CompareAny[T DefaultCompareType](k1, k2 T) int {
-
-	switch {
-	case k1 > k2:
-		return 1
-	case k1 < k2:
-		return -1
-	default:
-		return 0
+func newBenchDataWithSeed(n int, seed int64) []int64 {
+	random := rand.New(rand.NewSource(seed))
+	keys := make([]int64, n)
+	for i := 0; i < n; i++ {
+		keys[i] = random.Int63()
 	}
+	return keys
 }
 
 func BenchmarkPut(b *testing.B) {
-	var data []int64
-
-	if !testutils.LoadData("BenchmarkPut", data) {
-		for i := 0; i < 4000000; i++ {
-			v := rand.Int63()
-			data = append(data, v)
-		}
-		testutils.SaveData("BenchmarkPut", data)
-	}
-
-	b.ResetTimer()
-
-	rand.Seed(time.Now().Unix())
-	start := int(rand.Int63n(500000))
-
-	b.Run("pre", func(b *testing.B) {
-		tree := avl.New[int64, int64](compare.AnyEx[int64])
-
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			v := data[i+start]
-			tree.Put(v, v)
-		}
-		// b.Log(tree.Size())
-	})
+	data := newBenchDataWithSeed(4000000, 12345)
 
 	b.Run("indextree", func(b *testing.B) {
-		tree := New(CompareAny[int64])
-
+		tree := New(compare.Any[int64])
 		b.ResetTimer()
-
-		// b.N = 100
 		for i := 0; i < b.N; i++ {
-			v := data[i+start]
-			tree.Put(v, v)
+			tree.Put(data[i], data[i])
 		}
-
 	})
 
 	b.Run("avl", func(b *testing.B) {
 		tree := avl.New[int64, int64](compare.AnyEx[int64])
-
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			v := data[i+start]
-			tree.Put(v, v)
+			tree.Put(data[i], data[i])
 		}
+	})
+}
 
+func BenchmarkPutSequential(b *testing.B) {
+	b.Run("indextree", func(b *testing.B) {
+		tree := New(compare.Any[int])
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			tree.Put(i, i)
+		}
 	})
 
+	b.Run("avl", func(b *testing.B) {
+		tree := avl.New[int, int](compare.AnyEx[int])
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			tree.Put(i, i)
+		}
+	})
+}
+
+func BenchmarkGet(b *testing.B) {
+	data := newBenchDataWithSeed(1000000, 12345)
+
+	tree1 := New(compare.Any[int64])
+	for i := 0; i < 1000000; i++ {
+		tree1.Put(data[i], data[i])
+	}
+
+	tree2 := avl.New[int64, int64](compare.AnyEx[int64])
+	for i := 0; i < 1000000; i++ {
+		tree2.Put(data[i], data[i])
+	}
+
+	b.Run("indextree", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			tree1.Get(data[i%1000000])
+		}
+	})
+
+	b.Run("avl", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			tree2.Get(data[i%1000000])
+		}
+	})
+}
+
+func BenchmarkRemove(b *testing.B) {
+	data := newBenchDataWithSeed(1000000, 12345)
+
+	b.Run("indextree", func(b *testing.B) {
+		b.StopTimer()
+		tree := New(compare.Any[int64])
+		for i := 0; i < 1000000; i++ {
+			tree.Put(data[i], data[i])
+		}
+		b.StartTimer()
+		for i := 0; i < b.N && i < 1000000; i++ {
+			tree.Remove(data[i])
+		}
+	})
+
+	b.Run("avl", func(b *testing.B) {
+		b.StopTimer()
+		tree := avl.New[int64, int64](compare.AnyEx[int64])
+		for i := 0; i < 1000000; i++ {
+			tree.Put(data[i], data[i])
+		}
+		b.StartTimer()
+		for i := 0; i < b.N && i < 1000000; i++ {
+			tree.Remove(data[i])
+		}
+	})
+}
+
+func BenchmarkPutStringKey(b *testing.B) {
+	tree := New(compare.ArrayAny[[]byte])
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		tree.Put([]byte(string(rune(i))), i)
+	}
+}
+
+func BenchmarkIndexOnly(b *testing.B) {
+	data := newBenchDataWithSeed(1000000, 12345)
+
+	tree := New(compare.Any[int64])
+	for i := 0; i < 1000000; i++ {
+		tree.Put(data[i], data[i])
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		tree.Index(int64(i % 1000000))
+	}
+}
+
+func BenchmarkIndexOfOnly(b *testing.B) {
+	data := newBenchDataWithSeed(1000000, 12345)
+
+	tree := New(compare.Any[int64])
+	for i := 0; i < 1000000; i++ {
+		tree.Put(data[i], data[i])
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		tree.IndexOf(data[i%1000000])
+	}
 }
 
 func TestHeight(t *testing.T) {
-	itree := New(CompareAny[int64])
+	itree := New(compare.Any[int64])
 	avltree := avl.New[int64, int64](compare.AnyEx[int64])
 
-	var diffcount = 0
 	for i := 0; i < 5000; i++ {
 		v := rand.Int63()
 		itree.Put(v, v)
 		avltree.Put(v, v)
 
 		if itree.Size() != int64(avltree.Size()) {
-			log.Panic()
+			t.Fatal("size mismatch")
 		}
 
-		if h1, h2 := itree.hight(), avltree.Height(); math.Abs(float64(h1-int(h2))) >= 1 {
-			diffcount++
-			// log.Println("height:", h1,  h2, "diff:", diffcount, h1-h2)
+		h1 := itree.hight()
+		h2 := int(avltree.Height())
+		if h1 != h2 && h1 != h2+1 {
+			t.Logf("height diff: indextree=%d avl=%d", h1, h2)
 		}
 	}
 }
 
-func BenchmarkPut2(b *testing.B) {
-
-	tree := New(compare.ArrayAny[[]byte])
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		v := []byte(strconv.Itoa(i))
-		tree.Put(v, v)
-	}
-}
-
-func BenchmarkAvlPut(b *testing.B) {
-
-	tree := avl.New[int64, int64](compare.AnyEx[int64])
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		v := rand.Int63()
-		tree.Put(v, v)
-	}
-	b.Log(tree.Size())
-}
-
-func BenchmarkIndexTreePut(b *testing.B) {
-	rand := random.New(1683721792150515321)
-
-	tree := New(compare.Any[int])
-	b.StopTimer()
-	for i := 0; i < 10000; i++ {
-		v := rand.Int()
-		tree.Put(v, v)
-		// tree.check()
-	}
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		v := rand.Int()
-		tree.Put(v, v)
-	}
-}
-
-func TestCase10(t *testing.T) {
-
-	// for _, v := range []int{0, 131, 756, 459, 533} {
-	// 	tree.Put(v, v)
-	// 	t.Error(tree.debugString(false))
-	// }
-	r := random.New()
-	for n := 0; n < 10000; n++ {
-		tree := New(compare.Any[int])
-		for i := 0; i < 1000; i++ {
-			v := r.Intn(100)
+func TestPutAndIndexFromDataFile(t *testing.T) {
+	var data []int64
+	if testutils.LoadData("BenchmarkPut", data) {
+		tree := New(compare.Any[int64])
+		for _, v := range data {
 			tree.Put(v, v)
-			// t.Error(tree.debugString(false))
 		}
+		tree.check()
 	}
-
-}
-
-func estDiffHight(t *testing.T) {
-	// tree := New(compare.Int64)
-	// avltree := avl.New(compare.Int64)
-
-	// for n := 0; n < 100000; n++ {
-	// 	for i := 0; i < 1000; i++ {
-	// 		v := rand.Int63n(3000)
-	// 		avltree.Put(v, v)
-	// 		tree.Put(v, v)
-	// 	}
-
-	// 	if avltree.Height()-tree.hight() > 1 {
-	// 		log.Println(avltree.Height() - tree.hight())
-	// 	}
-
-	// 	tree.Clear()
-	// 	avltree.Clear()
-	// }
-
 }
