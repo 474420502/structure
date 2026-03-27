@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/474420502/structure/compare"
+	"github.com/474420502/structure/tree/avl"
 	"github.com/474420502/structure/tree/indextree"
 	"github.com/474420502/structure/tree/itree"
 )
@@ -107,6 +108,46 @@ func (adapter *iTreeAdapter) BenchmarkStats() benchStats {
 	}
 }
 
+type avlTreeAdapter struct {
+	tree *avl.Tree[int, int]
+}
+
+func newAVLTreeAdapter() benchTree {
+	return &avlTreeAdapter{tree: avl.New[int, int](compare.AnyEx[int])}
+}
+
+func (adapter *avlTreeAdapter) Put(key int) {
+	adapter.tree.Put(key, key)
+}
+
+func (adapter *avlTreeAdapter) Get(key int) {
+	adapter.tree.Get(key)
+}
+
+func (adapter *avlTreeAdapter) Remove(key int) {
+	adapter.tree.Remove(key)
+}
+
+func (adapter *avlTreeAdapter) Size() int {
+	return int(adapter.tree.Size())
+}
+
+func (adapter *avlTreeAdapter) ResetBenchmarkStats() {
+	adapter.tree.ResetBenchmarkStats()
+}
+
+func (adapter *avlTreeAdapter) BenchmarkStats() benchStats {
+	stats := adapter.tree.BenchmarkStats()
+	return benchStats{
+		singleRotations: stats.SingleRotations,
+		doubleRotations: stats.DoubleRotations,
+		height:          stats.Height,
+		avgDepth:        stats.AvgDepth,
+		p50Depth:        stats.P50Depth,
+		p95Depth:        stats.P95Depth,
+	}
+}
+
 func reportBenchmarkMetrics(b *testing.B, tree benchTree, operations int, singleRotations int, doubleRotations int) {
 	b.StopTimer()
 	stats := tree.BenchmarkStats()
@@ -128,40 +169,41 @@ func newBenchKeys(n int, seed int64) []int {
 	return keys
 }
 
-func benchmarkTreePutRandom(b *testing.B, createTree func() benchTree) {
+func benchmarkTreePutRandom(b *testing.B, createTree func() benchTree, prepSize int) {
 	b.StopTimer()
-	keys := newBenchKeys(b.N+10000, 12345)
+	keys := newBenchKeys(prepSize+b.N, 12345)
 	tree := createTree()
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < prepSize; i++ {
 		tree.Put(keys[i])
 	}
 	tree.ResetBenchmarkStats()
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		tree.Put(keys[i+10000])
+		tree.Put(keys[i+prepSize])
 	}
 
 	stats := tree.BenchmarkStats()
 	reportBenchmarkMetrics(b, tree, b.N, stats.singleRotations, stats.doubleRotations)
 }
 
-func benchmarkTreePutSequential(b *testing.B, createTree func() benchTree) {
+func benchmarkTreePutSequential(b *testing.B, createTree func() benchTree, prepSize int) {
 	tree := createTree()
 	tree.ResetBenchmarkStats()
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
-		tree.Put(i)
+		tree.Put(prepSize + i)
 	}
 
 	stats := tree.BenchmarkStats()
 	reportBenchmarkMetrics(b, tree, b.N, stats.singleRotations, stats.doubleRotations)
 }
 
-func benchmarkTreeRemoveRandom(b *testing.B, createTree func() benchTree) {
+func benchmarkTreeRemoveRandom(b *testing.B, createTree func() benchTree, prepSize int) {
 	random := rand.New(rand.NewSource(1683721792150515321))
 	tree := createTree()
-	removeList := make([]int, 0, 1100)
+	removeList := make([]int, 0, prepSize+100)
 	removeIndex := 0
 	totalSingleRotations := 0
 	totalDoubleRotations := 0
@@ -179,8 +221,8 @@ func benchmarkTreeRemoveRandom(b *testing.B, createTree func() benchTree) {
 			removeList = removeList[:0]
 			removeIndex = 0
 			tree.ResetBenchmarkStats()
-			for j := 0; j < 1000; j++ {
-				value := random.Intn(1000)
+			for j := 0; j < prepSize; j++ {
+				value := random.Intn(prepSize)
 				before := tree.Size()
 				tree.Put(value)
 				if tree.Size() != before {
@@ -188,7 +230,7 @@ func benchmarkTreeRemoveRandom(b *testing.B, createTree func() benchTree) {
 				}
 
 				if j%25 == 0 {
-					removeList = append(removeList, random.Intn(1000))
+					removeList = append(removeList, random.Intn(prepSize))
 				}
 			}
 			epochActive = true
@@ -208,19 +250,19 @@ func benchmarkTreeRemoveRandom(b *testing.B, createTree func() benchTree) {
 	reportBenchmarkMetrics(b, tree, b.N, totalSingleRotations, totalDoubleRotations)
 }
 
-func benchmarkTreeMixed(b *testing.B, createTree func() benchTree) {
+func benchmarkTreeMixed(b *testing.B, createTree func() benchTree, prepSize int) {
 	random := rand.New(rand.NewSource(1683989312052736623))
 	tree := createTree()
 
 	b.StopTimer()
-	for i := 0; i < 5000; i++ {
-		tree.Put(random.Intn(20000))
+	for i := 0; i < prepSize; i++ {
+		tree.Put(random.Intn(prepSize * 2))
 	}
 	tree.ResetBenchmarkStats()
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		value := random.Intn(20000)
+		value := random.Intn(prepSize * 2)
 		switch i % 3 {
 		case 0:
 			tree.Put(value)
@@ -235,38 +277,329 @@ func benchmarkTreeMixed(b *testing.B, createTree func() benchTree) {
 	reportBenchmarkMetrics(b, tree, b.N, stats.singleRotations, stats.doubleRotations)
 }
 
-func BenchmarkRotationComparePutRandom(b *testing.B) {
+func BenchmarkRotationComparePutRandom10k(b *testing.B) {
+	const prepSize = 10000
 	b.Run("indextree", func(b *testing.B) {
-		benchmarkTreePutRandom(b, newIndexTreeAdapter)
+		benchmarkTreePutRandom(b, newIndexTreeAdapter, prepSize)
 	})
 	b.Run("itree", func(b *testing.B) {
-		benchmarkTreePutRandom(b, newITreeAdapter)
+		benchmarkTreePutRandom(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreePutRandom(b, newAVLTreeAdapter, prepSize)
 	})
 }
 
-func BenchmarkRotationComparePutSequential(b *testing.B) {
+func BenchmarkRotationComparePutRandom20k(b *testing.B) {
+	const prepSize = 20000
 	b.Run("indextree", func(b *testing.B) {
-		benchmarkTreePutSequential(b, newIndexTreeAdapter)
+		benchmarkTreePutRandom(b, newIndexTreeAdapter, prepSize)
 	})
 	b.Run("itree", func(b *testing.B) {
-		benchmarkTreePutSequential(b, newITreeAdapter)
+		benchmarkTreePutRandom(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreePutRandom(b, newAVLTreeAdapter, prepSize)
 	})
 }
 
-func BenchmarkRotationCompareRemoveRandom(b *testing.B) {
+func BenchmarkRotationComparePutRandom50k(b *testing.B) {
+	const prepSize = 50000
 	b.Run("indextree", func(b *testing.B) {
-		benchmarkTreeRemoveRandom(b, newIndexTreeAdapter)
+		benchmarkTreePutRandom(b, newIndexTreeAdapter, prepSize)
 	})
 	b.Run("itree", func(b *testing.B) {
-		benchmarkTreeRemoveRandom(b, newITreeAdapter)
+		benchmarkTreePutRandom(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreePutRandom(b, newAVLTreeAdapter, prepSize)
 	})
 }
 
-func BenchmarkRotationCompareMixed(b *testing.B) {
+func BenchmarkRotationComparePutSequential10k(b *testing.B) {
+	const prepSize = 10000
 	b.Run("indextree", func(b *testing.B) {
-		benchmarkTreeMixed(b, newIndexTreeAdapter)
+		benchmarkTreePutSequential(b, newIndexTreeAdapter, prepSize)
 	})
 	b.Run("itree", func(b *testing.B) {
-		benchmarkTreeMixed(b, newITreeAdapter)
+		benchmarkTreePutSequential(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreePutSequential(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationComparePutSequential20k(b *testing.B) {
+	const prepSize = 20000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreePutSequential(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreePutSequential(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreePutSequential(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationComparePutSequential50k(b *testing.B) {
+	const prepSize = 50000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreePutSequential(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreePutSequential(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreePutSequential(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareRemoveRandom10k(b *testing.B) {
+	const prepSize = 10000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeRemoveRandom(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeRemoveRandom(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeRemoveRandom(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareRemoveRandom20k(b *testing.B) {
+	const prepSize = 20000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeRemoveRandom(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeRemoveRandom(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeRemoveRandom(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareRemoveRandom50k(b *testing.B) {
+	const prepSize = 50000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeRemoveRandom(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeRemoveRandom(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeRemoveRandom(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareMixed10k(b *testing.B) {
+	const prepSize = 10000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeMixed(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeMixed(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeMixed(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareMixed20k(b *testing.B) {
+	const prepSize = 20000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeMixed(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeMixed(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeMixed(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareMixed50k(b *testing.B) {
+	const prepSize = 50000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeMixed(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeMixed(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeMixed(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func benchmarkTreeGetRandom(b *testing.B, createTree func() benchTree, prepSize int) {
+	b.StopTimer()
+	random := rand.New(rand.NewSource(12345))
+	keys := make([]int, prepSize)
+	tree := createTree()
+	for i := 0; i < prepSize; i++ {
+		keys[i] = random.Int()
+		tree.Put(keys[i])
+	}
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		tree.Get(keys[i%prepSize])
+	}
+
+	reportBenchmarkMetrics(b, tree, b.N, 0, 0)
+}
+
+func benchmarkTreeGetSequential(b *testing.B, createTree func() benchTree, prepSize int) {
+	b.StopTimer()
+	tree := createTree()
+	for i := 0; i < prepSize; i++ {
+		tree.Put(i)
+	}
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		tree.Get(i % prepSize)
+	}
+
+	reportBenchmarkMetrics(b, tree, b.N, 0, 0)
+}
+
+func benchmarkTreeGetMixed(b *testing.B, createTree func() benchTree, prepSize int) {
+	b.StopTimer()
+	random := rand.New(rand.NewSource(1683989312052736623))
+	keys := make([]int, prepSize*2)
+	tree := createTree()
+	for i := 0; i < prepSize; i++ {
+		keys[i] = random.Intn(prepSize * 2)
+		tree.Put(keys[i])
+	}
+	for i := 0; i < prepSize*2; i++ {
+		keys[i] = random.Intn(prepSize * 2)
+	}
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		tree.Get(keys[i%len(keys)])
+	}
+
+	reportBenchmarkMetrics(b, tree, b.N, 0, 0)
+}
+
+func BenchmarkRotationCompareGetRandom10k(b *testing.B) {
+	const prepSize = 10000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeGetRandom(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeGetRandom(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeGetRandom(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareGetRandom20k(b *testing.B) {
+	const prepSize = 20000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeGetRandom(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeGetRandom(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeGetRandom(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareGetRandom50k(b *testing.B) {
+	const prepSize = 50000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeGetRandom(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeGetRandom(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeGetRandom(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareGetSequential10k(b *testing.B) {
+	const prepSize = 10000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeGetSequential(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeGetSequential(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeGetSequential(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareGetSequential20k(b *testing.B) {
+	const prepSize = 20000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeGetSequential(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeGetSequential(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeGetSequential(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareGetSequential50k(b *testing.B) {
+	const prepSize = 50000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeGetSequential(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeGetSequential(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeGetSequential(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareGetMixed10k(b *testing.B) {
+	const prepSize = 10000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeGetMixed(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeGetMixed(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeGetMixed(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareGetMixed20k(b *testing.B) {
+	const prepSize = 20000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeGetMixed(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeGetMixed(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeGetMixed(b, newAVLTreeAdapter, prepSize)
+	})
+}
+
+func BenchmarkRotationCompareGetMixed50k(b *testing.B) {
+	const prepSize = 50000
+	b.Run("indextree", func(b *testing.B) {
+		benchmarkTreeGetMixed(b, newIndexTreeAdapter, prepSize)
+	})
+	b.Run("itree", func(b *testing.B) {
+		benchmarkTreeGetMixed(b, newITreeAdapter, prepSize)
+	})
+	b.Run("avl", func(b *testing.B) {
+		benchmarkTreeGetMixed(b, newAVLTreeAdapter, prepSize)
 	})
 }

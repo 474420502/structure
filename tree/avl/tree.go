@@ -10,7 +10,8 @@ type Tree[KEY, VALUE any] struct {
 	size             uint
 	zero             VALUE
 	differenceHeight int8
-	// rotateCount      int
+	singleRotations  int
+	doubleRotations  int
 }
 
 func New[KEY, VALUE any](Compare compare.Compare[KEY]) *Tree[KEY, VALUE] {
@@ -19,7 +20,7 @@ func New[KEY, VALUE any](Compare compare.Compare[KEY]) *Tree[KEY, VALUE] {
 		Center:           &Node[KEY, VALUE]{Height: 0},
 		Compare:          Compare,
 		size:             0,
-		differenceHeight: 2,
+		differenceHeight: 1,
 	}
 
 	tree.Center.Children[0] = tree.Center
@@ -127,4 +128,21 @@ func (tree *Tree[KEY, VALUE]) Height() int8 {
 
 func (tree *Tree[KEY, VALUE]) Iterator() *Iterator[KEY, VALUE] {
 	return newIterator(tree)
+}
+
+func (tree *Tree[KEY, VALUE]) ResetBenchmarkStats() {
+	tree.singleRotations = 0
+	tree.doubleRotations = 0
+}
+
+func (tree *Tree[KEY, VALUE]) BenchmarkStats() BenchmarkStats {
+	height, avgDepth, p50Depth, p95Depth := tree.shapeStats()
+	return BenchmarkStats{
+		SingleRotations: tree.singleRotations,
+		DoubleRotations: tree.doubleRotations,
+		Height:          height,
+		AvgDepth:        avgDepth,
+		P50Depth:        p50Depth,
+		P95Depth:        p95Depth,
+	}
 }

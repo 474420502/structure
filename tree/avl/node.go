@@ -28,12 +28,18 @@ func (node *Node[KEY, VALUE]) String() string {
 // 			return true
 // 		}
 // 	}
-
+//
 // 	return false
 // }
 
-func (node *Node[KEY, VALUE]) updateHeightOneChild(child int) {
-	node.Height = getHeight(node.Children[child]) + 1
+func (node *Node[KEY, VALUE]) updateHeight() {
+	lh := getHeight(node.Children[0])
+	rh := getHeight(node.Children[1])
+	if lh > rh {
+		node.Height = lh + 1
+	} else {
+		node.Height = rh + 1
+	}
 }
 
 // func (node *Node[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) bool {
@@ -98,7 +104,8 @@ func getHeight[KEY, VALUE any](cur *Node[KEY, VALUE]) int8 {
 // 	}
 // }
 
-func leftRotateWithRight[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
+func leftRotateWithRight[KEY, VALUE any](tree *Tree[KEY, VALUE], parent *Node[KEY, VALUE], child int) {
+	tree.doubleRotations++
 	cur := parent.Children[child] //
 	sub := cur.Children[1]        // right
 	subsub := sub.Children[0]     // right->left
@@ -112,13 +119,14 @@ func leftRotateWithRight[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
 	cur.Children[1] = children[0]
 	sub.Children[0] = children[1]
 
-	cur.updateHeightOneChild(0)
-	sub.updateHeightOneChild(1)
-	subsub.updateHeightOneChild(0)
+	cur.updateHeight()
+	sub.updateHeight()
+	subsub.updateHeight()
 
 }
 
-func rightRotateWithLeft[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
+func rightRotateWithLeft[KEY, VALUE any](tree *Tree[KEY, VALUE], parent *Node[KEY, VALUE], child int) {
+	tree.doubleRotations++
 	cur := parent.Children[child] //
 	sub := cur.Children[0]        // left
 	subsub := sub.Children[1]     // left->right
@@ -132,12 +140,13 @@ func rightRotateWithLeft[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
 	cur.Children[0] = children[1]
 	sub.Children[1] = children[0]
 
-	cur.updateHeightOneChild(1)
-	sub.updateHeightOneChild(0)
-	subsub.updateHeightOneChild(1)
+	cur.updateHeight()
+	sub.updateHeight()
+	subsub.updateHeight()
 }
 
-func leftRotate[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
+func leftRotate[KEY, VALUE any](tree *Tree[KEY, VALUE], parent *Node[KEY, VALUE], child int) {
+	tree.singleRotations++
 	cur := parent.Children[child]
 	sub := cur.Children[1]
 
@@ -146,11 +155,12 @@ func leftRotate[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
 	cur.Children[1] = sub.Children[0]
 	sub.Children[0] = cur
 
-	cur.updateHeightOneChild(1)
-	sub.updateHeightOneChild(0)
+	cur.updateHeight()
+	sub.updateHeight()
 }
 
-func rightRotate[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
+func rightRotate[KEY, VALUE any](tree *Tree[KEY, VALUE], parent *Node[KEY, VALUE], child int) {
+	tree.singleRotations++
 	cur := parent.Children[child]
 	sub := cur.Children[0]
 
@@ -159,8 +169,8 @@ func rightRotate[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
 	cur.Children[0] = sub.Children[1]
 	sub.Children[1] = cur
 
-	cur.updateHeightOneChild(0)
-	sub.updateHeightOneChild(1)
+	cur.updateHeight()
+	sub.updateHeight()
 }
 
 // func view[KEY, VALUE any](root *Node[KEY, VALUE]) (result string) {

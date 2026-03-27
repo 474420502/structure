@@ -217,74 +217,52 @@ func (tree *Tree[KEY, VALUE]) neighboring(parent *Node[KEY, VALUE], child2, chil
 	return result, isRebalance
 }
 
-func sizeRotateType[KEY, VALUE any](cur *Node[KEY, VALUE], child int, ls, rs int) bool {
+func sizeRotateType[KEY, VALUE any](cur *Node[KEY, VALUE], child int) bool {
 	rchild := ^child + 2
-	// ls, rs := getSize(cur.Children[child]), getSize(cur.Children[rchild])
-
-	var subsize = 0
-	var subsubsize = 0
 	sub := cur.Children[child]
-	if sub != nil {
-		subsub := sub.Children[rchild]
-		subsize = getSize(subsub)
-		if subsub != nil {
-			subsubsize = getSize(subsub.Children[rchild])
-		}
-	}
-
-	sdiff1 := ls - rs - subsize - subsize - 2
-	if sdiff1 < 0 {
-		sdiff1 = -sdiff1
-	}
-
-	sdiff2 := ls - rs - subsubsize - subsubsize - 2
-	if sdiff2 < 0 {
-		sdiff2 = -sdiff2
-	}
-
-	if sdiff1 > sdiff2 {
-		// rightRotateWithLeft(parent, child)
-		return true
-	} else {
-		// rightRotate(parent, child)
+	if sub == nil {
 		return false
 	}
+	subsub := sub.Children[rchild]
+	if subsub == nil {
+		return false
+	}
+	llsize := getSize(sub.Children[child])
+	lrsize := getSize(subsub)
+	return llsize > lrsize
 }
 
 func (tree *Tree[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) bool {
 
 	node := parent.Children[child]
-
 	lsize, rsize := getSize(node.Children[0]), getSize(node.Children[1])
+
+	h := int(getMaybeHeight(node.Size))
+	if h < 2 {
+		h = 2
+	}
+	if h >= len(rootSizeTable) {
+		h = len(rootSizeTable) - 1
+	}
+	bottomsize := rootSizeTable[h].bottomsize
+
 	if lsize > rsize {
-		if lsize-rsize > rsize {
-			lh, rh := getMaybeHeight(lsize), getMaybeHeight(rsize)
-			if lh-rh > 1 {
-				// log.Println("rotate")
-				// tree.rotateCount++
-				if sizeRotateType(node, 0, lsize, rsize) {
-					rightRotateWithLeft(parent, child)
-				} else {
-					rightRotate(parent, child)
-				}
-				return true
+		if lsize-rsize >= bottomsize {
+			if sizeRotateType(node, 0) {
+				rightRotateWithLeft(parent, child)
+			} else {
+				rightRotate(parent, child)
 			}
+			return true
 		}
-	} else {
-		if rsize-lsize > lsize {
-			lh, rh := getMaybeHeight(lsize), getMaybeHeight(rsize)
-
-			if rh-lh > 1 {
-				// log.Println("rotate")
-				// tree.rotateCount++
-				if sizeRotateType(node, 1, rsize, lsize) {
-					leftRotateWithRight(parent, child)
-				} else {
-					leftRotate(parent, child)
-				}
-				return true
+	} else if rsize > lsize {
+		if rsize-lsize >= bottomsize {
+			if sizeRotateType(node, 1) {
+				leftRotateWithRight(parent, child)
+			} else {
+				leftRotate(parent, child)
 			}
-
+			return true
 		}
 	}
 	return false

@@ -10,7 +10,30 @@
 
 	- [IndexTree](./tree/indextree/doc.md)  is a self-balancing binary search tree (BST). and have some special features
 
-	- [TreeList](./tree/treelist/doc.md)  is a self-balancing binary search tree (BST). and have some special features 
+	- [TreeList](./tree/treelist/doc.md)  is a self-balancing binary search tree (BST). and have some special features
+
+## IndexTree - High Performance BST
+
+IndexTree uses a **size-based balancing strategy** that achieves identical tree shapes as classic AVL (differenceHeight=1) while performing **6-11x fewer rotations**.
+
+### Benchmark Comparison (50k keys)
+
+| Operation | IndexTree | AVL (diff=1) | itree | IndexTree Advantage |
+|-----------|-----------|---------------|-------|---------------------|
+| PutRandom | **682 ns/op** | 790 ns/op | 741 ns/op | 16% faster than AVL |
+| PutSequential | **125 ns/op** | 157 ns/op | 215 ns/op | 26% faster than AVL |
+| RemoveRandom | **103 ns/op** | 161 ns/op | 183 ns/op | 56% faster than AVL |
+| GetRandom | **89 ns/op** | 109 ns/op | 102 ns/op | 22% faster than AVL |
+| Rotations/op | **0.47** | 3.07 | 0.43 | 6.5x fewer than AVL |
+
+### Key Findings
+
+1. **Same tree shape**: All implementations achieve identical height (26 for random keys, 24 for sequential)
+2. **Fewer rotations**: IndexTree performs 6-11x fewer rotations than AVL while maintaining the same balance
+3. **Better throughput**: 16-56% faster than AVL across all operations
+4. **Get performance**: IndexTree is 22% faster for lookups due to better cache locality
+
+See [Rotation Analysis](./tree/indextree/rotation-analysis.md) for detailed benchmark data. 
 
 - [List](./list)
 

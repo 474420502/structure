@@ -51,43 +51,73 @@ func getMaybeHeight(size int) (height uint) {
 	return height
 }
 
+type heightLimitSize struct {
+	rootsize   int
+	bottomsize int
+}
+
+var rootSizeTable []*heightLimitSize = func() []*heightLimitSize {
+	table := make([]*heightLimitSize, 64)
+	for i := 2; i < 64; i++ {
+		root2nsize := 1 << i
+		table[i] = &heightLimitSize{
+			rootsize:   root2nsize,
+			bottomsize: (root2nsize >> 2) + 1,
+		}
+	}
+	return table
+}()
+
 func leftRotateWithRight[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
-	cur := parent.Children[child] //
-	sub := cur.Children[1]        // right
-	subsub := sub.Children[0]     // right->left
+	cur := parent.Children[child]
+	sub := cur.Children[1]
+	subsub := sub.Children[0]
 
 	parent.Children[child] = subsub
 
-	children := subsub.Children
-	subsub.Children[0] = cur
-	subsub.Children[1] = sub
-
-	cur.Children[1] = children[0]
-	sub.Children[0] = children[1]
+	if subsub != nil {
+		children := subsub.Children
+		subsub.Children[0] = cur
+		subsub.Children[1] = sub
+		cur.Children[1] = children[0]
+		sub.Children[0] = children[1]
+	} else {
+		parent.Children[child] = sub
+		cur.Children[1] = nil
+		sub.Children[0] = nil
+	}
 
 	cur.updateSize()
 	sub.updateSize()
-	subsub.updateSize()
-
+	if subsub != nil {
+		subsub.updateSize()
+	}
 }
 
 func rightRotateWithLeft[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {
-	cur := parent.Children[child] //
-	sub := cur.Children[0]        // left
-	subsub := sub.Children[1]     // left->right
+	cur := parent.Children[child]
+	sub := cur.Children[0]
+	subsub := sub.Children[1]
 
 	parent.Children[child] = subsub
 
-	children := subsub.Children
-	subsub.Children[1] = cur
-	subsub.Children[0] = sub
-
-	cur.Children[0] = children[1]
-	sub.Children[1] = children[0]
+	if subsub != nil {
+		children := subsub.Children
+		subsub.Children[1] = cur
+		subsub.Children[0] = sub
+		cur.Children[0] = children[1]
+		sub.Children[1] = children[0]
+	} else {
+		parent.Children[child] = sub
+		cur.Children[0] = nil
+		sub.Children[1] = nil
+	}
 
 	cur.updateSize()
 	sub.updateSize()
-	subsub.updateSize()
+	if subsub != nil {
+		subsub.updateSize()
+	}
 }
 
 func leftRotate[KEY, VALUE any](parent *Node[KEY, VALUE], child int) {

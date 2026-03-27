@@ -115,20 +115,18 @@ func (tree *Tree[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) boo
 
 	if diff >= tree.differenceHeight {
 		sub := node.Children[0]
-		// tree.rotateCount++
 		if getHeight(sub.Children[1]) > getHeight(sub.Children[0]) {
-			rightRotateWithLeft(parent, child)
+			rightRotateWithLeft(tree, parent, child)
 		} else {
-			rightRotate(parent, child)
+			rightRotate(tree, parent, child)
 		}
 		return true
 	} else if diff <= -tree.differenceHeight {
 		sub := node.Children[1]
-		// tree.rotateCount++
 		if getHeight(sub.Children[0]) > getHeight(sub.Children[1]) {
-			leftRotateWithRight(parent, child)
+			leftRotateWithRight(tree, parent, child)
 		} else {
-			leftRotate(parent, child)
+			leftRotate(tree, parent, child)
 		}
 		return true
 	} else {
