@@ -69,19 +69,21 @@
 | 结构 | 时间/op | 内存/op | 内存分配/op |
 |------|---------|---------|-------------|
 | **TreeList** | ~155 ns | 7 B | 0 |
+| **IndexTree** | N/A | N/A | N/A |
 | **AVL** | ~275 ns | 328 B | 1-2 |
 | SkipList | ~715 ns | 7 B | 0 |
 
-**最优: TreeList**（比AVL快2倍，最小内存）
+注意：IndexTree 的迭代器不提供 SeekGE 接口，使用不同的迭代模式。
 
 ### 6. 基于索引的访问（100k keys）
 
 | 结构 | 时间/op | 内存/op | 内存分配/op |
 |------|---------|---------|-------------|
 | **TreeList** | ~41 ns | 0 B | 0 |
+| **IndexTree** | ~95 ns | 0 B | 0 |
 | SkipList | ~102k ns | 16 B | 1 |
 
-**最优: TreeList**（比SkipList快2500倍）
+**最优: TreeList**（比IndexTree快2.3倍，比SkipList快2500倍）
 
 ### 7. 混合工作负载（50% Put，25% Get，25% Remove）
 
@@ -114,7 +116,7 @@ IndexTree 和 AVL 都能达到相同的树形（相同高度），但 IndexTree 
 
 1. **更少的旋转**: 随机插入时旋转少6.5倍，顺序插入时少3.5倍
 2. **更好的写性能**: Put 操作快16-22%
-3. **Get零分配**: IndexTree 的 Get 是无内存分配的（0 B/op, 0 allocs/op）
+3. **Get无额外boxing分配**: IndexTree 直接返回 `interface{}`，避免了具体返回类型需要的装箱开销
 4. **更好的混合工作负载**: 快30%，旋转少12倍
 
 **为什么 IndexTree 旋转更少：**

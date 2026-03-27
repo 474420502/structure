@@ -69,11 +69,11 @@ Note: IndexTree returns `interface{}` directly, avoiding the boxing overhead tha
 | Structure | Time/op | Memory/op | Allocs/op |
 |-----------|---------|----------|----------|
 | **TreeList** | ~155 ns | 7 B | 0 |
-| **IndexTree** | N/A* | N/A | N/A |
+| **IndexTree** | N/A | N/A | N/A |
 | **AVL** | ~275 ns | 328 B | 1-2 |
 | SkipList | ~715 ns | 7 B | 0 |
 
-*IndexTree does not have SeekGE in the skiplist comparison benchmark, but Iterator() is available*
+Note: IndexTree's Iterator does not expose SeekGE; it uses a different iteration model.
 
 **Winner: TreeList** (2x faster than AVL, minimal memory)
 
@@ -82,9 +82,10 @@ Note: IndexTree returns `interface{}` directly, avoiding the boxing overhead tha
 | Structure | Time/op | Memory/op | Allocs/op |
 |-----------|---------|----------|----------|
 | **TreeList** | ~41 ns | 0 B | 0 |
+| **IndexTree** | ~95 ns | 0 B | 0 |
 | SkipList | ~102k ns | 16 B | 1 |
 
-**Winner: TreeList** (2500x faster than SkipList for index access)
+**Winner: TreeList** (2.3x faster than IndexTree, 2500x faster than SkipList)
 
 ### 7. Mixed Workload (50% Put, 25% Get, 25% Remove)
 
@@ -117,7 +118,7 @@ Both IndexTree and AVL achieve identical tree shapes (same height), but IndexTre
 
 1. **Fewer Rotations**: 6.5x fewer rotations during random inserts, 3.5x fewer during sequential inserts
 2. **Better Write Performance**: 16-22% faster for Put operations
-3. **Zero Allocations on Get**: IndexTree's Get is allocation-free (0 B/op, 0 allocs/op)
+3. **No Boxing Allocations on Get**: IndexTree returns `interface{}` directly, avoiding the boxing overhead that occurs with concrete return types
 4. **Better Mixed Workload**: 30% faster with 12x fewer rotations
 
 **Why IndexTree Has Fewer Rotations:**
