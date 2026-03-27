@@ -336,3 +336,164 @@ func estIntersectionP(t *testing.T) {
 
 	log.Println(cost1, cost2)
 }
+
+func benchmarkSetTrees(size int) (*Tree[int, int], *Tree[int, int]) {
+	tree1 := New[int, int](compare.Any[int])
+	tree2 := New[int, int](compare.Any[int])
+
+	for i := 0; i < size; i += 2 {
+		tree1.Put(i, i)
+	}
+
+	for i := 1; i < size; i += 2 {
+		tree2.Put(i, i)
+	}
+
+	for i := size / 4; i < size+size/4; i += 4 {
+		tree1.Put(i, i)
+		tree2.Put(i, i)
+	}
+
+	return tree1, tree2
+}
+
+func oldIntersectionBenchmark(tree, other *Tree[int, int]) *Tree[int, int] {
+	const R = 1
+	head1 := tree.head()
+	head2 := other.head()
+	result := New[int, int](tree.compare)
+	for head1 != nil && head2 != nil {
+		c := tree.compare(head1.Key, head2.Key)
+		switch {
+		case c < 0:
+			head1 = head1.Direct[R]
+		case c > 0:
+			head2 = head2.Direct[R]
+		default:
+			result.Put(head1.Key, head1.Value)
+			head1 = head1.Direct[R]
+			head2 = head2.Direct[R]
+		}
+	}
+	return result
+}
+
+func oldUnionBenchmark(tree, other *Tree[int, int]) *Tree[int, int] {
+	const R = 1
+	head1 := tree.head()
+	head2 := other.head()
+	result := New[int, int](tree.compare)
+	for head1 != nil && head2 != nil {
+		c := tree.compare(head1.Key, head2.Key)
+		switch {
+		case c < 0:
+			result.Put(head1.Key, head1.Value)
+			head1 = head1.Direct[R]
+		case c > 0:
+			result.Put(head2.Key, head2.Value)
+			head2 = head2.Direct[R]
+		default:
+			result.Put(head1.Key, head1.Value)
+			head1 = head1.Direct[R]
+			head2 = head2.Direct[R]
+		}
+	}
+	for head1 != nil {
+		result.Put(head1.Key, head1.Value)
+		head1 = head1.Direct[R]
+	}
+	for head2 != nil {
+		result.Put(head2.Key, head2.Value)
+		head2 = head2.Direct[R]
+	}
+	return result
+}
+
+func oldDifferenceBenchmark(tree, other *Tree[int, int]) *Tree[int, int] {
+	const R = 1
+	head1 := tree.head()
+	head2 := other.head()
+	result := New[int, int](tree.compare)
+	for head1 != nil && head2 != nil {
+		c := tree.compare(head1.Key, head2.Key)
+		switch {
+		case c < 0:
+			result.Put(head1.Key, head1.Value)
+			head1 = head1.Direct[R]
+		case c > 0:
+			head2 = head2.Direct[R]
+		default:
+			head1 = head1.Direct[R]
+			head2 = head2.Direct[R]
+		}
+	}
+	for head1 != nil {
+		result.Put(head1.Key, head1.Value)
+		head1 = head1.Direct[R]
+	}
+	return result
+}
+
+func BenchmarkSetOperations(b *testing.B) {
+	tree1, tree2 := benchmarkSetTrees(1 << 15)
+
+	b.Run("intersection/old-put-build", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			result := oldIntersectionBenchmark(tree1, tree2)
+			if result.Size() == 0 {
+				b.Fatal("unexpected empty intersection")
+			}
+		}
+	})
+
+	b.Run("intersection/stream-build", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			result := tree1.Intersection(tree2)
+			if result.Size() == 0 {
+				b.Fatal("unexpected empty intersection")
+			}
+		}
+	})
+
+	b.Run("union/old-put-build", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			result := oldUnionBenchmark(tree1, tree2)
+			if result.Size() == 0 {
+				b.Fatal("unexpected empty union")
+			}
+		}
+	})
+
+	b.Run("union/stream-build", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			result := tree1.UnionSets(tree2)
+			if result.Size() == 0 {
+				b.Fatal("unexpected empty union")
+			}
+		}
+	})
+
+	b.Run("difference/old-put-build", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			result := oldDifferenceBenchmark(tree1, tree2)
+			if result.Size() == 0 {
+				b.Fatal("unexpected empty difference")
+			}
+		}
+	})
+
+	b.Run("difference/stream-build", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			result := tree1.DifferenceSets(tree2)
+			if result.Size() == 0 {
+				b.Fatal("unexpected empty difference")
+			}
+		}
+	})
+}

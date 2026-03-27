@@ -25,6 +25,83 @@ func (tree *Tree[KEY, VALUE]) getRoot() *treeNode[KEY, VALUE] {
 	return tree.root.Children[0]
 }
 
+func (tree *Tree[KEY, VALUE]) initRootNode(key KEY, value VALUE) {
+	node := &treeNode[KEY, VALUE]{
+		Parent: tree.root,
+		Size:   1,
+		Slice:  Slice[KEY, VALUE]{Key: key, Value: value},
+	}
+	tree.root.Children[0] = node
+	tree.root.Direct[0] = node
+	tree.root.Direct[1] = node
+}
+
+func (tree *Tree[KEY, VALUE]) attachNode(parent *treeNode[KEY, VALUE], childDir int, key KEY, value VALUE, left *treeNode[KEY, VALUE], right *treeNode[KEY, VALUE]) {
+	node := &treeNode[KEY, VALUE]{
+		Parent: parent,
+		Size:   1,
+		Slice:  Slice[KEY, VALUE]{Key: key, Value: value},
+	}
+	parent.Children[childDir] = node
+
+	if left != nil {
+		left.Direct[1] = node
+	} else {
+		tree.root.Direct[0] = node
+	}
+
+	if right != nil {
+		right.Direct[0] = node
+	} else {
+		tree.root.Direct[1] = node
+	}
+
+	node.Direct[0] = left
+	node.Direct[1] = right
+	tree.fixPut(parent)
+}
+
+func (tree *Tree[KEY, VALUE]) putWith(key KEY, value VALUE, insertedResult bool, existsResult bool, onExists func(cur *treeNode[KEY, VALUE])) bool {
+	const L = 0
+	const R = 1
+
+	cur := tree.getRoot()
+	if cur == nil {
+		tree.initRootNode(key, value)
+		return insertedResult
+	}
+
+	var left *treeNode[KEY, VALUE]
+	var right *treeNode[KEY, VALUE]
+
+	for {
+		c := tree.compare(key, cur.Key)
+		switch {
+		case c < 0:
+			right = cur
+			if child := cur.Children[L]; child != nil {
+				cur = child
+				continue
+			}
+			tree.attachNode(cur, L, key, value, left, right)
+			return insertedResult
+		case c > 0:
+			left = cur
+			if child := cur.Children[R]; child != nil {
+				cur = child
+				continue
+			}
+			tree.attachNode(cur, R, key, value, left, right)
+			return insertedResult
+		default:
+			if onExists != nil {
+				onExists(cur)
+			}
+			return existsResult
+		}
+	}
+}
+
 // getRangeNodes 获取范围节点的左团和又团
 func (tree *Tree[KEY, VALUE]) getRangeRoot(low, hight KEY) (root *treeNode[KEY, VALUE]) {
 	const L = 0
@@ -91,36 +168,34 @@ var rootSizeTable []*heightLimitSize = func() []*heightLimitSize {
 
 func (tree *Tree[KEY, VALUE]) fixPut(cur *treeNode[KEY, VALUE]) {
 	cur.Size++
+	cur.updateBalance()
 	if cur.Size == 3 {
 		tree.fixPutSize(cur.Parent)
 		return
 	}
 
 	var height int64 = 2
-	var lsize, rsize int64
 	var parent *treeNode[KEY, VALUE]
 
 	cur = cur.Parent
 
 	for cur != tree.root {
 		cur.Size++
+		cur.updateBalance()
 		parent = cur.Parent
 
 		limitsize := rootSizeTable[height]
-		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
 		if cur.Size < limitsize.rootsize {
-
-			lsize, rsize = getChildrenSize(cur)
-			// 右就检测左边
-			if rsize > lsize {
-				if rsize-lsize >= limitsize.bottomsize {
-					tree.sizeRrotate(cur)
+			balance := cur.Balance
+			if balance < 0 {
+				if -balance >= limitsize.bottomsize {
+					tree.sizeRRotate(cur)
 					tree.fixPutSize(parent)
 					return
 				}
 			} else {
-				if lsize-rsize >= limitsize.bottomsize {
-					tree.sizeLrotate(cur)
+				if balance >= limitsize.bottomsize {
+					tree.sizeLRotate(cur)
 					tree.fixPutSize(parent)
 					return
 				}
@@ -140,53 +215,59 @@ func (tree *Tree[KEY, VALUE]) fixRemoveRange(cur *treeNode[KEY, VALUE]) {
 		return
 	}
 
-	// log.Println(tree.debugString(true))
-
 	ls, rs := getChildrenSize(cur)
 	if ls > rs && ls >= rs<<1 {
 		cls, crs := getChildrenSize(cur.Children[L])
 		if cls < crs {
+			tree.doubleRotations++
 			tree.lrotate(cur.Children[L])
+			tree.rrotate(cur)
+			return
 		}
+		tree.singleRotations++
 		tree.rrotate(cur)
-		// tree.fixRemoveRange(cur)
-		// tree.fixRemoveRange(root, level+1)
 	} else if ls < rs && rs >= ls<<1 {
 		cls, crs := getChildrenSize(cur.Children[R])
 		if cls > crs {
+			tree.doubleRotations++
 			tree.rrotate(cur.Children[R])
+			tree.lrotate(cur)
+			return
 		}
+		tree.singleRotations++
 		tree.lrotate(cur)
-		// tree.fixRemoveRange(cur)
-		// tree.fixRemoveRange(root, level+1)
 	}
 
 }
 
-func (tree *Tree[KEY, VALUE]) sizeRrotate(cur *treeNode[KEY, VALUE]) *treeNode[KEY, VALUE] {
+func (tree *Tree[KEY, VALUE]) sizeRRotate(cur *treeNode[KEY, VALUE]) *treeNode[KEY, VALUE] {
 	const R = 1
 	llsize, lrsize := getChildrenSize(cur.Children[R])
 	if llsize > lrsize {
+		tree.doubleRotations++
 		tree.rrotate(cur.Children[R])
+		return tree.lrotate(cur)
 	}
+	tree.singleRotations++
 	return tree.lrotate(cur)
 }
 
-func (tree *Tree[KEY, VALUE]) sizeLrotate(cur *treeNode[KEY, VALUE]) *treeNode[KEY, VALUE] {
+func (tree *Tree[KEY, VALUE]) sizeLRotate(cur *treeNode[KEY, VALUE]) *treeNode[KEY, VALUE] {
 	const L = 0
 	llsize, lrsize := getChildrenSize(cur.Children[L])
 	if llsize < lrsize {
+		tree.doubleRotations++
 		tree.lrotate(cur.Children[L])
+		return tree.rrotate(cur)
 	}
+	tree.singleRotations++
 	return tree.rrotate(cur)
 }
 
 func (tree *Tree[KEY, VALUE]) lrotate(cur *treeNode[KEY, VALUE]) *treeNode[KEY, VALUE] {
-	// tree.rcount++
 
 	const L = 1
 	const R = 0
-	// 1 right 0 left
 	mov := cur.Children[L]
 	movright := mov.Children[R]
 
@@ -209,16 +290,17 @@ func (tree *Tree[KEY, VALUE]) lrotate(cur *treeNode[KEY, VALUE]) *treeNode[KEY, 
 
 	cur.Size = getChildrenSumSize(cur) + 1
 	mov.Size = getChildrenSumSize(mov) + 1
+
+	cur.updateBalance()
+	mov.updateBalance()
 
 	return mov
 }
 
 func (tree *Tree[KEY, VALUE]) rrotate(cur *treeNode[KEY, VALUE]) *treeNode[KEY, VALUE] {
-	// tree.rcount++
 
 	const L = 0
 	const R = 1
-	// 1 right 0 left
 	mov := cur.Children[L]
 	movright := mov.Children[R]
 
@@ -241,6 +323,9 @@ func (tree *Tree[KEY, VALUE]) rrotate(cur *treeNode[KEY, VALUE]) *treeNode[KEY, 
 
 	cur.Size = getChildrenSumSize(cur) + 1
 	mov.Size = getChildrenSumSize(mov) + 1
+
+	cur.updateBalance()
+	mov.updateBalance()
 
 	return mov
 }
@@ -500,6 +585,10 @@ func getRelationship[KEY any, VALUE any](cur *treeNode[KEY, VALUE]) int {
 	return 0
 }
 
+func (node *treeNode[KEY, VALUE]) updateBalance() {
+	node.Balance = getSize(node.Children[0]) - getSize(node.Children[1])
+}
+
 // func (tree *Tree[KEY,VALUE]) getHeight() int {
 // 	root := tree.getRoot()
 // 	if root == nil {
@@ -558,6 +647,7 @@ func (tree *Tree[KEY, VALUE]) unionSetSlice(other *Tree[KEY, VALUE]) (result []*
 
 	const L = 0
 	const R = 1
+	result = make([]*Slice[KEY, VALUE], 0, tree.Size()+other.Size())
 
 	// count := 0
 
@@ -601,6 +691,11 @@ func (tree *Tree[KEY, VALUE]) intersectionSlice(other *Tree[KEY, VALUE]) (result
 
 	const L = 0
 	const R = 1
+	capacity := tree.Size()
+	if other.Size() < capacity {
+		capacity = other.Size()
+	}
+	result = make([]*Slice[KEY, VALUE], 0, capacity)
 
 	// count := 0
 
@@ -625,6 +720,228 @@ func (tree *Tree[KEY, VALUE]) intersectionSlice(other *Tree[KEY, VALUE]) (result
 
 	// log.Println("count:", count, tree.Size(), other.Size())
 	return
+}
+
+func (tree *Tree[KEY, VALUE]) differenceSetSlice(other *Tree[KEY, VALUE]) (result []*Slice[KEY, VALUE]) {
+	const R = 1
+	result = make([]*Slice[KEY, VALUE], 0, tree.Size())
+
+	head1 := tree.head()
+	head2 := other.head()
+
+	for head1 != nil && head2 != nil {
+		c := tree.compare(head1.Key, head2.Key)
+		switch {
+		case c < 0:
+			result = append(result, &head1.Slice)
+			head1 = head1.Direct[R]
+		case c > 0:
+			head2 = head2.Direct[R]
+		default:
+			head1 = head1.Direct[R]
+			head2 = head2.Direct[R]
+		}
+	}
+
+	for head1 != nil {
+		result = append(result, &head1.Slice)
+		head1 = head1.Direct[R]
+	}
+
+	return
+}
+
+type setOperation uint8
+
+const (
+	setOpIntersection setOperation = iota
+	setOpUnion
+	setOpDifference
+)
+
+func (tree *Tree[KEY, VALUE]) setOperationStream(other *Tree[KEY, VALUE], operation setOperation) (int64, func() Slice[KEY, VALUE]) {
+	const R = 1
+	emit := func(head1, head2 **treeNode[KEY, VALUE], c int) (*Slice[KEY, VALUE], bool) {
+		switch operation {
+		case setOpIntersection:
+			switch {
+			case c < 0:
+				*head1 = (*head1).Direct[R]
+			case c > 0:
+				*head2 = (*head2).Direct[R]
+			default:
+				current := &(*head1).Slice
+				*head1 = (*head1).Direct[R]
+				*head2 = (*head2).Direct[R]
+				return current, true
+			}
+		case setOpUnion:
+			switch {
+			case c < 0:
+				current := &(*head1).Slice
+				*head1 = (*head1).Direct[R]
+				return current, true
+			case c > 0:
+				current := &(*head2).Slice
+				*head2 = (*head2).Direct[R]
+				return current, true
+			default:
+				current := &(*head1).Slice
+				*head1 = (*head1).Direct[R]
+				*head2 = (*head2).Direct[R]
+				return current, true
+			}
+		case setOpDifference:
+			switch {
+			case c < 0:
+				current := &(*head1).Slice
+				*head1 = (*head1).Direct[R]
+				return current, true
+			case c > 0:
+				*head2 = (*head2).Direct[R]
+			default:
+				*head1 = (*head1).Direct[R]
+				*head2 = (*head2).Direct[R]
+			}
+		}
+		return nil, false
+	}
+
+	count := int64(0)
+	head1 := tree.head()
+	head2 := other.head()
+	for head1 != nil && head2 != nil {
+		c := tree.compare(head1.Key, head2.Key)
+		if _, ok := emit(&head1, &head2, c); ok {
+			count++
+		}
+	}
+	switch operation {
+	case setOpUnion:
+		for head1 != nil {
+			count++
+			head1 = head1.Direct[R]
+		}
+		for head2 != nil {
+			count++
+			head2 = head2.Direct[R]
+		}
+	case setOpDifference:
+		for head1 != nil {
+			count++
+			head1 = head1.Direct[R]
+		}
+	}
+
+	head1 = tree.head()
+	head2 = other.head()
+	next := func() Slice[KEY, VALUE] {
+		for head1 != nil && head2 != nil {
+			if current, ok := emit(&head1, &head2, tree.compare(head1.Key, head2.Key)); ok {
+				return *current
+			}
+		}
+		switch operation {
+		case setOpUnion:
+			if head1 != nil {
+				current := head1.Slice
+				head1 = head1.Direct[R]
+				return current
+			}
+			if head2 != nil {
+				current := head2.Slice
+				head2 = head2.Direct[R]
+				return current
+			}
+		case setOpDifference:
+			if head1 != nil {
+				current := head1.Slice
+				head1 = head1.Direct[R]
+				return current
+			}
+		}
+		panic("set operation stream exhausted")
+	}
+
+	return count, next
+}
+
+func (tree *Tree[KEY, VALUE]) buildFromSortedSlices(items []*Slice[KEY, VALUE]) {
+	tree.Clear()
+	if len(items) == 0 {
+		return
+	}
+
+	var prev *treeNode[KEY, VALUE]
+	var build func(start, end int, parent *treeNode[KEY, VALUE]) *treeNode[KEY, VALUE]
+	build = func(start, end int, parent *treeNode[KEY, VALUE]) *treeNode[KEY, VALUE] {
+		if start > end {
+			return nil
+		}
+
+		mid := start + (end-start)/2
+		slice := items[mid]
+		node := &treeNode[KEY, VALUE]{
+			Parent: parent,
+			Slice:  Slice[KEY, VALUE]{Key: slice.Key, Value: slice.Value},
+		}
+
+		node.Children[0] = build(start, mid-1, node)
+		if prev != nil {
+			prev.Direct[1] = node
+			node.Direct[0] = prev
+		} else {
+			tree.root.Direct[0] = node
+		}
+		prev = node
+		node.Children[1] = build(mid+1, end, node)
+		node.Size = getChildrenSumSize(node) + 1
+		node.updateBalance()
+		return node
+	}
+
+	root := build(0, len(items)-1, tree.root)
+	tree.root.Children[0] = root
+	tree.root.Direct[1] = prev
+}
+
+func (tree *Tree[KEY, VALUE]) buildFromSortedStream(count int64, next func() Slice[KEY, VALUE]) {
+	tree.Clear()
+	if count == 0 {
+		return
+	}
+
+	var prev *treeNode[KEY, VALUE]
+	var build func(size int64, parent *treeNode[KEY, VALUE]) *treeNode[KEY, VALUE]
+	build = func(size int64, parent *treeNode[KEY, VALUE]) *treeNode[KEY, VALUE] {
+		if size == 0 {
+			return nil
+		}
+
+		leftSize := size / 2
+		rightSize := size - leftSize - 1
+		node := &treeNode[KEY, VALUE]{Parent: parent}
+		node.Children[0] = build(leftSize, node)
+
+		slice := next()
+		node.Slice = slice
+		if prev != nil {
+			prev.Direct[1] = node
+			node.Direct[0] = prev
+		} else {
+			tree.root.Direct[0] = node
+		}
+		prev = node
+
+		node.Children[1] = build(rightSize, node)
+		node.Size = getChildrenSumSize(node) + 1
+		node.updateBalance()
+		return node
+	}
+
+	root := build(count, tree.root)
+	tree.root.Children[0] = root
+	tree.root.Direct[1] = prev
 }
 
 func (tree *Tree[KEY, VALUE]) check() {

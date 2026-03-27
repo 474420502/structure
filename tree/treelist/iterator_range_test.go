@@ -36,7 +36,7 @@ func TestIteratorRange(t *testing.T) {
 			return true
 		})
 		if fmt.Sprintf("%v", result) != "[a5 c1]" {
-			t.Error(fmt.Sprintf("%v", result))
+			t.Errorf("%v", result)
 		}
 	}()
 
@@ -49,7 +49,7 @@ func TestIteratorRange(t *testing.T) {
 			return true
 		})
 		if fmt.Sprintf("%v", result) != "[a5 c1 c4 c6]" {
-			t.Error(fmt.Sprintf("%v", result))
+			t.Errorf("%v", result)
 		}
 	}()
 
@@ -62,21 +62,26 @@ func TestIteratorRange(t *testing.T) {
 			return true
 		})
 		if fmt.Sprintf("%v", result) != "[a1 a3 a5 c1 c4 c6]" {
-			t.Error(fmt.Sprintf("%v", result))
+			t.Errorf("%v", result)
 		}
 	}()
 
 	func() {
 		var result []string
+		var indexes []int64
 		iter := tree.IteratorRange()
 		iter.SetDirection(Reverse)
 		iter.GT2LE([]byte("a0"), []byte("c9"))
 		iter.Range(func(cur *SliceIndex[[]byte, []byte]) bool {
 			result = append(result, string(cur.Key))
+			indexes = append(indexes, cur.Index)
 			return true
 		})
 		if fmt.Sprintf("%v", result) != "[c6 c4 c1 a5 a3 a1]" {
-			t.Error(fmt.Sprintf("%v", result))
+			t.Errorf("%v", result)
+		}
+		if fmt.Sprintf("%v", indexes) != "[5 4 3 2 1 0]" {
+			t.Errorf("%v", indexes)
 		}
 	}()
 

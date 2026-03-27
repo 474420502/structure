@@ -743,6 +743,18 @@ func TestIntersectionBase(t *testing.T) {
 		t.Error(result)
 	}
 
+	union := tree1.UnionSets(tree2)
+	iter := union.Iterator()
+	iter.SeekToFirst()
+	var iterResult []int
+	for iter.Valid() {
+		iterResult = append(iterResult, iter.Key())
+		iter.Next()
+	}
+	if fmt.Sprintf("%v", iterResult) != "[1 2 3 4 5]" {
+		t.Error(iterResult)
+	}
+
 }
 
 func TestIntersection(t *testing.T) {
@@ -986,5 +998,33 @@ func TestSet(t *testing.T) {
 			}
 		}
 
+	}
+}
+
+func TestSetKeepsStoredKey(t *testing.T) {
+	comp := func(k1, k2 string) int {
+		switch {
+		case len(k1) < len(k2):
+			return -1
+		case len(k1) > len(k2):
+			return 1
+		default:
+			return 0
+		}
+	}
+
+	tree := New[string, int](comp)
+	if updated := tree.Set("a", 1); updated {
+		t.Fatal("first Set should insert")
+	}
+	if updated := tree.Set("b", 2); !updated {
+		t.Fatal("second Set should update existing node")
+	}
+
+	if got := tree.Head().Key; got != "a" {
+		t.Fatalf("stored key changed: %q", got)
+	}
+	if value, ok := tree.Get("a"); !ok || value != 2 {
+		t.Fatalf("unexpected value after update: %v %v", value, ok)
 	}
 }

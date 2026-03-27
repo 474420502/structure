@@ -22,7 +22,8 @@ type treeNode[KEY any, VALUE any] struct {
 	Children [2]*treeNode[KEY, VALUE]
 	Direct   [2]*treeNode[KEY, VALUE]
 
-	Size int64
+	Size    int64
+	Balance int64
 
 	Slice[KEY, VALUE]
 }
@@ -33,11 +34,12 @@ func (n *treeNode[KEY, VALUE]) String() string {
 
 // Tree the struct of treelist
 type Tree[KEY any, VALUE any] struct {
-	root    *treeNode[KEY, VALUE]
-	compare compare.Compare[KEY]
+	root            *treeNode[KEY, VALUE]
+	compare         compare.Compare[KEY]
+	singleRotations int64
+	doubleRotations int64
 
 	zero VALUE
-	// rcount int
 }
 
 // New create a object of tree
@@ -78,266 +80,24 @@ func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 }
 
 // PutDuplicate put, when key duplicate with call do. don,t change the key of `exists`, will break the tree of blance
-// 				if duplicate, will return true.
+//
+//	if duplicate, will return true.
 func (tree *Tree[KEY, VALUE]) PutDuplicate(key KEY, value VALUE, do func(exists *Slice[KEY, VALUE])) bool {
-	const L = 0
-	const R = 1
-
-	// if key == nil {
-	// 	panic(fmt.Errorf("key must not be nil"))
-	// }
-
-	cur := tree.getRoot()
-	if cur == nil {
-		node := &treeNode[KEY, VALUE]{Slice: Slice[KEY, VALUE]{Key: key, Value: value}, Size: 1, Parent: tree.root}
-		tree.root.Children[0] = node
-		tree.root.Direct[L] = node
-		tree.root.Direct[R] = node
-		return false
-	}
-
-	var left *treeNode[KEY, VALUE] = nil
-	var right *treeNode[KEY, VALUE] = nil
-
-	for {
-		c := tree.compare(key, cur.Key)
-		switch {
-		case c < 0:
-
-			right = cur
-			if cur.Children[L] != nil {
-				cur = cur.Children[L]
-			} else {
-
-				node := &treeNode[KEY, VALUE]{Parent: cur, Slice: Slice[KEY, VALUE]{Key: key, Value: value}, Size: 1}
-				cur.Children[L] = node
-
-				if left != nil {
-					left.Direct[R] = node
-				} else {
-					tree.root.Direct[L] = node
-				}
-
-				if right != nil {
-					right.Direct[L] = node
-				} else {
-					tree.root.Direct[R] = node
-				}
-
-				node.Direct[L] = left
-				node.Direct[R] = right
-
-				tree.fixPut(cur)
-				return false
-			}
-
-		case c > 0:
-
-			left = cur
-			if cur.Children[R] != nil {
-				cur = cur.Children[R]
-			} else {
-				node := &treeNode[KEY, VALUE]{Parent: cur, Slice: Slice[KEY, VALUE]{Key: key, Value: value}, Size: 1}
-				cur.Children[R] = node
-
-				if left != nil {
-					left.Direct[R] = node
-				} else {
-					tree.root.Direct[L] = node
-				}
-				if right != nil {
-					right.Direct[L] = node
-				} else {
-					tree.root.Direct[R] = node
-				}
-
-				node.Direct[L] = left
-				node.Direct[R] = right
-
-				tree.fixPut(cur)
-				return false
-			}
-		default:
-			do(&cur.Slice)
-			return true
-		}
-	}
-
+	return tree.putWith(key, value, false, true, func(cur *treeNode[KEY, VALUE]) {
+		do(&cur.Slice)
+	})
 }
 
 // Set Insert the key In treelist, if key exists, cover
 func (tree *Tree[KEY, VALUE]) Set(key KEY, value VALUE) bool {
-	const L = 0
-	const R = 1
-
-	// if key == nil {
-	// 	panic(fmt.Errorf("key must not be nil"))
-	// }
-
-	cur := tree.getRoot()
-	if cur == nil {
-
-		node := &treeNode[KEY, VALUE]{Slice: Slice[KEY, VALUE]{Key: key, Value: value}, Size: 1, Parent: tree.root}
-		tree.root.Children[0] = node
-		tree.root.Direct[L] = node
-		tree.root.Direct[R] = node
-		return false
-	}
-
-	var left *treeNode[KEY, VALUE] = nil
-	var right *treeNode[KEY, VALUE] = nil
-
-	for {
-		c := tree.compare(key, cur.Key)
-		switch {
-		case c < 0:
-
-			right = cur
-			if cur.Children[L] != nil {
-				cur = cur.Children[L]
-			} else {
-
-				node := &treeNode[KEY, VALUE]{Parent: cur, Slice: Slice[KEY, VALUE]{Key: key, Value: value}, Size: 1}
-				cur.Children[L] = node
-
-				if left != nil {
-					left.Direct[R] = node
-				} else {
-					tree.root.Direct[L] = node
-				}
-
-				if right != nil {
-					right.Direct[L] = node
-				} else {
-					tree.root.Direct[R] = node
-				}
-
-				node.Direct[L] = left
-				node.Direct[R] = right
-
-				tree.fixPut(cur)
-				return false
-			}
-
-		case c > 0:
-
-			left = cur
-			if cur.Children[R] != nil {
-				cur = cur.Children[R]
-			} else {
-				node := &treeNode[KEY, VALUE]{Parent: cur, Slice: Slice[KEY, VALUE]{Key: key, Value: value}, Size: 1}
-				cur.Children[R] = node
-
-				if left != nil {
-					left.Direct[R] = node
-				} else {
-					tree.root.Direct[L] = node
-				}
-				if right != nil {
-					right.Direct[L] = node
-				} else {
-					tree.root.Direct[R] = node
-				}
-
-				node.Direct[L] = left
-				node.Direct[R] = right
-
-				tree.fixPut(cur)
-				return false
-			}
-		default:
-			cur.Slice.Key = key
-			cur.Slice.Value = value
-			return true
-		}
-	}
-
+	return tree.putWith(key, value, false, true, func(cur *treeNode[KEY, VALUE]) {
+		cur.Slice.Value = value
+	})
 }
 
 // Put Insert the key In treelist, if key exists, ignore
 func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
-	const L = 0
-	const R = 1
-
-	// if key == nil {
-	// 	panic(fmt.Errorf("key must not be nil"))
-	// }
-
-	cur := tree.getRoot()
-	if cur == nil {
-		node := &treeNode[KEY, VALUE]{Slice: Slice[KEY, VALUE]{Key: key, Value: value}, Size: 1, Parent: tree.root}
-		tree.root.Children[0] = node
-		tree.root.Direct[L] = node
-		tree.root.Direct[R] = node
-		return true
-	}
-
-	var left *treeNode[KEY, VALUE] = nil
-	var right *treeNode[KEY, VALUE] = nil
-
-	for {
-		c := tree.compare(key, cur.Key)
-		switch {
-		case c < 0:
-
-			right = cur
-			if cur.Children[L] != nil {
-				cur = cur.Children[L]
-			} else {
-
-				node := &treeNode[KEY, VALUE]{Parent: cur, Slice: Slice[KEY, VALUE]{Key: key, Value: value}, Size: 1}
-				cur.Children[L] = node
-
-				if left != nil {
-					left.Direct[R] = node
-				} else {
-					tree.root.Direct[L] = node
-				}
-
-				if right != nil {
-					right.Direct[L] = node
-				} else {
-					tree.root.Direct[R] = node
-				}
-
-				node.Direct[L] = left
-				node.Direct[R] = right
-
-				tree.fixPut(cur)
-				return true
-			}
-
-		case c > 0:
-
-			left = cur
-			if cur.Children[R] != nil {
-				cur = cur.Children[R]
-			} else {
-				node := &treeNode[KEY, VALUE]{Parent: cur, Slice: Slice[KEY, VALUE]{Key: key, Value: value}, Size: 1}
-				cur.Children[R] = node
-
-				if left != nil {
-					left.Direct[R] = node
-				} else {
-					tree.root.Direct[L] = node
-				}
-				if right != nil {
-					right.Direct[L] = node
-				} else {
-					tree.root.Direct[R] = node
-				}
-
-				node.Direct[L] = left
-				node.Direct[R] = right
-
-				tree.fixPut(cur)
-				return true
-			}
-		default:
-			return false
-		}
-	}
-
+	return tree.putWith(key, value, true, false, nil)
 }
 
 // Index return the slice by index.
@@ -744,6 +504,24 @@ func (tree *Tree[KEY, VALUE]) Clear() {
 	tree.root.Children[0] = nil
 	tree.root.Direct[0] = nil
 	tree.root.Direct[1] = nil
+	tree.singleRotations = 0
+	tree.doubleRotations = 0
+}
+
+// SingleRotations returns the number of single rotations performed
+func (tree *Tree[KEY, VALUE]) SingleRotations() int64 {
+	return tree.singleRotations
+}
+
+// DoubleRotations returns the number of double rotations performed
+func (tree *Tree[KEY, VALUE]) DoubleRotations() int64 {
+	return tree.doubleRotations
+}
+
+// ResetRotations resets the rotation counters
+func (tree *Tree[KEY, VALUE]) ResetRotations() {
+	tree.singleRotations = 0
+	tree.doubleRotations = 0
 }
 
 // Trim retain the value of the range . [low high]
@@ -939,119 +717,27 @@ func (tree *Tree[KEY, VALUE]) TrimByIndex(low, hight int64) {
 
 // Intersection  tree intersection with other. [1 2 3] [2 3 4] -> [2 3].
 func (tree *Tree[KEY, VALUE]) Intersection(other *Tree[KEY, VALUE]) *Tree[KEY, VALUE] {
-	// This method is a bit stupid.  There is time to prepare for refactoring
-	const L = 0
-	const R = 1
-
-	// count := 0
-
-	head1 := tree.head()
-	head2 := other.head()
-
 	result := New[KEY, VALUE](tree.compare)
 	result.compare = tree.compare
-
-	for head1 != nil && head2 != nil {
-		c := tree.compare(head1.Key, head2.Key)
-		// count++
-
-		switch {
-		case c < 0:
-			head1 = head1.Direct[R]
-		case c > 0:
-			head2 = head2.Direct[R]
-		default:
-			result.Put(head1.Key, head1.Value)
-			head1 = head1.Direct[R]
-			head2 = head2.Direct[R]
-		}
-	}
-
-	// log.Println("count:", count, tree.Size(), other.Size())
+	count, next := tree.setOperationStream(other, setOpIntersection)
+	result.buildFromSortedStream(count, next)
 	return result
 }
 
 // UnionSets tree unionsets with other. [1 2 3] [2 3 4] -> [1 2 3 4].
 func (tree *Tree[KEY, VALUE]) UnionSets(other *Tree[KEY, VALUE]) *Tree[KEY, VALUE] {
-
-	// There is time to prepare for refactoring
-
-	const L = 0
-	const R = 1
-
-	// count := 0
-
-	head1 := tree.head()
-	head2 := other.head()
-
 	result := New[KEY, VALUE](tree.compare)
 	result.compare = tree.compare
-
-	for head1 != nil && head2 != nil {
-		c := tree.compare(head1.Key, head2.Key)
-		// count++
-		switch {
-		case c < 0:
-			result.Put(head1.Key, head1.Value)
-			head1 = head1.Direct[R]
-
-		case c > 0:
-			result.Put(head2.Key, head2.Value)
-			head2 = head2.Direct[R]
-
-		default:
-			result.Put(head1.Key, head1.Value)
-			head1 = head1.Direct[R]
-			head2 = head2.Direct[R]
-		}
-	}
-
-	for head1 != nil {
-		result.Put(head1.Key, head1.Value)
-		head1 = head1.Direct[R]
-	}
-
-	for head2 != nil {
-		result.Put(head2.Key, head2.Value)
-		head2 = head2.Direct[R]
-	}
-
+	count, next := tree.setOperationStream(other, setOpUnion)
+	result.buildFromSortedStream(count, next)
 	return result
 }
 
 // DifferenceSets The set of elements after subtracting B from A
 func (tree *Tree[KEY, VALUE]) DifferenceSets(other *Tree[KEY, VALUE]) *Tree[KEY, VALUE] {
-	const L = 0
-	const R = 1
-
-	// count := 0
-
-	head1 := tree.head()
-	head2 := other.head()
-
 	result := New[KEY, VALUE](tree.compare)
 	result.compare = tree.compare
-
-	for head1 != nil && head2 != nil {
-		c := tree.compare(head1.Key, head2.Key)
-		// count++
-		switch {
-		case c < 0:
-			result.Put(head1.Key, head1.Value)
-			head1 = head1.Direct[R]
-
-		case c > 0:
-			head2 = head2.Direct[R]
-		default:
-			head1 = head1.Direct[R]
-			head2 = head2.Direct[R]
-		}
-	}
-
-	for head1 != nil {
-		result.Put(head1.Key, head1.Value)
-		head1 = head1.Direct[R]
-	}
-
+	count, next := tree.setOperationStream(other, setOpDifference)
+	result.buildFromSortedStream(count, next)
 	return result
 }

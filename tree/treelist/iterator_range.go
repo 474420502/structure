@@ -55,7 +55,11 @@ func (ir *IteratorRange[KEY, VALUE]) Range(do func(cur *SliceIndex[KEY, VALUE]) 
 			break
 		}
 		cur = cur.Direct[dir]
-		idx++
+		if ir.dir == Forward {
+			idx++
+		} else {
+			idx--
+		}
 	}
 
 }
