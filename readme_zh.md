@@ -69,11 +69,10 @@
 | 结构 | 时间/op | 内存/op | 内存分配/op |
 |------|---------|---------|-------------|
 | **TreeList** | ~155 ns | 7 B | 0 |
-| **IndexTree** | N/A | N/A | N/A |
 | **AVL** | ~275 ns | 328 B | 1-2 |
 | SkipList | ~715 ns | 7 B | 0 |
 
-注意：IndexTree 的迭代器不提供 SeekGE 接口，使用不同的迭代模式。
+注意：IndexTree 使用 Traverse() 回调函数进行迭代，而不是 Seek* 迭代器模式。
 
 ### 6. 基于索引的访问（100k keys）
 

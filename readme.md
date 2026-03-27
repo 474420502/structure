@@ -69,11 +69,10 @@ Note: IndexTree returns `interface{}` directly, avoiding the boxing overhead tha
 | Structure | Time/op | Memory/op | Allocs/op |
 |-----------|---------|----------|----------|
 | **TreeList** | ~155 ns | 7 B | 0 |
-| **IndexTree** | N/A | N/A | N/A |
 | **AVL** | ~275 ns | 328 B | 1-2 |
 | SkipList | ~715 ns | 7 B | 0 |
 
-Note: IndexTree's Iterator does not expose SeekGE; it uses a different iteration model.
+Note: IndexTree uses Traverse() with callback for iteration instead of Seek* iterator pattern.
 
 **Winner: TreeList** (2x faster than AVL, minimal memory)
 
