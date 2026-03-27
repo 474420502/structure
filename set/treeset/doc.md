@@ -15,6 +15,7 @@ import "github.com/474420502/structure/set/treeset"
 - in-order traversal and value export
 - iterator with forward/backward seek operations
 - configurable balancing tolerance through `NewEx`
+- set operations: `Union`, `Intersection`, `Difference`
 
 ## API Snapshot
 
@@ -32,13 +33,18 @@ import "github.com/474420502/structure/set/treeset"
 - `Traverse(func(KEY, VALUE) bool)`
 - `Values() []VALUE`
 - `Iterator() *Iterator[KEY, VALUE]`
+- `Union(other *Tree[KEY, VALUE]) *Tree[KEY, VALUE]`
+- `Intersection(other *Tree[KEY, VALUE]) *Tree[KEY, VALUE]`
+- `Difference(other *Tree[KEY, VALUE]) *Tree[KEY, VALUE]`
 
-The iterator supports `SeekToFirst`, `SeekToLast`, `SeekGE`, `SeekGT`, `SeekLE`, `SeekLT`, `Next`, `Prev`, and `Clone`.
+The iterator supports `SeekToFirst`, `SeekToLast`, `SeekGE`, `SeekGT`, `SeekLE`, `SeekLT`, `Next`, `Prev`, `Clone`, and both `Valid` and the legacy `Vaild` compatibility alias.
 
 ## Notes
 
 - `Add` does not overwrite an existing key.
 - `Set` inserts when absent and overwrites when present.
+- `Union`, `Intersection`, and `Difference` mutate the receiver, return the receiver, and leave `other` unchanged.
+- `Valid` is the preferred iterator validity check. `Vaild` remains available for backward compatibility.
 - Example usage is available at [../../example/treeset/main.go](../../example/treeset/main.go).
 
 ## Validation

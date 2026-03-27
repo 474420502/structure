@@ -170,3 +170,45 @@ func (tree *Tree[KEY, VALUE]) String() string {
 func (tree *Tree[KEY, VALUE]) Iterator() *Iterator[KEY, VALUE] {
 	return newIterator(tree)
 }
+
+func (tree *Tree[KEY, VALUE]) Union(other *Tree[KEY, VALUE]) *Tree[KEY, VALUE] {
+	tree.doUnion(other)
+	return tree
+}
+
+func (tree *Tree[KEY, VALUE]) doUnion(other *Tree[KEY, VALUE]) {
+	other.Traverse(func(k KEY, v VALUE) bool {
+		tree.Set(k, v)
+		return true
+	})
+}
+
+func (tree *Tree[KEY, VALUE]) Intersection(other *Tree[KEY, VALUE]) *Tree[KEY, VALUE] {
+	tree.retainAll(other)
+	return tree
+}
+
+func (tree *Tree[KEY, VALUE]) retainAll(other *Tree[KEY, VALUE]) {
+	var keys []KEY
+	tree.Traverse(func(k KEY, v VALUE) bool {
+		if !other.Contains(k) {
+			keys = append(keys, k)
+		}
+		return true
+	})
+	for _, k := range keys {
+		tree.Remove(k)
+	}
+}
+
+func (tree *Tree[KEY, VALUE]) Difference(other *Tree[KEY, VALUE]) *Tree[KEY, VALUE] {
+	tree.removeAll(other)
+	return tree
+}
+
+func (tree *Tree[KEY, VALUE]) removeAll(other *Tree[KEY, VALUE]) {
+	other.Traverse(func(k KEY, v VALUE) bool {
+		tree.Remove(k)
+		return true
+	})
+}

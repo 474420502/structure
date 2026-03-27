@@ -30,6 +30,11 @@ func (iter *Iterator[KEY, VALUE]) Vaild() bool {
 	return iter.cur != nil
 }
 
+// Valid reports whether the iterator is positioned on a node.
+func (iter *Iterator[KEY, VALUE]) Valid() bool {
+	return iter.Vaild()
+}
+
 // SeekToFirst seek to first item
 func (iter *Iterator[KEY, VALUE]) SeekToFirst() {
 	iter.cur = iter.tree.getRoot()
@@ -85,6 +90,8 @@ func (iter *Iterator[KEY, VALUE]) Clone() *Iterator[KEY, VALUE] {
 	other := newIterator(iter.tree)
 	other.cur = iter.cur
 	other.idx = iter.idx
-	copy(other.stack, iter.stack)
+	for i := 0; i <= int(iter.idx); i++ {
+		other.stack[i] = iter.stack[i]
+	}
 	return other
 }

@@ -190,3 +190,21 @@ func TestIteratorForce2(t *testing.T) {
 
 	}
 }
+
+func TestIteratorValidAlias(t *testing.T) {
+	tree := New[int, int](compare.AnyEx[int])
+	iter := tree.Iterator()
+
+	if iter.Valid() {
+		t.Fatalf("empty iterator should be invalid")
+	}
+
+	tree.Set(1, 1)
+	iter.SeekToFirst()
+	if !iter.Valid() {
+		t.Fatalf("iterator should be valid after SeekToFirst on non-empty tree")
+	}
+	if iter.Valid() != iter.Vaild() {
+		t.Fatalf("Valid and Vaild should report the same state")
+	}
+}

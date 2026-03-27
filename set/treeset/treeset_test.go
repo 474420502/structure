@@ -3,12 +3,18 @@ package treeset
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/474420502/random"
 	"github.com/474420502/structure/compare"
 )
+
+func valuesSnapshot(set *Tree[int, int]) []int {
+	values := set.Values()
+	return append([]int(nil), values...)
+}
 
 func TestTreeSet_Add(t *testing.T) {
 	type fields struct {
@@ -217,5 +223,276 @@ func TestForce(t *testing.T) {
 		if !set.Empty() {
 			panic("")
 		}
+	}
+}
+
+func TestTreeSet_Union(t *testing.T) {
+	tests := []struct {
+		name   string
+		a      []int
+		b      []int
+		expect []int
+	}{
+		{"empty union empty", []int{}, []int{}, []int{}},
+		{"empty union non-empty", []int{}, []int{1, 2, 3}, []int{1, 2, 3}},
+		{"non-empty union empty", []int{1, 2, 3}, []int{}, []int{1, 2, 3}},
+		{"disjoint", []int{1, 2, 3}, []int{4, 5, 6}, []int{1, 2, 3, 4, 5, 6}},
+		{"overlapping", []int{1, 2, 3}, []int{3, 4, 5}, []int{1, 2, 3, 4, 5}},
+		{"identical", []int{1, 2, 3}, []int{1, 2, 3}, []int{1, 2, 3}},
+		{"subset left", []int{1, 2}, []int{1, 2, 3, 4}, []int{1, 2, 3, 4}},
+		{"subset right", []int{1, 2, 3, 4}, []int{2, 3}, []int{1, 2, 3, 4}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			setA := New[int, int](compare.AnyEx[int])
+			setB := New[int, int](compare.AnyEx[int])
+			for _, v := range tt.a {
+				setA.Set(v, v)
+			}
+			for _, v := range tt.b {
+				setB.Set(v, v)
+			}
+				beforeB := valuesSnapshot(setB)
+			result := setA.Union(setB)
+				if result != setA {
+					t.Fatalf("union should return receiver")
+				}
+			if result.Size() != uint(len(tt.expect)) {
+				t.Errorf("size mismatch: got %d, expect %d", result.Size(), len(tt.expect))
+			}
+			for _, v := range tt.expect {
+				if !result.Contains(v) {
+					t.Errorf("missing element %d", v)
+				}
+			}
+				if !reflect.DeepEqual(valuesSnapshot(setB), beforeB) {
+					t.Fatalf("union should not mutate other: got %v want %v", setB.Values(), beforeB)
+				}
+		})
+	}
+}
+
+func TestTreeSet_Intersection(t *testing.T) {
+	tests := []struct {
+		name   string
+		a      []int
+		b      []int
+		expect []int
+	}{
+		{"empty intersect empty", []int{}, []int{}, []int{}},
+		{"empty intersect non-empty", []int{}, []int{1, 2, 3}, []int{}},
+		{"non-empty intersect empty", []int{1, 2, 3}, []int{}, []int{}},
+		{"disjoint", []int{1, 2, 3}, []int{4, 5, 6}, []int{}},
+		{"overlapping", []int{1, 2, 3}, []int{3, 4, 5}, []int{3}},
+		{"identical", []int{1, 2, 3}, []int{1, 2, 3}, []int{1, 2, 3}},
+		{"subset left", []int{1, 2}, []int{1, 2, 3, 4}, []int{1, 2}},
+		{"subset right", []int{1, 2, 3, 4}, []int{2, 3}, []int{2, 3}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			setA := New[int, int](compare.AnyEx[int])
+			setB := New[int, int](compare.AnyEx[int])
+			for _, v := range tt.a {
+				setA.Set(v, v)
+			}
+			for _, v := range tt.b {
+				setB.Set(v, v)
+			}
+				beforeB := valuesSnapshot(setB)
+			result := setA.Intersection(setB)
+				if result != setA {
+					t.Fatalf("intersection should return receiver")
+				}
+			if result.Size() != uint(len(tt.expect)) {
+				t.Errorf("size mismatch: got %d, expect %d, got %v", result.Size(), len(tt.expect), result.Values())
+			}
+			for _, v := range tt.expect {
+				if !result.Contains(v) {
+					t.Errorf("missing element %d", v)
+				}
+			}
+				if !reflect.DeepEqual(valuesSnapshot(setB), beforeB) {
+					t.Fatalf("intersection should not mutate other: got %v want %v", setB.Values(), beforeB)
+				}
+		})
+	}
+}
+
+func TestTreeSet_Difference(t *testing.T) {
+	tests := []struct {
+		name   string
+		a      []int
+		b      []int
+		expect []int
+	}{
+		{"empty diff empty", []int{}, []int{}, []int{}},
+		{"empty diff non-empty", []int{}, []int{1, 2, 3}, []int{}},
+		{"non-empty diff empty", []int{1, 2, 3}, []int{}, []int{1, 2, 3}},
+		{"disjoint", []int{1, 2, 3}, []int{4, 5, 6}, []int{1, 2, 3}},
+		{"overlapping", []int{1, 2, 3}, []int{3, 4, 5}, []int{1, 2}},
+		{"identical", []int{1, 2, 3}, []int{1, 2, 3}, []int{}},
+		{"subset left", []int{1, 2}, []int{1, 2, 3, 4}, []int{}},
+		{"subset right", []int{1, 2, 3, 4}, []int{2, 3}, []int{1, 4}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			setA := New[int, int](compare.AnyEx[int])
+			setB := New[int, int](compare.AnyEx[int])
+			for _, v := range tt.a {
+				setA.Set(v, v)
+			}
+			for _, v := range tt.b {
+				setB.Set(v, v)
+			}
+				beforeB := valuesSnapshot(setB)
+			result := setA.Difference(setB)
+				if result != setA {
+					t.Fatalf("difference should return receiver")
+				}
+			if result.Size() != uint(len(tt.expect)) {
+				t.Errorf("size mismatch: got %d, expect %d, got %v", result.Size(), len(tt.expect), result.Values())
+			}
+			for _, v := range tt.expect {
+				if !result.Contains(v) {
+					t.Errorf("missing element %d", v)
+				}
+			}
+				if !reflect.DeepEqual(valuesSnapshot(setB), beforeB) {
+					t.Fatalf("difference should not mutate other: got %v want %v", setB.Values(), beforeB)
+				}
+		})
+	}
+}
+
+func TestTreeSet_UnionRandom(t *testing.T) {
+	rand := random.New(t.Name())
+	for n := 0; n < 1000; n++ {
+		setA := New[int, int](compare.AnyEx[int])
+		setB := New[int, int](compare.AnyEx[int])
+		var mapA, mapB, mapUnion map[int]bool = make(map[int]bool), make(map[int]bool), make(map[int]bool)
+
+		for i := 0; i < 100; i++ {
+			v := rand.Intn(200)
+			setA.Set(v, v)
+			mapA[v] = true
+			mapUnion[v] = true
+		}
+		for i := 0; i < 100; i++ {
+			v := rand.Intn(200)
+			setB.Set(v, v)
+			mapB[v] = true
+			mapUnion[v] = true
+		}
+
+		result := setA.Union(setB)
+		if result.Size() != uint(len(mapUnion)) {
+			t.Errorf("union size mismatch: got %d, expect %d", result.Size(), len(mapUnion))
+		}
+
+		result.Traverse(func(k, v int) bool {
+			if !mapUnion[v] {
+				t.Errorf("unexpected element %d in union result", v)
+			}
+			return true
+		})
+	}
+}
+
+func TestTreeSet_IntersectionRandom(t *testing.T) {
+	rand := random.New(t.Name())
+	for n := 0; n < 1000; n++ {
+		setA := New[int, int](compare.AnyEx[int])
+		setB := New[int, int](compare.AnyEx[int])
+		var mapA, mapB, mapIntersection map[int]bool = make(map[int]bool), make(map[int]bool), make(map[int]bool)
+
+		for i := 0; i < 100; i++ {
+			v := rand.Intn(200)
+			setA.Set(v, v)
+			mapA[v] = true
+		}
+		for i := 0; i < 100; i++ {
+			v := rand.Intn(200)
+			setB.Set(v, v)
+			mapB[v] = true
+		}
+		for v := range mapA {
+			if mapB[v] {
+				mapIntersection[v] = true
+			}
+		}
+
+		result := setA.Intersection(setB)
+		if result.Size() != uint(len(mapIntersection)) {
+			t.Errorf("intersection size mismatch: got %d, expect %d", result.Size(), len(mapIntersection))
+		}
+
+		result.Traverse(func(k, v int) bool {
+			if !mapIntersection[v] {
+				t.Errorf("unexpected element %d in intersection result", v)
+			}
+			return true
+		})
+	}
+}
+
+func TestTreeSet_DifferenceRandom(t *testing.T) {
+	rand := random.New(t.Name())
+	for n := 0; n < 1000; n++ {
+		setA := New[int, int](compare.AnyEx[int])
+		setB := New[int, int](compare.AnyEx[int])
+		var mapA, mapB, mapDiff map[int]bool = make(map[int]bool), make(map[int]bool), make(map[int]bool)
+
+		for i := 0; i < 100; i++ {
+			v := rand.Intn(200)
+			setA.Set(v, v)
+			mapA[v] = true
+		}
+		for i := 0; i < 100; i++ {
+			v := rand.Intn(200)
+			setB.Set(v, v)
+			mapB[v] = true
+		}
+		for v := range mapA {
+			if !mapB[v] {
+				mapDiff[v] = true
+			}
+		}
+
+		result := setA.Difference(setB)
+		if result.Size() != uint(len(mapDiff)) {
+			t.Errorf("difference size mismatch: got %d, expect %d", result.Size(), len(mapDiff))
+		}
+
+		result.Traverse(func(k, v int) bool {
+			if !mapDiff[v] {
+				t.Errorf("unexpected element %d in difference result", v)
+			}
+			return true
+		})
+	}
+}
+
+func TestIterator_Clone(t *testing.T) {
+	set := New[int, int](compare.AnyEx[int])
+	for i := 0; i < 10; i++ {
+		set.Set(i, i)
+	}
+
+	iter1 := set.Iterator()
+	iter1.SeekToFirst()
+	iter1.Next()
+	iter1.Next()
+
+	iter2 := iter1.Clone()
+	if iter2.Value() != iter1.Value() {
+		t.Errorf("clone value mismatch: got %d, expect %d", iter2.Value(), iter1.Value())
+	}
+
+	iter1.Next()
+	if iter2.Value() == iter1.Value() {
+		t.Errorf("clone should be independent")
 	}
 }
