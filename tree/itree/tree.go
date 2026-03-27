@@ -9,16 +9,19 @@ import (
 type Tree[KEY, VALUE any] struct {
 	Center  *Node[KEY, VALUE]
 	Compare compare.Compare[KEY]
+	rotateType func(cur *Node[KEY, VALUE], child int, ls, rs int) bool
 	// hight       int
 	zero VALUE
-	// rotateCount int
+	singleRotations int
+	doubleRotations int
 }
 
 func New[KEY, VALUE any](Compare compare.Compare[KEY]) *Tree[KEY, VALUE] {
 
 	tree := &Tree[KEY, VALUE]{
-		Center:  &Node[KEY, VALUE]{Size: 0},
-		Compare: Compare,
+		Center:     &Node[KEY, VALUE]{Size: 0},
+		Compare:    Compare,
+		rotateType: sizeRotateTypeChildBias[KEY, VALUE],
 	}
 
 	tree.Center.Children[0] = tree.Center

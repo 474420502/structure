@@ -86,8 +86,11 @@ func (tree *Tree[T]) sizeRRotate(cur *hNode[T]) *hNode[T] {
 	const R = 1
 	llsize, lrsize := getChildrenSize(cur.Children[R])
 	if llsize > lrsize {
+		tree.doubleRotations++
 		tree.rrotate(cur.Children[R])
+		return tree.lrotate(cur)
 	}
+	tree.singleRotations++
 	return tree.lrotate(cur)
 }
 
@@ -95,8 +98,11 @@ func (tree *Tree[T]) sizeLRotate(cur *hNode[T]) *hNode[T] {
 	const L = 0
 	llsize, lrsize := getChildrenSize(cur.Children[L])
 	if llsize < lrsize {
+		tree.doubleRotations++
 		tree.lrotate(cur.Children[L])
+		return tree.rrotate(cur)
 	}
+	tree.singleRotations++
 	return tree.rrotate(cur)
 }
 
@@ -251,14 +257,22 @@ func (tree *Tree[T]) fixRemoveRange(cur *hNode[T]) {
 	if ls > rs && ls >= rs<<1 {
 		cls, crs := getChildrenSize(cur.Children[L])
 		if cls < crs {
+			tree.doubleRotations++
 			tree.lrotate(cur.Children[L])
+			tree.rrotate(cur)
+			return
 		}
+		tree.singleRotations++
 		tree.rrotate(cur)
 	} else if ls < rs && rs >= ls<<1 {
 		cls, crs := getChildrenSize(cur.Children[R])
 		if cls > crs {
+			tree.doubleRotations++
 			tree.rrotate(cur.Children[R])
+			tree.lrotate(cur)
+			return
 		}
+		tree.singleRotations++
 		tree.lrotate(cur)
 	}
 }

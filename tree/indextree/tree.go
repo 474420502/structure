@@ -22,6 +22,8 @@ type hNode[T any] struct {
 type Tree[T any] struct {
 	root    *hNode[T]
 	compare compare.Compare[T]
+	singleRotations int
+	doubleRotations int
 }
 
 // New create a object of tree

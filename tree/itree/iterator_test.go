@@ -30,12 +30,10 @@ func TestNextPrev(t *testing.T) {
 		if !iter.Vaild() || iter.Value() != i {
 			panic("")
 		}
-		log.Println(iter.view())
 		iter.Next()
 	}
 
 	iter.Prev()
-	log.Println(iter.Vaild(), iter.Key())
 	if !iter.Vaild() && iter.Value() != 9 {
 		panic("")
 	}
@@ -58,7 +56,7 @@ func TestNextPrev(t *testing.T) {
 	iter.SeekGT(5)
 	for i := 6; i < 10; i++ {
 		if iter.Value() != i {
-			log.Panic(iter.Value())
+			panic("")
 		}
 		iter.Next()
 	}
@@ -66,7 +64,7 @@ func TestNextPrev(t *testing.T) {
 	iter.SeekLT(5)
 	for i := 4; i >= 0; i-- {
 		if iter.Value() != i {
-			log.Panic(iter.Value())
+			panic("")
 		}
 		iter.Prev()
 	}
@@ -181,8 +179,6 @@ func TestSeekFor(t *testing.T) {
 	for i := 0; i < 20; i += 2 {
 		tree.Set(i, i)
 	}
-
-	log.Println(tree.view())
 
 	iter := tree.Iterator()
 	iter.SeekLE(7)

@@ -218,7 +218,23 @@ func sizeRotateType[KEY, VALUE any](cur *Node[KEY, VALUE], child int, ls, rs int
 	}
 }
 
+func sizeRotateTypeChildBias[KEY, VALUE any](cur *Node[KEY, VALUE], child int, ls, rs int) bool {
+	rchild := ^child + 2
+	sub := cur.Children[child]
+	if sub == nil {
+		return false
+	}
+
+	outerSize := getSize(sub.Children[child])
+	innerSize := getSize(sub.Children[rchild])
+	return innerSize > outerSize
+}
+
 func (tree *Tree[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) bool {
+	rotateType := tree.rotateType
+	if rotateType == nil {
+		rotateType = sizeRotateTypeChildBias[KEY, VALUE]
+	}
 
 	node := parent.Children[child]
 
@@ -227,11 +243,11 @@ func (tree *Tree[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) boo
 		if lsize-rsize > rsize {
 			lh, rh := getMaybeHeight(lsize), getMaybeHeight(rsize)
 			if lh-rh > 1 {
-				// log.Println("rotate")
-				// tree.rotateCount++
-				if sizeRotateType(node, 0, lsize, rsize) {
+				if rotateType(node, 0, lsize, rsize) {
+					tree.doubleRotations++
 					rightRotateWithLeft(parent, child)
 				} else {
+					tree.singleRotations++
 					rightRotate(parent, child)
 				}
 				return true
@@ -242,11 +258,11 @@ func (tree *Tree[KEY, VALUE]) rebalance(parent *Node[KEY, VALUE], child int) boo
 			lh, rh := getMaybeHeight(lsize), getMaybeHeight(rsize)
 
 			if rh-lh > 1 {
-				// log.Println("rotate")
-				// tree.rotateCount++
-				if sizeRotateType(node, 1, rsize, lsize) {
+				if rotateType(node, 1, rsize, lsize) {
+					tree.doubleRotations++
 					leftRotateWithRight(parent, child)
 				} else {
+					tree.singleRotations++
 					leftRotate(parent, child)
 				}
 				return true
