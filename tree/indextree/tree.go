@@ -13,15 +13,16 @@ type hNode[T any] struct {
 	Parent   *hNode[T]
 	Children [2]*hNode[T]
 
-	Size  int64
-	Key   T
-	Value interface{}
+	Size    int64
+	Balance int64
+	Key     T
+	Value   interface{}
 }
 
 // Tree the struct of tree
 type Tree[T any] struct {
-	root    *hNode[T]
-	compare compare.Compare[T]
+	root            *hNode[T]
+	compare         compare.Compare[T]
 	singleRotations int
 	doubleRotations int
 }

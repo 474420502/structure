@@ -7,6 +7,7 @@ import (
 func (tree *Tree[T]) fixPutSize(cur *hNode[T]) {
 	for cur != tree.root {
 		cur.Size++
+		cur.updateBalance()
 		cur = cur.Parent
 	}
 }
@@ -23,17 +24,19 @@ type heightLimitSize struct {
 	bottomsize int64
 }
 
-var rootSizeTable []*heightLimitSize = func() []*heightLimitSize {
-	table := make([]*heightLimitSize, 64)
-	for i := 2; i < 64; i++ {
-		root2nsize := int64(1) << i
-		table[i] = &heightLimitSize{
-			rootsize:   root2nsize,
-			bottomsize: (root2nsize >> 2) + 1,
-		}
+var sizeToleranceShift int64 = 2
+
+func SetSizeToleranceShift(shift int64) {
+	sizeToleranceShift = shift
+}
+
+func getHeightLimit(height int64) *heightLimitSize {
+	root2nsize := int64(1) << height
+	return &heightLimitSize{
+		rootsize:   root2nsize,
+		bottomsize: (root2nsize >> sizeToleranceShift) + 1,
 	}
-	return table
-}()
+}
 
 func (tree *Tree[T]) fixPut(cur *hNode[T]) {
 
@@ -44,33 +47,28 @@ func (tree *Tree[T]) fixPut(cur *hNode[T]) {
 	}
 
 	var height int64 = 2
-	var lsize, rsize int64
 	var parent *hNode[T]
 
 	cur = cur.Parent
 
 	for cur != tree.root {
 		cur.Size++
+		cur.updateBalance()
 		parent = cur.Parent
 
-		limitSize := rootSizeTable[height]
+		limitSize := getHeightLimit(height)
 
-		// (1<< height) -1 允许的最大size　超过证明高度超1, 并且有最少１size的空缺
 		if cur.Size < limitSize.rootsize {
-
-			lsize, rsize = getChildrenSize(cur)
-			// 右就检测左边
-			if rsize > lsize {
-				if rsize-lsize >= limitSize.bottomsize {
+			balance := cur.Balance
+			if balance < 0 {
+				if -balance >= limitSize.bottomsize {
 					tree.sizeRRotate(cur)
-					// height--
 					tree.fixPutSize(parent)
 					return
 				}
 			} else {
-				if lsize-rsize >= limitSize.bottomsize {
+				if balance >= limitSize.bottomsize {
 					tree.sizeLRotate(cur)
-					// height--
 					tree.fixPutSize(parent)
 					return
 				}
@@ -134,6 +132,9 @@ func (tree *Tree[T]) lrotate(cur *hNode[T]) *hNode[T] {
 	cur.Size = getChildrenSumSize(cur) + 1
 	mov.Size = getChildrenSumSize(mov) + 1
 
+	cur.updateBalance()
+	mov.updateBalance()
+
 	return mov
 }
 
@@ -165,6 +166,9 @@ func (tree *Tree[T]) rrotate(cur *hNode[T]) *hNode[T] {
 	cur.Size = getChildrenSumSize(cur) + 1
 	mov.Size = getChildrenSumSize(mov) + 1
 
+	cur.updateBalance()
+	mov.updateBalance()
+
 	return mov
 }
 
@@ -181,6 +185,10 @@ func getSize[T any](cur *hNode[T]) int64 {
 		return 0
 	}
 	return cur.Size
+}
+
+func (node *hNode[T]) updateBalance() {
+	node.Balance = getSize(node.Children[0]) - getSize(node.Children[1])
 }
 
 func getRelationship[T any](cur *hNode[T]) int {
