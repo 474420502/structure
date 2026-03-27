@@ -45,6 +45,11 @@ func (tree *Tree[T]) Size() int64 {
 	return 0
 }
 
+// Iterator return a new iterator for the tree
+func (tree *Tree[T]) Iterator() *Iterator[T] {
+	return newIterator(tree)
+}
+
 // Get get value by key
 func (tree *Tree[T]) Get(key T) (interface{}, bool) {
 	if cur := tree.getNode(key); cur != nil {
