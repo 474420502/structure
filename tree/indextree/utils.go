@@ -41,6 +41,7 @@ func getHeightLimit(height int64) *heightLimitSize {
 func (tree *Tree[T]) fixPut(cur *hNode[T]) {
 
 	cur.Size++
+	cur.updateBalance()
 	if cur.Size == 3 {
 		tree.fixPutSize(cur.Parent)
 		return

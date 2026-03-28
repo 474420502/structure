@@ -159,3 +159,31 @@ func TestTreeRotationCompare(t *testing.T) {
 		}
 	}
 }
+
+func TestIndexTreeHeightGap(t *testing.T) {
+	seeds := []int64{12345, 67890}
+
+	for _, seed := range seeds {
+		data := newBenchDataWithSeed(10000, seed)
+
+		it := New(compare.Any[int64])
+		for i := 0; i < len(data); i++ {
+			it.Put(data[i], data[i])
+		}
+		itStats := it.BenchmarkStats()
+
+		ta := avl.New[int64, int64](compare.AnyEx[int64])
+		for i := 0; i < len(data); i++ {
+			ta.Put(data[i], data[i])
+		}
+		taStats := ta.BenchmarkStats()
+
+		if itStats.Height > taStats.Height+2 {
+			t.Fatalf("seed=%d: indextree height %d exceeds avl height %d by more than 2", seed, itStats.Height, taStats.Height)
+		}
+
+		if itStats.SingleRotations+itStats.DoubleRotations >= taStats.SingleRotations+taStats.DoubleRotations {
+			t.Fatalf("seed=%d: indextree rotations %d should stay below avl rotations %d", seed, itStats.SingleRotations+itStats.DoubleRotations, taStats.SingleRotations+taStats.DoubleRotations)
+		}
+	}
+}
