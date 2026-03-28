@@ -43,6 +43,17 @@ func TestPush(t *testing.T) {
 		t.Error(lhm.String())
 	}
 }
+func TestLinkedHashMapAlias(t *testing.T) {
+	var lhm *LinkedHashMap = New()
+	if lhm == nil {
+		t.Fatal("New should return a usable LinkedHashMap alias")
+	}
+
+	lhm.Put(1, 1)
+	if value, ok := lhm.Get(1); !ok || value != 1 {
+		t.Fatalf("LinkedHashMap alias should behave like LinkedHashmap, got (%v, %v)", value, ok)
+	}
+}
 
 func TestBase(t *testing.T) {
 	lhm := New()

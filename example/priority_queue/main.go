@@ -3,36 +3,42 @@ package main
 import (
 	"log"
 
-	"github.com/474420502/random"
 	"github.com/474420502/structure/compare"
 	treequeue "github.com/474420502/structure/queue/priority"
 )
 
 func main() {
-	// all api is fast
-	r := random.New(1636706158629652669)
 	queue := treequeue.New[int, int](compare.Any[int])
 
-	for i := 0; i < 10; i++ {
-		v := r.Intn(10)
-		queue.Put(v, v)
+	for _, v := range []int{5, 1, 9, 1, 4, 7} {
+		queue.InsertIfAbsent(v, v)
 	}
 
-	log.Println(queue.Values())  // [0 0 0 1 1 2 4 4 4 8]
-	log.Println(queue.PopHead()) // (0,0) PopHead treequeue.Slice{} Key = 0 Value = 0
-	log.Println(queue.Values())  // [0 0 1 1 2 4 4 4 8]
-	log.Println(queue.PopTail()) // (8,8) PopTail treequeue.Slice{} Key = 8 Value = 8
-	log.Println(queue.Values())  // [0 0 1 1 2 4 4 4]
+	log.Println(queue.Values())  // [1 4 5 7 9]
+	log.Println(queue.Upsert(7, 70)) // true
+	log.Println(queue.Get(7))        // 70 true
+	log.Println(queue.Len())         // 5
+	log.Println(queue.Delete(5))     // 5 true
+	log.Println(queue.Values())      // [1 4 70 9]
+
+	duplicateQueue := treequeue.New[int, int](compare.Any[int])
+	for _, v := range []int{5, 1, 9, 1, 4, 7} {
+		duplicateQueue.Put(v, v)
+	}
+	log.Println(duplicateQueue.Values()) // [1 1 4 5 7 9]
+	log.Println(duplicateQueue.Gets(1))  // [1 1]
+
+	iter := duplicateQueue.Iterator()
+	log.Println(iter.SeekGEExact(4)) // true
+	for iter.Valid() {
+		log.Println(iter.Value()) // 4 5 7 9
+		iter.Next()
+	}
 
 	// Top 5 (Top k). Keep Top 5 Size
 	// queue.Remove()
 	// queue.RemoveRangeByIndex(0, (queue.Size()-5)-1) // Remove 0 - 2 [0,2]
 	// log.Println(queue.String())                     // [1 2 4 4 4]
-
-	// for i := 0; i < 100; i++ {
-	// 	v := r.Intn(100)
-	// 	queue.Put(v, v)
-	// }
 
 	// // Top 5 (Top k). Keep data in sliding window. (date, rank ....)
 	// queue.RemoveRangeByIndex(0, (queue.Size()-5)-1)

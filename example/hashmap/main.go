@@ -10,12 +10,12 @@ func main() {
 
 	hm := hashmap.New()
 
-	log.Println("Put Set Get String")
-	log.Println(hm.Put(1, 1))       // true
-	log.Println(hm.Put(1, 1))       // false
-	log.Println(hm.Put('a', 2))     // true
-	log.Println(hm.Put("apple", 4)) // true
-	hm.Set("apple", 3)
+	log.Println("InsertIfAbsent Upsert Get String")
+	log.Println(hm.InsertIfAbsent(1, 1))        // true
+	log.Println(hm.InsertIfAbsent(1, 1))        // false
+	log.Println(hm.InsertIfAbsent('a', 2))      // true
+	log.Println(hm.InsertIfAbsent("apple", 4)) // true
+	log.Println(hm.Upsert("apple", 3))         // true
 	log.Println(hm.String()) // map[1:1 97:2 apple:3]
 
 	log.Println(hm.Get(1))       // 1 true
@@ -28,13 +28,13 @@ func main() {
 	log.Println(hm.Values()) // [1 2 3]
 	log.Println(hm.Slices()) // [{1 1} {97 2} {apple 3}]
 
-	log.Println("Size Remove")
-	log.Println(hm.Size())
-	hm.Remove(1)
+	log.Println("Len Delete")
+	log.Println(hm.Len())
+	log.Println(hm.Delete(1))
 	log.Println(hm.String()) // map[97:2 apple:3]
-	hm.Remove('a')
+	log.Println(hm.Delete('a'))
 	log.Println(hm.String()) // map[apple:3]
-	hm.Remove(2)
+	log.Println(hm.Delete(2))
 	log.Println(hm.String()) // map[apple:3]
 
 	log.Println("Clear Empty")

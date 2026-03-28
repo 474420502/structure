@@ -58,7 +58,7 @@ func main() {
 	// [{0:0} {1:1} {3:3} {4:4} {7:7}]
 	log.Println("Iterator: {Valid Next SeekGE}")
 	iter := tree1.Iterator()
-	log.Println(iter.SeekGE(2))       // return false. key >= 2 similar to rocksdb pebble leveldb skiplist
+	log.Println(iter.SeekGE(2))       // false. key 2 does not exist, iterator lands on 3
 	for ; iter.Valid(); iter.Next() { // Vaiid Next
 		log.Println(iter.Key()) // log: 3 4 7
 		// you can limit by yourself
@@ -66,7 +66,7 @@ func main() {
 
 	// [{0:0} {1:1} {3:3} {4:4} {7:7}]
 	log.Println("Iterator: {Valid Next SeekGT}")
-	log.Println(iter.SeekGT(2))       // return false.  key > 2
+	log.Println(iter.SeekGT(2))       // false. key 2 does not exist, iterator lands on 3
 	for ; iter.Valid(); iter.Next() { // Vaiid Next
 		log.Println(iter.Key()) // log: 3 4 7
 		// you can limit by yourself
@@ -74,7 +74,7 @@ func main() {
 
 	// [{0:0} {1:1} {3:3} {4:4} {7:7}]
 	log.Println("Iterator: {Valid Prev SeekLE}")
-	log.Println(iter.SeekLE(3))       // return true . key  <= 3
+	log.Println(iter.SeekLE(3))       // true. key 3 exists, iterator lands on 3
 	for ; iter.Valid(); iter.Prev() { // Vaiid Next
 		log.Println(iter.Key()) // log: 3 1 0
 		// you can limit by yourself
@@ -82,11 +82,10 @@ func main() {
 
 	// [{0:0} {1:1} {3:3} {4:4} {7:7}]
 	log.Println("Iterator: {Valid Prev SeekLT}")
-	if iter.SeekLT(3) { // return true. key < 3
-		for ; iter.Valid(); iter.Prev() { // Vaiid Next
-			log.Println(iter.Key()) // log: 1 0
-			// you can limit by yourself
-		}
+	log.Println(iter.SeekLT(3)) // true. key 3 exists, iterator lands on 1
+	for ; iter.Valid(); iter.Prev() { // Vaiid Next
+		log.Println(iter.Key()) // log: 1 0
+		// you can limit by yourself
 	}
 
 	log.Println("Iterator: {SeekToFirst SeekToLast Index}")

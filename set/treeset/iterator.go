@@ -60,9 +60,19 @@ func (iter *Iterator[KEY, VALUE]) SeekLE(key KEY) {
 	iter.seekEqual(key, 0)
 }
 
+// SeekLEExact seeks like SeekLE and reports whether the queried key existed exactly.
+func (iter *Iterator[KEY, VALUE]) SeekLEExact(key KEY) bool {
+	return iter.seekEqual(key, 0)
+}
+
 // SeekLT seek to the key that less than
 func (iter *Iterator[KEY, VALUE]) SeekLT(key KEY) {
 	iter.seekThan(key, 0)
+}
+
+// SeekLTExact seeks like SeekLT and reports whether the queried key existed exactly.
+func (iter *Iterator[KEY, VALUE]) SeekLTExact(key KEY) bool {
+	return iter.seekThan(key, 0)
 }
 
 // SeekGE seek to the key that greater than or equal to
@@ -70,9 +80,19 @@ func (iter *Iterator[KEY, VALUE]) SeekGE(key KEY) {
 	iter.seekEqual(key, 1)
 }
 
+// SeekGEExact seeks like SeekGE and reports whether the queried key existed exactly.
+func (iter *Iterator[KEY, VALUE]) SeekGEExact(key KEY) bool {
+	return iter.seekEqual(key, 1)
+}
+
 // SeekGT seek to the key that greater than
 func (iter *Iterator[KEY, VALUE]) SeekGT(key KEY) {
 	iter.seekThan(key, 1)
+}
+
+// SeekGTExact seeks like SeekGT and reports whether the queried key existed exactly.
+func (iter *Iterator[KEY, VALUE]) SeekGTExact(key KEY) bool {
+	return iter.seekThan(key, 1)
 }
 
 // Prev the current iterator move to the prev. before call it must call Vaild() and return true.

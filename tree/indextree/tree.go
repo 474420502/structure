@@ -101,6 +101,11 @@ func (tree *Tree[T]) Put(key T, value interface{}) bool {
 
 }
 
+// InsertIfAbsent inserts a value only when the key does not exist.
+func (tree *Tree[T]) InsertIfAbsent(key T, value interface{}) bool {
+	return tree.Put(key, value)
+}
+
 // Set set value by Key. if key exists, cover the value and return true. else return false and put value into tree
 func (tree *Tree[T]) Set(key T, value interface{}) bool {
 
@@ -144,6 +149,16 @@ func (tree *Tree[T]) Set(key T, value interface{}) bool {
 		}
 	}
 
+}
+
+// Upsert sets the value and reports whether an existing value was replaced.
+func (tree *Tree[T]) Upsert(key T, value interface{}) bool {
+	if cur := tree.getNode(key); cur != nil {
+		cur.Value = value
+		return true
+	}
+	tree.Put(key, value)
+	return false
 }
 
 // Index Indexing Ordered Data. like TopN
@@ -331,6 +346,20 @@ func (tree *Tree[T]) Remove(key T) interface{} {
 	}
 
 	return nil
+}
+
+// Delete removes a key and reports whether a value was present.
+func (tree *Tree[T]) Delete(key T) (interface{}, bool) {
+	v := tree.Remove(key)
+	if v == nil {
+		return nil, false
+	}
+	return v, true
+}
+
+// Len returns the number of elements.
+func (tree *Tree[T]) Len() int {
+	return int(tree.Size())
 }
 
 // RemoveIndex remove key value by index and return value that be removed

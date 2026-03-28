@@ -29,6 +29,35 @@ func BenchmarkCase1(b *testing.B) {
 		}
 	}
 }
+func TestIteratorValidAlias(t *testing.T) {
+	l := New(compare.AnyEx[int])
+	iter := l.Iterator()
+	citer := l.CircularIterator()
+
+	if iter.Valid() {
+		t.Fatal("empty iterator should be invalid")
+	}
+	if citer.Valid() {
+		t.Fatal("empty circular iterator should be invalid")
+	}
+
+	l.Push(1)
+	iter.ToHead()
+	citer.ToHead()
+
+	if iter.Valid() != iter.Vaild() {
+		t.Fatal("iterator Valid and Vaild should report the same state")
+	}
+	if citer.Valid() != citer.Vaild() {
+		t.Fatal("circular iterator Valid and Vaild should report the same state")
+	}
+	if !iter.Valid() || !citer.Valid() {
+		t.Fatal("iterators should be valid after adding an element")
+	}
+	if iter.Value() != 1 || citer.Value() != 1 {
+		t.Fatal("iterators should point to the inserted element")
+	}
+}
 
 func BenchmarkCase2(b *testing.B) {
 	// var result = sort.IntSlice{}

@@ -14,17 +14,23 @@ func (iter *CircularIterator[T]) SetValue(v T) {
 	iter.cur.value = v
 }
 
-// Value get the value of element. must iter.Vaild() == true
+// Value get the value of element. Must satisfy iter.Valid() == true.
 func (iter *CircularIterator[T]) Value() T {
 	return iter.cur.value
 }
 
+// Deprecated: use Valid.
 // Vaild current is Vaild ?
 func (iter *CircularIterator[T]) Vaild() bool {
 	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
 		return false
 	}
 	return true
+}
+
+// Valid reports whether the iterator points to an existing element.
+func (iter *CircularIterator[T]) Valid() bool {
+	return iter.Vaild()
 }
 
 // Prev the prev element
@@ -75,7 +81,7 @@ func (iter *CircularIterator[T]) ToTail() {
 	iter.cur = iter.ll.tail.prev
 }
 
-// Move move next(prev[if step < 0]) by step must iter.Vaild() == true
+// Move move next(prev[if step < 0]) by step. Must satisfy iter.Valid() == true.
 func (iter *CircularIterator[T]) Move(step int) {
 	if iter.ll.size == 0 {
 		return

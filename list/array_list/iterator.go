@@ -13,9 +13,15 @@ func (iter *Iterator[T]) Value() T {
 	return iter.al.Index(iter.cur)
 }
 
+// Deprecated: use Valid.
 // Vaild if current value is not nil return true. else return false. for use with Seek
 func (iter *Iterator[T]) Vaild() bool {
 	return iter.cur < iter.al.size
+}
+
+// Valid reports whether the iterator points to an existing element.
+func (iter *Iterator[T]) Valid() bool {
+	return iter.Vaild()
 }
 
 // Swap  Swap the Value of iterator with other iterator
@@ -46,7 +52,7 @@ func (iter *Iterator[T]) Index() uint {
 	return iter.cur
 }
 
-// RemoveToNext Remove self and to Next. must iter.Vaild() == true
+// RemoveToNext Remove self and move to the next element. Must satisfy iter.Valid() == true.
 func (iter *Iterator[T]) RemoveToNext() {
 	iter.al.Remove(iter.cur)
 	if iter.cur == iter.al.size {
@@ -54,7 +60,7 @@ func (iter *Iterator[T]) RemoveToNext() {
 	}
 }
 
-// RemoveToNext Remove self and to Prev.  must iter.Vaild() == true
+// RemoveToPrev Remove self and move to the previous element. Must satisfy iter.Valid() == true.
 func (iter *Iterator[T]) RemoveToPrev() {
 	iter.al.Remove(iter.cur)
 	if iter.cur == 0 {

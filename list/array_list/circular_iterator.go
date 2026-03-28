@@ -53,9 +53,15 @@ func (iter *CircularIterator[T]) Value() T {
 	return iter.al.Index(iter.cur)
 }
 
+// Deprecated: use Valid.
 // Vaild if current value is not nil return true. else return false. for use with Seek
 func (iter *CircularIterator[T]) Vaild() bool {
 	return iter.cur < iter.al.size
+}
+
+// Valid reports whether the iterator points to an existing element.
+func (iter *CircularIterator[T]) Valid() bool {
+	return iter.Vaild()
 }
 
 // Prev to prev

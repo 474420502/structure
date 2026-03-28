@@ -307,6 +307,36 @@ func TestContains(t *testing.T) {
 	}
 }
 
+func TestIteratorValidAlias(t *testing.T) {
+	ll := New[int](compare.AnyEx[int])
+	iter := ll.Iterator()
+	citer := ll.CircularIterator()
+
+	if iter.Valid() {
+		t.Fatal("empty iterator should be invalid")
+	}
+	if citer.Valid() {
+		t.Fatal("empty circular iterator should be invalid")
+	}
+
+	ll.Push(1)
+	iter.ToHead()
+	citer.ToHead()
+
+	if iter.Valid() != iter.Vaild() {
+		t.Fatal("iterator Valid and Vaild should report the same state")
+	}
+	if citer.Valid() != citer.Vaild() {
+		t.Fatal("circular iterator Valid and Vaild should report the same state")
+	}
+	if !iter.Valid() || !citer.Valid() {
+		t.Fatal("iterators should be valid after adding an element")
+	}
+	if iter.Value() != 1 || citer.Value() != 1 {
+		t.Fatal("iterators should point to the inserted element")
+	}
+}
+
 func TestForce(t *testing.T) {
 
 	rand := random.New(t.Name())

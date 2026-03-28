@@ -142,6 +142,7 @@ func (iter *Iterator[T]) Value() T {
 	return iter.cur.value
 }
 
+// Deprecated: use Valid.
 // Vaild current is Vaild ?
 func (iter *Iterator[T]) Vaild() bool {
 	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
@@ -150,7 +151,12 @@ func (iter *Iterator[T]) Vaild() bool {
 	return true
 }
 
-// Move move next(prev[if step < 0]) by step. must iter.Vaild() == true
+// Valid reports whether the iterator points to an existing element.
+func (iter *Iterator[T]) Valid() bool {
+	return iter.Vaild()
+}
+
+// Move move next(prev[if step < 0]) by step. Must satisfy iter.Valid() == true.
 func (iter *Iterator[T]) Move(step int) {
 
 	if step > 0 {
@@ -180,12 +186,12 @@ func (iter *Iterator[T]) Move(step int) {
 	return
 }
 
-//Prev must iter.Vaild() == true
+// Prev must satisfy iter.Valid() == true.
 func (iter *Iterator[T]) Prev() {
 	iter.cur = iter.cur.prev
 }
 
-//Next must iter.Vaild() == true
+// Next must satisfy iter.Valid() == true.
 func (iter *Iterator[T]) Next() {
 	iter.cur = iter.cur.next
 }

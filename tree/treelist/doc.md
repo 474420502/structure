@@ -57,6 +57,7 @@ The range iterator supports:
 ## Notes
 
 - This package is the main ordered structure for workloads that need both sorted-key semantics and rank/index operations.
+- The iterator `Seek*` methods already return the exact-match status directly. This package follows the same exact-status convention as `indextree` and `avl`.
 - `Intersection`, `UnionSets`, and `DifferenceSets` treat the tree as an ordered set by key.
 - The benchmark comparison for ordered structures lives in [../indextree/benchmark-comparison.md](../indextree/benchmark-comparison.md).
 - Example usage is available at [../../example/tree-treelist/main.go](../../example/tree-treelist/main.go).

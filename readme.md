@@ -7,6 +7,8 @@ This repository contains multiple implementations of ordered trees, lists, stack
 ## Documentation Map
 
 - Chinese overview: [readme_zh.md](./readme_zh.md)
+- API standard draft: [api_standard.md](./api_standard.md)
+- API migration strategy: [api_migration_strategy.md](./api_migration_strategy.md)
 - IndexTree benchmark summary: [tree/indextree/benchmark-comparison.md](./tree/indextree/benchmark-comparison.md)
 - IndexTree benchmark summary in Chinese: [tree/indextree/benchmark-comparison.zh.md](./tree/indextree/benchmark-comparison.zh.md)
 - Rotation analysis deep dive: [tree/indextree/rotation-analysis.md](./tree/indextree/rotation-analysis.md)
@@ -31,9 +33,9 @@ module github.com/474420502/structure
 
 | Package | Summary | Docs | Example |
 |---------|---------|------|---------|
-| `map/hashmap` | Basic hash map wrapper with `Put`, `Set`, `Get`, `Keys`, `Values`, `Slices` | [doc](./map/hashmap/doc.md) | [example](./example/hashmap/main.go) |
-| `map/linkedhashmap` | Hash map that preserves insertion order and supports front/back relocation | [doc](./map/linkedhashmap/doc.md) | [example](./example/linkedhashmap/main.go) |
-| `map/orderedmap.go` | Placeholder for a future ordered map implementation. The package currently exposes only an empty `OrderedMap` type. | [doc](./map/orderedmap.go/doc.md) | - |
+| `map/hashmap` | Basic hash map wrapper with legacy `Put`/`Set` plus standardized `InsertIfAbsent`/`Upsert` helpers | [doc](./map/hashmap/doc.md) | [example](./example/hashmap/main.go) |
+| `map/linkedhashmap` | Ordered hash map with front/back relocation and standardized semantic write helpers | [doc](./map/linkedhashmap/doc.md) | [example](./example/linkedhashmap/main.go) |
+| `map/orderedmap.go` | Ordered map built on `tree/indextree` with iterator, index access, and standardized semantic write helpers | [doc](./map/orderedmap.go/doc.md) | - |
 
 ### Queues
 
@@ -41,14 +43,14 @@ module github.com/474420502/structure
 |---------|---------|------|---------|
 | `queue/linkedarray` | Circular-array deque with front/back push-pop, indexed access, and traversal | [doc](./queue/linkedarray/doc.md) | - |
 | `queue/list` | Doubly linked deque with explicit node handles for front/back iteration | [doc](./queue/list/doc.md) | - |
-| `queue/priority` | Ordered priority queue backed by a size-balanced tree with iterators and indexed removal | [doc](./queue/priority/doc.md) | [example](./example/priority_queue/main.go) |
+| `queue/priority` | Ordered priority queue backed by a size-balanced tree with duplicate-key support and standardized semantic helpers | [doc](./queue/priority/doc.md) | [example](./example/priority_queue/main.go) |
 
 ### Sets
 
 | Package | Summary | Docs | Example |
 |---------|---------|------|---------|
 | `set/hashset` | Simple hash set for unordered membership tests | [doc](./set/hashset/doc.md) | - |
-| `set/treeset` | Ordered tree set with AVL-style balancing and bidirectional iterators | [doc](./set/treeset/doc.md) | [example](./example/treeset/main.go) |
+| `set/treeset` | Ordered tree set with AVL-style balancing, bidirectional iterators, and semantic alias helpers | [doc](./set/treeset/doc.md) | [example](./example/treeset/main.go) |
 
 ### Stacks
 
@@ -62,10 +64,10 @@ module github.com/474420502/structure
 
 | Package | Summary | Docs | Example |
 |---------|---------|------|---------|
-| `tree/avl` | Classic AVL tree with iterator support | [doc](./tree/avl/doc.md) | [example](./example/avl/main.go) |
-| `tree/avls` | Duplicate-key AVL variant | [doc](./tree/avls/doc.md) | - |
+| `tree/avl` | Classic AVL tree with iterator support and semantic alias helpers | [doc](./tree/avl/doc.md) | [example](./example/avl/main.go) |
+| `tree/avls` | Duplicate-key AVL variant with explicit insert-if-absent and upsert helpers | [doc](./tree/avls/doc.md) | - |
 | `tree/heap` | Binary heap based on comparator ordering | [doc](./tree/heap/doc.md) | [example](./example/heap/main.go) |
-| `tree/indextree` | Size-balanced ordered tree with rank/index operations and split/trim support | [doc](./tree/indextree/doc.md) | [example](./example/indextree/main.go) |
+| `tree/indextree` | Size-balanced ordered tree with rank/index operations, split/trim support, and semantic alias helpers | [doc](./tree/indextree/doc.md) | [example](./example/indextree/main.go) |
 | `tree/skiplist` | Concurrent skip list with iterator, index, trim, and set-operation helpers | [doc](./tree/skiplist/doc.md) | - |
 | `tree/treelist` | Ordered map/tree list with linked ordering, range iterator, and set algebra | [doc](./tree/treelist/doc.md) | [example](./example/tree-treelist/main.go) |
 

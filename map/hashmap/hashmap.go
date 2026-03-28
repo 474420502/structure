@@ -33,9 +33,21 @@ func (hm *HashMap) Put(key interface{}, value interface{}) bool {
 	return false
 }
 
+// InsertIfAbsent inserts a value only when the key does not exist.
+func (hm *HashMap) InsertIfAbsent(key interface{}, value interface{}) bool {
+	return hm.Put(key, value)
+}
+
 // Set inserts element into the map With Set.
 func (hm *HashMap) Set(key interface{}, value interface{}) {
 	hm.hm[key] = value
+}
+
+// Upsert sets the value and reports whether an existing value was replaced.
+func (hm *HashMap) Upsert(key interface{}, value interface{}) bool {
+	_, replaced := hm.hm[key]
+	hm.hm[key] = value
+	return replaced
 }
 
 // Get get the element by key
@@ -49,6 +61,15 @@ func (hm *HashMap) Remove(key interface{}) {
 	delete(hm.hm, key)
 }
 
+// Delete removes a key and returns the previous value when present.
+func (hm *HashMap) Delete(key interface{}) (value interface{}, ok bool) {
+	value, ok = hm.hm[key]
+	if ok {
+		delete(hm.hm, key)
+	}
+	return
+}
+
 // Empty if the hashmap is empty, return true
 func (hm *HashMap) Empty() bool {
 	return len(hm.hm) == 0
@@ -56,6 +77,11 @@ func (hm *HashMap) Empty() bool {
 
 // Size return the size of hashmap
 func (hm *HashMap) Size() int {
+	return len(hm.hm)
+}
+
+// Len returns the number of elements.
+func (hm *HashMap) Len() int {
 	return len(hm.hm)
 }
 

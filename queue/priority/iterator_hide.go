@@ -69,31 +69,37 @@ func (iter *Iterator[KEY, VALUE]) up(cmp int8) bool {
 }
 
 // seekE seek to the key that (less or greater) than or equal to
-func (iter *Iterator[KEY, VALUE]) seekEqual(key KEY, LessAndGreater int8) {
+func (iter *Iterator[KEY, VALUE]) seekEqual(key KEY, LessAndGreater int8) bool {
 
 	iter.cur = iter.tree.getRoot()
+	if iter.cur == nil {
+		return false
+	}
 	iter.idx = -1
 
 	for {
 
 		cmp := iter.tree.Compare(iter.cur.Key, key)
 		if cmp < 0 {
-			return
+			return true
 		}
 
 		if !iter.down(int8(cmp)) {
 			if int8(cmp) == LessAndGreater {
 				iter.up(LessAndGreater)
 			}
-			return
+			return false
 		}
 	}
 }
 
 // SeekLT seek to the key that (less or greater) than
-func (iter *Iterator[KEY, VALUE]) seekThan(key KEY, LessAndGreater int8) {
+func (iter *Iterator[KEY, VALUE]) seekThan(key KEY, LessAndGreater int8) bool {
 
 	iter.cur = iter.tree.getRoot()
+	if iter.cur == nil {
+		return false
+	}
 	iter.idx = -1
 
 	for {
@@ -102,14 +108,14 @@ func (iter *Iterator[KEY, VALUE]) seekThan(key KEY, LessAndGreater int8) {
 
 		if cmp < 0 {
 			iter.move(LessAndGreater)
-			return
+			return true
 		}
 
 		if !iter.down(int8(cmp)) {
 			if int8(cmp) == LessAndGreater {
 				iter.up(LessAndGreater)
 			}
-			return
+			return false
 		}
 	}
 }

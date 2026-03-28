@@ -39,6 +39,25 @@ func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 	return true
 }
 
+// InsertIfAbsent inserts a value only when the key does not exist.
+func (tree *Tree[KEY, VALUE]) InsertIfAbsent(key KEY, value VALUE) bool {
+	if _, ok := tree.Get(key); ok {
+		return false
+	}
+	tree.Put(key, value)
+	return true
+}
+
+// Upsert sets the first matching value and reports whether an existing value was replaced.
+func (tree *Tree[KEY, VALUE]) Upsert(key KEY, value VALUE) bool {
+	if cur := tree.getfirst(key, tree.Center, 1, nil); cur != nil {
+		cur.Value = value
+		return true
+	}
+	tree.Put(key, value)
+	return false
+}
+
 func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	cur := tree.getfirst(key, tree.Center, 1, nil)
 	if cur == nil {
@@ -79,6 +98,11 @@ func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
 		return *target, true
 	}
 	return tree.zero, false
+}
+
+// Delete removes a key and returns the previous value when present.
+func (tree *Tree[KEY, VALUE]) Delete(key KEY) (VALUE, bool) {
+	return tree.Remove(key)
 }
 
 // RemoveIndex remove key value by index and return value that be removed
@@ -145,6 +169,11 @@ func (tree *Tree[KEY, VALUE]) Clear() {
 
 func (tree *Tree[KEY, VALUE]) Size() int {
 	return getSize(tree.getRoot())
+}
+
+// Len returns the number of elements.
+func (tree *Tree[KEY, VALUE]) Len() int {
+	return tree.Size()
 }
 
 func (tree *Tree[KEY, VALUE]) Traverse(every func(KEY, VALUE) bool) {

@@ -19,6 +19,11 @@ func (m *OrderedMap[K, V]) Size() int64 {
 	return m.tree.Size()
 }
 
+// Len returns the number of elements.
+func (m *OrderedMap[K, V]) Len() int {
+	return int(m.tree.Size())
+}
+
 func (m *OrderedMap[K, V]) IsEmpty() bool {
 	return m.tree.Size() == 0
 }
@@ -35,13 +40,32 @@ func (m *OrderedMap[K, V]) Put(key K, value V) bool {
 	return m.tree.Put(key, value)
 }
 
+// InsertIfAbsent inserts a value only when the key does not exist.
+func (m *OrderedMap[K, V]) InsertIfAbsent(key K, value V) bool {
+	return m.tree.InsertIfAbsent(key, value)
+}
+
 func (m *OrderedMap[K, V]) Set(key K, value V) bool {
 	return m.tree.Set(key, value)
+}
+
+// Upsert sets the value and reports whether an existing value was replaced.
+func (m *OrderedMap[K, V]) Upsert(key K, value V) bool {
+	return m.tree.Upsert(key, value)
 }
 
 func (m *OrderedMap[K, V]) Remove(key K) (V, bool) {
 	v := m.tree.Remove(key)
 	if v == nil {
+		return *new(V), false
+	}
+	return v.(V), true
+}
+
+// Delete removes a key and returns the previous value when present.
+func (m *OrderedMap[K, V]) Delete(key K) (V, bool) {
+	v, ok := m.tree.Delete(key)
+	if !ok {
 		return *new(V), false
 	}
 	return v.(V), true

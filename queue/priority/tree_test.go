@@ -78,6 +78,25 @@ func TestCase1(t *testing.T) {
 
 }
 
+func TestIteratorValidAlias(t *testing.T) {
+	q := New[int, int](compare.AnyEx[int])
+	iter := q.Iterator()
+
+	if iter.Valid() {
+		t.Fatal("empty iterator should be invalid")
+	}
+
+	q.Put(1, 1)
+	iter.SeekToFirst()
+
+	if iter.Valid() != iter.Vaild() {
+		t.Fatal("Valid and Vaild should report the same state")
+	}
+	if !iter.Valid() {
+		t.Fatal("iterator should be valid after SeekToFirst on non-empty queue")
+	}
+}
+
 func TestExtractForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {

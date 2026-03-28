@@ -13,11 +13,14 @@ type hNode struct {
 	prev, next *hNode
 }
 
-// LinkedHashmap   LinkedHashmap like list + hashmap.
+// LinkedHashmap keeps insertion order with a linked list plus a hashmap.
 type LinkedHashmap struct {
 	head, tail *hNode // head  tail
 	hmap       map[interface{}]*hNode
 }
+
+// LinkedHashMap is the preferred exported spelling kept in sync with LinkedHashmap.
+type LinkedHashMap = LinkedHashmap
 
 // New create a object of LinkedHashmap
 func New() *LinkedHashmap {
@@ -122,6 +125,11 @@ func (lhmap *LinkedHashmap) Put(key interface{}, value interface{}) bool {
 	return lhmap.PushBack(key, value)
 }
 
+// InsertIfAbsent inserts a value only when the key does not exist.
+func (lhmap *LinkedHashmap) InsertIfAbsent(key interface{}, value interface{}) bool {
+	return lhmap.Put(key, value)
+}
+
 // PushBack equal to Put, if key exists, skip value and return false. size is unchanging
 func (lhmap *LinkedHashmap) PushBack(key interface{}, value interface{}) bool {
 	if _, ok := lhmap.hmap[key]; !ok {
@@ -187,6 +195,18 @@ func (lhmap *LinkedHashmap) Set(key, value interface{}) bool {
 	return false
 }
 
+// Upsert sets the value and reports whether an existing value was replaced.
+// New keys are appended to the back to match Put semantics.
+func (lhmap *LinkedHashmap) Upsert(key, value interface{}) bool {
+	if node, ok := lhmap.hmap[key]; ok {
+		node.Key = key
+		node.Value = value
+		return true
+	}
+	lhmap.Put(key, value)
+	return false
+}
+
 // Clear clear the LinkedHashmap
 func (lhmap *LinkedHashmap) Clear() {
 	lhmap.head.Key = nil
@@ -212,6 +232,11 @@ func (lhmap *LinkedHashmap) Remove(key interface{}) (interface{}, bool) {
 	return nil, false
 }
 
+// Delete removes a key and returns the previous value when present.
+func (lhmap *LinkedHashmap) Delete(key interface{}) (interface{}, bool) {
+	return lhmap.Remove(key)
+}
+
 // Remove if key not exists reture nil, false.
 func (lhmap *LinkedHashmap) remove(node *hNode) {
 	nprev := node.prev
@@ -228,6 +253,11 @@ func (lhmap *LinkedHashmap) Empty() bool {
 // Size returns number of elements in the map.
 func (lhmap *LinkedHashmap) Size() uint {
 	return uint(len(lhmap.hmap))
+}
+
+// Len returns the number of elements.
+func (lhmap *LinkedHashmap) Len() int {
+	return len(lhmap.hmap)
 }
 
 // Keys returns all keys left to right (head to tail)

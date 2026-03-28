@@ -57,7 +57,7 @@ func main() {
 	}
 
 	log.Println("SeekGE")
-	iter.SeekGE(3) // seek to the iterator value >= 3
+	log.Println(iter.SeekGE(3)) // true. exact key exists
 	// range 3 to 4
 	for iter.Valid() {
 		log.Println(iter.Value()) // 3 4
@@ -65,7 +65,7 @@ func main() {
 	}
 
 	log.Println("SeekLE")
-	iter.SeekLE(2) // seek to the iterator value >= 3
+	log.Println(iter.SeekLE(2)) // false. key 2 was removed, iterator lands on 1
 	// range 1 to 0
 	for iter.Valid() {
 		log.Println(iter.Value()) // 1 0

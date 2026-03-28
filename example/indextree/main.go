@@ -11,18 +11,18 @@ func main1() {
 
 	tree := indextree.New(compare.Any[int]) // create a  object
 
-	log.Println("Put Set")
-	tree.Put(0, 0) // put key value into the tree
-	tree.Put(4, 4)
-	tree.Put(1, 1)
-	tree.Put(2, 2)
-	tree.Set(3, 3) // Set value
+	log.Println("InsertIfAbsent Upsert")
+	tree.InsertIfAbsent(0, 0)
+	tree.InsertIfAbsent(4, 4)
+	tree.InsertIfAbsent(1, 1)
+	tree.InsertIfAbsent(2, 2)
+	tree.Upsert(3, 3)
 
 	log.Println("Values")
 	log.Println(tree.Values())
 
-	log.Println("Size")
-	tree.Size() // 5
+	log.Println("Len")
+	log.Println(tree.Len()) // 5
 
 	log.Println("Index IndexOf")
 	log.Println(tree.Index(0))   // 0 0
@@ -48,11 +48,11 @@ func main1() {
 	log.Println(tree.Get(4)) // 4,true
 	log.Println(tree.Get(5)) // nil,false
 
-	log.Println("Remove")
-	log.Println(tree.Remove(2)) // 2, true
-	log.Println(tree.Remove(2)) // <nil>, false
-	tree.Put(5, 5)
-	tree.Put(6, 6)
+	log.Println("Delete")
+	log.Println(tree.Delete(2)) // 2, true
+	log.Println(tree.Delete(2)) // <nil>, false
+	tree.InsertIfAbsent(5, 5)
+	tree.InsertIfAbsent(6, 6)
 	log.Println(tree.String())
 	// 	│       ┌── 6
 	// 	│   ┌── 5
@@ -94,7 +94,7 @@ func main() {
 	tree := indextree.New(compare.Any[int]) // create a  object
 
 	for i := 0; i < 7; i++ {
-		tree.Put(i, i)
+		tree.InsertIfAbsent(i, i)
 	}
 
 	log.Println(tree.String())
@@ -120,7 +120,7 @@ func main() {
 
 	tree.Clear()
 	for i := 0; i < 7; i++ {
-		tree.Put(i, i)
+		tree.InsertIfAbsent(i, i)
 	}
 
 	log.Println("SplitContain")
@@ -137,7 +137,7 @@ func main() {
 
 	tree.Clear()
 	for i := 0; i < 7; i++ {
-		tree.Put(i, i)
+		tree.InsertIfAbsent(i, i)
 	}
 	log.Println(tree.String())
 	// 	│       ┌── 6
@@ -158,7 +158,7 @@ func main() {
 
 	tree.Clear()
 	for i := 0; i < 7; i++ {
-		tree.Put(i, i)
+		tree.InsertIfAbsent(i, i)
 	}
 	log.Println("TrimByIndex")
 	tree.TrimByIndex(2, 5) // keep the values that index range with 2-5
