@@ -41,7 +41,6 @@ func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 
 func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	cur := tree.getfirst(key, tree.Center, 1, nil)
-	log.Println(tree.viewEx(cur))
 	if cur == nil {
 		return tree.zero, false
 	}
