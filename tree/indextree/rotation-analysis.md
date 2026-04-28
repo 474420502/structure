@@ -13,9 +13,12 @@ This document presents the benchmark comparison between **IndexTree** and other 
 - **PutSequential**: Sequential key insertion
 - **RemoveRandom**: Random key removal
 - **GetRandom/ Sequential/ Mixed**: Lookup operations
-- **Mixed**: 60% Put, 20% Get, 20% Remove
+- **Mixed**: Round-robin `Put` / `Get` / `Remove` after a random prefill
 
-**Scale**: 10k, 20k, 50k keys
+**Scale:**
+- `Get*`: fixed trees of 10k, 20k, 50k keys
+- `PutRandom` / `Mixed`: 10k, 20k, 50k `prepSize` values before the timed loop
+- `PutSequential`: the benchmark labels reuse 10k, 20k, 50k as key offsets, not as different final tree sizes
 
 **Metrics:**
 - `ns/op` - Operations per nanosecond (throughput)

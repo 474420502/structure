@@ -17,6 +17,9 @@ This document is the dedicated benchmark comparison for `tree/indextree`. The re
 - Comparable APIs: `Put`, `Get`, `Remove`, iterator-style traversal
 - Stability: repeated runs with `-count`
 - Workloads: random, sequential, index-based, and mixed read/write patterns
+- Sections 2, 3, and 7 come from the root `BenchmarkRotationCompare*` suite and compare `IndexTree` vs `AVL` with rotation statistics
+- Sections 1, 4, 5, 6, and 8 come from the package-level comparison benchmarks under `tree/skiplist` and `tree/indextree`
+- In the root rotation suite, `10k/20k/50k` labels are `prepSize` inputs. For `PutSequential`, they only shift the key range and do not represent different final tree sizes
 
 ---
 
@@ -33,32 +36,32 @@ This document is the dedicated benchmark comparison for `tree/indextree`. The re
 
 Winner: TreeList
 
-### 2. Random Put (50k keys, with rotation stats)
+### 2. Random Put (prepSize 50k, with rotation stats)
 
-| Structure | Time/op | Rotations/op | Double Rotations/op | Tree Height | Memory/op |
-|-----------|---------|--------------|---------------------|-------------|-----------|
-| **IndexTree** | ~730 ns | 0.47 | 0.23 | 26 | 161 B |
-| **AVL** | ~778 ns | 3.07 | 1.00 | 26 | 137 B |
+| Structure | Time/op | Rotations/op | Double Rotations/op | Tree Height | AvgDepth |
+|-----------|---------|--------------|---------------------|-------------|----------|
+| **IndexTree** | ~690 ns | 0.47 | 0.23 | 26 | 20.53 |
+| **AVL** | ~710 ns | 3.07 | 1.00 | 26 | 20.90 |
 
 Winner: IndexTree
 
-### 3. Sequential Put Rotation Comparison (50k keys)
+### 3. Sequential Put Rotation Comparison (monotone insert stream)
 
 | Structure | Time/op | Rotations/op | Double Rotations/op | Height |
 |-----------|---------|--------------|---------------------|--------|
-| **IndexTree** | ~125 ns | 1.00 | 0 | 24 |
-| **AVL** | ~152 ns | 3.49 | 1.94 | 24 |
+| **IndexTree** | ~123 ns | 1.00 | 0 | 24 |
+| **AVL** | ~156 ns | 3.49 | 1.94 | 24 |
 
 Winner: IndexTree
 
-### 4. Random Get (100k keys)
+### 4. Random Get (100k fixed keys)
 
 | Structure | Time/op | Memory/op | Allocs/op |
 |-----------|---------|-----------|-----------|
-| **IndexTree** | ~135 ns | 0 B | 0 |
-| **TreeList** | ~141 ns | 8 B | 1 |
-| **AVL** | ~156 ns | 8 B | 1 |
-| SkipList | ~650 ns | 8 B | 1 |
+| **IndexTree** | ~107 ns | 0 B | 0 |
+| **TreeList** | ~128 ns | 8 B | 1 |
+| **AVL** | ~140 ns | 8 B | 1 |
+| SkipList | ~430 ns | 8 B | 1 |
 
 Winner: IndexTree
 
@@ -74,22 +77,24 @@ Note: `IndexTree` returns `interface{}` directly in `Get`, which avoids one boxi
 
 Note: `IndexTree` historically used `Traverse()` callbacks for iteration. Iterator APIs were added later, but the original benchmark section remains centered on the comparable `Seek*` interfaces.
 
-### 6. Index-based Access (100k keys)
+### 6. Index-based Access (fixed tree benchmarks)
 
 | Structure | Time/op | Memory/op | Allocs/op |
 |-----------|---------|-----------|-----------|
-| **TreeList** | ~41 ns | 0 B | 0 |
-| **IndexTree** | ~95 ns | 0 B | 0 |
-| SkipList | ~102k ns | 16 B | 1 |
+| **TreeList** | ~36 ns | 0 B | 0 |
+| **IndexTree** | ~88 ns | 0 B | 0 |
+| SkipList | ~100k ns | 16 B | 1 |
 
 Winner: TreeList
 
-### 7. Mixed Workload (50% Put, 25% Get, 25% Remove)
+Note: `TreeList` and `SkipList` use `BenchmarkTreeIndex` with 100k preloaded keys. `IndexTree` uses `BenchmarkIndexOnly` with 1M preloaded keys, so this row is still useful directionally but not a perfectly unified apples-to-apples benchmark.
+
+### 7. Mixed Workload (round-robin Put/Get/Remove, prepSize 50k)
 
 | Structure | Time/op | Rotations/op | Height |
 |-----------|---------|--------------|--------|
-| **IndexTree** | ~140 ns | 0.068 | 19 |
-| **AVL** | ~182 ns | 0.83 | 19 |
+| **IndexTree** | ~145 ns | 0.068 | 19 |
+| **AVL** | ~177 ns | 0.83 | 19 |
 
 Winner: IndexTree
 
@@ -146,6 +151,10 @@ go test -bench=. -benchmem ./tree/indextree/...
 go test -bench=. -benchmem ./tree/avl/...
 go test -bench=. -benchmem ./tree/skiplist/...
 go test -bench=. -benchmem ./tree/treelist/...
+
+# Shift tolerance experiment benchmarks
+go test -v -run TestComprehensiveReport -count=1 ./tree/indextree/experiment/...
+go test -bench=. -benchmem ./tree/indextree/experiment/...
 ```
 
 ## Related Documents

@@ -17,6 +17,9 @@
 - 接口可比: 覆盖 `Put`、`Get`、`Remove`、迭代遍历
 - 多次运行: 通过 `-count` 提高稳定性
 - 真实负载: 随机、顺序、按索引访问、混合读写
+- 第 2、3、7 节来自仓库根目录的 `BenchmarkRotationCompare*`，用于比较 `IndexTree` 与 `AVL` 的旋转统计
+- 第 1、4、5、6、8 节来自 `tree/skiplist` 与 `tree/indextree` 下的包级对照 benchmark
+- 在根目录旋转 benchmark 中，`10k/20k/50k` 表示 `prepSize`。对 `PutSequential` 而言，它只影响 key 的起始偏移，不代表不同的最终树规模
 
 ---
 
@@ -33,32 +36,32 @@
 
 最优: TreeList
 
-### 2. 随机 Put（50k keys，含旋转统计）
+### 2. 随机 Put（prepSize 50k，含旋转统计）
 
-| 结构 | 时间/op | 旋转次数/op | 双旋次数/op | 树高 | 内存/op |
-|------|---------|-------------|-------------|------|---------|
-| **IndexTree** | ~730 ns | 0.47 | 0.23 | 26 | 161 B |
-| **AVL** | ~778 ns | 3.07 | 1.00 | 26 | 137 B |
+| 结构 | 时间/op | 旋转次数/op | 双旋次数/op | 树高 | AvgDepth |
+|------|---------|-------------|-------------|------|----------|
+| **IndexTree** | ~690 ns | 0.47 | 0.23 | 26 | 20.53 |
+| **AVL** | ~710 ns | 3.07 | 1.00 | 26 | 20.90 |
 
 最优: IndexTree
 
-### 3. 顺序 Put 旋转对比（50k keys）
+### 3. 顺序 Put 旋转对比（单调插入流）
 
 | 结构 | 时间/op | 旋转次数/op | 双旋次数/op | 高度 |
 |------|---------|-------------|-------------|------|
-| **IndexTree** | ~125 ns | 1.00 | 0 | 24 |
-| **AVL** | ~152 ns | 3.49 | 1.94 | 24 |
+| **IndexTree** | ~123 ns | 1.00 | 0 | 24 |
+| **AVL** | ~156 ns | 3.49 | 1.94 | 24 |
 
 最优: IndexTree
 
-### 4. 随机 Get（100k keys）
+### 4. 随机 Get（100k 固定 keys）
 
 | 结构 | 时间/op | 内存/op | 分配/op |
 |------|---------|---------|---------|
-| **IndexTree** | ~135 ns | 0 B | 0 |
-| **TreeList** | ~141 ns | 8 B | 1 |
-| **AVL** | ~156 ns | 8 B | 1 |
-| SkipList | ~650 ns | 8 B | 1 |
+| **IndexTree** | ~107 ns | 0 B | 0 |
+| **TreeList** | ~128 ns | 8 B | 1 |
+| **AVL** | ~140 ns | 8 B | 1 |
+| SkipList | ~430 ns | 8 B | 1 |
 
 最优: IndexTree
 
@@ -74,22 +77,24 @@
 
 说明: 这组历史对比主要围绕 `Seek*` 迭代接口。`IndexTree` 后续新增了迭代器 API，但原始对比仍以可直接横向比较的接口为主。
 
-### 6. 基于索引访问（100k keys）
+### 6. 基于索引访问（固定树 benchmark）
 
 | 结构 | 时间/op | 内存/op | 分配/op |
 |------|---------|---------|---------|
-| **TreeList** | ~41 ns | 0 B | 0 |
-| **IndexTree** | ~95 ns | 0 B | 0 |
-| SkipList | ~102k ns | 16 B | 1 |
+| **TreeList** | ~36 ns | 0 B | 0 |
+| **IndexTree** | ~88 ns | 0 B | 0 |
+| SkipList | ~100k ns | 16 B | 1 |
 
 最优: TreeList
 
-### 7. 混合负载（50% Put，25% Get，25% Remove）
+说明: `TreeList` 与 `SkipList` 取自 `BenchmarkTreeIndex`（100k 预加载 keys），`IndexTree` 取自 `BenchmarkIndexOnly`（1M 预加载 keys）。这一节仍能反映量级差异，但还不是完全统一口径的横向 benchmark。
+
+### 7. 混合负载（轮转 Put/Get/Remove，prepSize 50k）
 
 | 结构 | 时间/op | 旋转次数/op | 高度 |
 |------|---------|-------------|------|
-| **IndexTree** | ~140 ns | 0.068 | 19 |
-| **AVL** | ~182 ns | 0.83 | 19 |
+| **IndexTree** | ~145 ns | 0.068 | 19 |
+| **AVL** | ~177 ns | 0.83 | 19 |
 
 最优: IndexTree
 
@@ -146,6 +151,10 @@ go test -bench=. -benchmem ./tree/indextree/...
 go test -bench=. -benchmem ./tree/avl/...
 go test -bench=. -benchmem ./tree/skiplist/...
 go test -bench=. -benchmem ./tree/treelist/...
+
+# Shift tolerance 实验基准
+go test -v -run TestComprehensiveReport -count=1 ./tree/indextree/experiment/...
+go test -bench=. -benchmem ./tree/indextree/experiment/...
 ```
 
 ## 相关文档
