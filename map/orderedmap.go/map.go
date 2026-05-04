@@ -6,12 +6,12 @@ import (
 )
 
 type OrderedMap[K any, V any] struct {
-	tree *indextree.Tree[K]
+	tree *indextree.Tree[K, V]
 }
 
 func New[K any, V any](comp compare.Compare[K]) *OrderedMap[K, V] {
 	return &OrderedMap[K, V]{
-		tree: indextree.New(comp),
+		tree: indextree.NewWithValue[K, V](comp),
 	}
 }
 
@@ -29,11 +29,7 @@ func (m *OrderedMap[K, V]) IsEmpty() bool {
 }
 
 func (m *OrderedMap[K, V]) Get(key K) (V, bool) {
-	v, ok := m.tree.Get(key)
-	if !ok {
-		return *new(V), false
-	}
-	return v.(V), true
+	return m.tree.Get(key)
 }
 
 func (m *OrderedMap[K, V]) Put(key K, value V) bool {
@@ -55,20 +51,12 @@ func (m *OrderedMap[K, V]) Upsert(key K, value V) bool {
 }
 
 func (m *OrderedMap[K, V]) Remove(key K) (V, bool) {
-	v := m.tree.Remove(key)
-	if v == nil {
-		return *new(V), false
-	}
-	return v.(V), true
+	return m.tree.Remove(key)
 }
 
 // Delete removes a key and returns the previous value when present.
 func (m *OrderedMap[K, V]) Delete(key K) (V, bool) {
-	v, ok := m.tree.Delete(key)
-	if !ok {
-		return *new(V), false
-	}
-	return v.(V), true
+	return m.tree.Delete(key)
 }
 
 func (m *OrderedMap[K, V]) Contains(key K) bool {
@@ -81,8 +69,7 @@ func (m *OrderedMap[K, V]) IndexOf(key K) int64 {
 }
 
 func (m *OrderedMap[K, V]) Index(index int64) (K, V) {
-	k, v := m.tree.Index(index)
-	return k, v.(V)
+	return m.tree.Index(index)
 }
 
 func (m *OrderedMap[K, V]) RemoveIndex(index int64) (K, V, bool) {
@@ -90,8 +77,11 @@ func (m *OrderedMap[K, V]) RemoveIndex(index int64) (K, V, bool) {
 		return *new(K), *new(V), false
 	}
 	k, _ := m.tree.Index(index)
-	vv := m.tree.RemoveIndex(index)
-	return k, vv.(V), true
+	v, ok := m.tree.RemoveIndex(index)
+	if !ok {
+		return *new(K), *new(V), false
+	}
+	return k, v, true
 }
 
 func (m *OrderedMap[K, V]) Keys() []K {
@@ -100,7 +90,7 @@ func (m *OrderedMap[K, V]) Keys() []K {
 		size = m.tree.Size()
 	}
 	result := make([]K, 0, size)
-	m.tree.Traverse(func(k K, v interface{}) bool {
+	m.tree.Traverse(func(k K, v V) bool {
 		result = append(result, k)
 		return true
 	})
@@ -113,8 +103,8 @@ func (m *OrderedMap[K, V]) Values() []V {
 		size = m.tree.Size()
 	}
 	result := make([]V, 0, size)
-	m.tree.Traverse(func(k K, v interface{}) bool {
-		result = append(result, v.(V))
+	m.tree.Traverse(func(k K, v V) bool {
+		result = append(result, v)
 		return true
 	})
 	return result
@@ -129,7 +119,7 @@ func (m *OrderedMap[K, V]) Iterator() *Iterator[K, V] {
 }
 
 type Iterator[K any, V any] struct {
-	iter *indextree.Iterator[K]
+	iter *indextree.Iterator[K, V]
 }
 
 func (iter *Iterator[K, V]) Valid() bool {
@@ -141,7 +131,7 @@ func (iter *Iterator[K, V]) Key() K {
 }
 
 func (iter *Iterator[K, V]) Value() V {
-	return iter.iter.Value().(V)
+	return iter.iter.Value()
 }
 
 func (iter *Iterator[K, V]) Index() int64 {

@@ -1,156 +1,168 @@
 package indextree
 
-func newIterator[T any](tree *Tree[T]) *Iterator[T] {
-	hight := tree.hight()
-	if hight == 0 {
-		hight = 1
-	}
-	iter := &Iterator[T]{
-		tree: tree,
-		idx:  -1,
-	}
-	iter.stack = make([]nodeDir[T], hight+1)
-	return iter
+func newIterator[KEY any, VALUE any](tree *Tree[KEY, VALUE]) *Iterator[KEY, VALUE] {
+	return &Iterator[KEY, VALUE]{tree: tree}
 }
 
-func (iter *Iterator[T]) down(cmp int8) bool {
+func minimumNode[KEY any, VALUE any](node *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
+	for node != nil && node.Children[0] != nil {
+		node = node.Children[0]
+	}
+	return node
+}
 
-	if iter.cur == nil {
-		if iter.idx > -1 {
-			ndir := &iter.stack[iter.idx]
-			rcmp := ^cmp + 2
-			if ndir.D == rcmp {
-				iter.cur = ndir.N
-				iter.idx--
-				return true
-			}
-		}
+func maximumNode[KEY any, VALUE any](node *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
+	for node != nil && node.Children[1] != nil {
+		node = node.Children[1]
+	}
+	return node
+}
+
+func successorNode[KEY any, VALUE any](node *hNode[KEY, VALUE], sentinel *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
+	if node == nil {
+		return nil
+	}
+
+	if node.Children[1] != nil {
+		return minimumNode(node.Children[1])
+	}
+
+	parent := node.Parent
+	for parent != nil && parent != sentinel && parent.Children[1] == node {
+		node = parent
+		parent = parent.Parent
+	}
+	if parent == sentinel {
+		return nil
+	}
+	return parent
+}
+
+func predecessorNode[KEY any, VALUE any](node *hNode[KEY, VALUE], sentinel *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
+	if node == nil {
+		return nil
+	}
+
+	if node.Children[0] != nil {
+		return maximumNode(node.Children[0])
+	}
+
+	parent := node.Parent
+	for parent != nil && parent != sentinel && parent.Children[0] == node {
+		node = parent
+		parent = parent.Parent
+	}
+	if parent == sentinel {
+		return nil
+	}
+	return parent
+}
+
+func (iter *Iterator[KEY, VALUE]) seekEqual(key KEY, lessAndGreater int8) bool {
+	current := iter.tree.getRoot()
+	if current == nil {
+		iter.cur = nil
 		return false
 	}
 
-	if iter.cur.Children[cmp] == nil {
-		return false
-	}
-	iter.idx += 1
-	ndir := &iter.stack[iter.idx]
-	ndir.N = iter.cur
-	ndir.D = cmp
-	iter.cur = iter.cur.Children[cmp]
-	return true
-}
+	pos := getSize(current.Children[0])
+	var candidate *hNode[KEY, VALUE]
+	var candidatePos int64
+	exact := false
 
-func (iter *Iterator[T]) up(cmp int8) bool {
-
-	idx := iter.idx
-	for {
-
-		if idx > -1 {
-			ndir := &iter.stack[idx]
-			rcmp := ^cmp + 2
-			if ndir.D == rcmp {
-				idx--
-				iter.idx = idx
-				iter.cur = ndir.N
-				return true
+	for current != nil {
+		cmp := iter.tree.compare(current.Key, key)
+		switch {
+		case cmp == 0:
+			candidate = current
+			candidatePos = pos
+			exact = true
+			current = nil
+		case cmp < 0:
+			if lessAndGreater == 0 {
+				candidate = current
+				candidatePos = pos
 			}
-		} else {
-			if iter.cur != nil {
-				if int(iter.idx)+1 < len(iter.stack) {
-					iter.idx++
-					ndir := &iter.stack[iter.idx]
-					ndir.N = iter.cur
-					ndir.D = cmp
-				}
-				iter.cur = nil
+			current = current.Children[1]
+			if current != nil {
+				pos += getSize(current.Children[0]) + 1
 			}
-
-			return false
-		}
-		idx--
-	}
-
-}
-
-func (iter *Iterator[T]) seekEqual(key T, LessAndGreater int8) bool {
-
-	iter.cur = iter.tree.getRoot()
-	if iter.cur == nil {
-		return false
-	}
-
-	iter.idx = -1
-
-	for {
-		cmp := iter.tree.compare(iter.cur.Key, key)
-
-		var dir int8
-		if cmp < 0 {
-			dir = 1
-		} else {
-			dir = 0
-		}
-
-		if cmp == 0 {
-			iter.pos = iter.tree.IndexOf(key)
-			return true
-		}
-
-		if !iter.down(dir) {
-			if dir == LessAndGreater {
-				iter.up(LessAndGreater)
+		default:
+			if lessAndGreater == 1 {
+				candidate = current
+				candidatePos = pos
 			}
-			iter.pos = iter.tree.IndexOf(key)
-			return false
-		}
-	}
-}
-
-func (iter *Iterator[T]) seekThan(key T, LessAndGreater int8) bool {
-
-	iter.cur = iter.tree.getRoot()
-	if iter.cur == nil {
-		return false
-	}
-
-	iter.idx = -1
-
-	for {
-
-		cmp := iter.tree.compare(iter.cur.Key, key)
-
-		var dir int8
-		if cmp < 0 {
-			dir = 1
-		} else {
-			dir = 0
-		}
-
-		if cmp > 0 {
-			iter.move(LessAndGreater)
-			iter.pos = iter.tree.IndexOf(iter.cur.Key)
-			return true
-		}
-
-		if !iter.down(dir) {
-			if dir == LessAndGreater {
-				iter.up(LessAndGreater)
+			current = current.Children[0]
+			if current != nil {
+				pos -= getSize(current.Children[1]) + 1
 			}
-			if iter.cur != nil {
-				iter.pos = iter.tree.IndexOf(iter.cur.Key)
-			}
-			return false
 		}
 	}
-}
 
-func (iter *Iterator[T]) move(cmp int8) {
-	rcmp := ^cmp + 2
-	if iter.down(cmp) {
-		for iter.down(rcmp) {
-
-		}
+	iter.cur = candidate
+	if candidate != nil {
+		iter.pos = candidatePos
+	} else if lessAndGreater == 0 {
+		iter.pos = -1
 	} else {
-		iter.up(cmp)
+		iter.pos = iter.tree.Size()
+	}
+	return exact
+}
+
+func (iter *Iterator[KEY, VALUE]) seekThan(key KEY, lessAndGreater int8) bool {
+	current := iter.tree.getRoot()
+	if current == nil {
+		iter.cur = nil
+		return false
 	}
 
+	pos := getSize(current.Children[0])
+	var candidate *hNode[KEY, VALUE]
+	var candidatePos int64
+	exact := false
+
+	for current != nil {
+		cmp := iter.tree.compare(current.Key, key)
+		switch {
+		case cmp == 0:
+			exact = true
+			current = current.Children[lessAndGreater]
+			if current != nil {
+				if lessAndGreater == 0 {
+					pos -= getSize(current.Children[1]) + 1
+				} else {
+					pos += getSize(current.Children[0]) + 1
+				}
+			}
+		case cmp < 0:
+			if lessAndGreater == 0 {
+				candidate = current
+				candidatePos = pos
+			}
+			current = current.Children[1]
+			if current != nil {
+				pos += getSize(current.Children[0]) + 1
+			}
+		default:
+			if lessAndGreater == 1 {
+				candidate = current
+				candidatePos = pos
+			}
+			current = current.Children[0]
+			if current != nil {
+				pos -= getSize(current.Children[1]) + 1
+			}
+		}
+	}
+
+	iter.cur = candidate
+	if candidate != nil {
+		iter.pos = candidatePos
+	} else if lessAndGreater == 0 {
+		iter.pos = -1
+	} else {
+		iter.pos = iter.tree.Size()
+	}
+	return exact
 }

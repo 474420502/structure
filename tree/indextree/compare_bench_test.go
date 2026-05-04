@@ -10,20 +10,20 @@ import (
 var sink interface{}
 
 func BenchmarkTreePut(b *testing.B) {
-	data := newBenchDataWithSeed(50000, 12345)
-
 	b.Run("indextree", func(b *testing.B) {
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := New(compare.Any[int64])
 		b.ResetTimer()
-		for i := 0; i < b.N && i < len(data); i++ {
+		for i := 0; i < b.N; i++ {
 			sink = tree.Put(data[i], data[i])
 		}
 	})
 
 	b.Run("avl", func(b *testing.B) {
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := avl.New[int64, int64](compare.AnyEx[int64])
 		b.ResetTimer()
-		for i := 0; i < b.N && i < len(data); i++ {
+		for i := 0; i < b.N; i++ {
 			sink = tree.Put(data[i], data[i])
 		}
 	})
@@ -76,28 +76,26 @@ func BenchmarkTreeGet(b *testing.B) {
 }
 
 func BenchmarkTreeRemove(b *testing.B) {
-	data := newBenchDataWithSeed(100000, 12345)
-
 	b.Run("indextree", func(b *testing.B) {
-		b.StopTimer()
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := New(compare.Any[int64])
-		for i := 0; i < 100000; i++ {
+		for i := 0; i < b.N; i++ {
 			tree.Put(data[i], data[i])
 		}
-		b.StartTimer()
-		for i := 0; i < b.N && i < 100000; i++ {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
 			tree.Remove(data[i])
 		}
 	})
 
 	b.Run("avl", func(b *testing.B) {
-		b.StopTimer()
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := avl.New[int64, int64](compare.AnyEx[int64])
-		for i := 0; i < 100000; i++ {
+		for i := 0; i < b.N; i++ {
 			tree.Put(data[i], data[i])
 		}
-		b.StartTimer()
-		for i := 0; i < b.N && i < 100000; i++ {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
 			tree.Remove(data[i])
 		}
 	})

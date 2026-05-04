@@ -8,10 +8,13 @@ import (
 	"github.com/474420502/structure/compare"
 	"github.com/474420502/structure/tree/avl"
 	"github.com/474420502/structure/tree/indextree"
+	"github.com/474420502/structure/tree/rbtree"
 	"github.com/474420502/structure/tree/treelist"
 )
 
 var sink interface{}
+var sinkInt64Key int64
+var sinkInt64Value int64
 
 func newBenchDataWithSeed(size int, seed int64) []int64 {
 	r := rand.New(rand.NewSource(seed))
@@ -23,36 +26,47 @@ func newBenchDataWithSeed(size int, seed int64) []int64 {
 }
 
 func BenchmarkTreePut(b *testing.B) {
-	data := newBenchDataWithSeed(b.N, 12345)
-
 	b.Run("skiplist", func(b *testing.B) {
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := New[int64, int64](compare.Any[int64])
 		b.ResetTimer()
-		for i := 0; i < b.N && i < len(data); i++ {
+		for i := 0; i < b.N; i++ {
 			sink = tree.Put(data[i], data[i])
 		}
 	})
 
 	b.Run("treelist", func(b *testing.B) {
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := treelist.New[int64, int64](compare.Any[int64])
 		b.ResetTimer()
-		for i := 0; i < b.N && i < len(data); i++ {
+		for i := 0; i < b.N; i++ {
 			sink = tree.Put(data[i], data[i])
 		}
 	})
 
 	b.Run("indextree", func(b *testing.B) {
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := indextree.New(compare.Any[int64])
 		b.ResetTimer()
-		for i := 0; i < b.N && i < len(data); i++ {
+		for i := 0; i < b.N; i++ {
 			sink = tree.Put(data[i], data[i])
 		}
 	})
 
 	b.Run("avl", func(b *testing.B) {
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := avl.New[int64, int64](compare.AnyEx[int64])
 		b.ResetTimer()
-		for i := 0; i < b.N && i < len(data); i++ {
+		for i := 0; i < b.N; i++ {
+			sink = tree.Put(data[i], data[i])
+		}
+	})
+
+	b.Run("rbtree", func(b *testing.B) {
+		data := newBenchDataWithSeed(b.N, 12345)
+		tree := rbtree.New[int64, int64](compare.Any[int64])
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
 			sink = tree.Put(data[i], data[i])
 		}
 	})
@@ -90,6 +104,14 @@ func BenchmarkTreePutSequential(b *testing.B) {
 			sink = tree.Put(i, i)
 		}
 	})
+
+	b.Run("rbtree", func(b *testing.B) {
+		tree := rbtree.New[int, int](compare.Any[int])
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			sink = tree.Put(i, i)
+		}
+	})
 }
 
 func BenchmarkTreeGet(b *testing.B) {
@@ -114,6 +136,11 @@ func BenchmarkTreeGet(b *testing.B) {
 	ta := avl.New[int64, int64](compare.AnyEx[int64])
 	for i := 0; i < size; i++ {
 		ta.Put(data[i], data[i])
+	}
+
+	rb := rbtree.New[int64, int64](compare.Any[int64])
+	for i := 0; i < size; i++ {
+		rb.Put(data[i], data[i])
 	}
 
 	b.Run("skiplist", func(b *testing.B) {
@@ -143,56 +170,72 @@ func BenchmarkTreeGet(b *testing.B) {
 			sink, _ = ta.Get(data[i%size])
 		}
 	})
+
+	b.Run("rbtree", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			sink, _ = rb.Get(data[i%size])
+		}
+	})
 }
 
 func BenchmarkTreeRemove(b *testing.B) {
-	size := 100000
-	data := newBenchDataWithSeed(size, 12345)
-
 	b.Run("skiplist", func(b *testing.B) {
-		b.StopTimer()
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := New[int64, int64](compare.Any[int64])
-		for i := 0; i < size; i++ {
+		for i := 0; i < b.N; i++ {
 			tree.Put(data[i], data[i])
 		}
-		b.StartTimer()
-		for i := 0; i < b.N && i < size; i++ {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
 			tree.Remove(data[i])
 		}
 	})
 
 	b.Run("treelist", func(b *testing.B) {
-		b.StopTimer()
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := treelist.New[int64, int64](compare.Any[int64])
-		for i := 0; i < size; i++ {
+		for i := 0; i < b.N; i++ {
 			tree.Put(data[i], data[i])
 		}
-		b.StartTimer()
-		for i := 0; i < b.N && i < size; i++ {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
 			tree.Remove(data[i])
 		}
 	})
 
 	b.Run("indextree", func(b *testing.B) {
-		b.StopTimer()
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := indextree.New(compare.Any[int64])
-		for i := 0; i < size; i++ {
+		for i := 0; i < b.N; i++ {
 			tree.Put(data[i], data[i])
 		}
-		b.StartTimer()
-		for i := 0; i < b.N && i < size; i++ {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
 			tree.Remove(data[i])
 		}
 	})
 
 	b.Run("avl", func(b *testing.B) {
-		b.StopTimer()
+		data := newBenchDataWithSeed(b.N, 12345)
 		tree := avl.New[int64, int64](compare.AnyEx[int64])
-		for i := 0; i < size; i++ {
+		for i := 0; i < b.N; i++ {
 			tree.Put(data[i], data[i])
 		}
-		b.StartTimer()
-		for i := 0; i < b.N && i < size; i++ {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			tree.Remove(data[i])
+		}
+	})
+
+	b.Run("rbtree", func(b *testing.B) {
+		data := newBenchDataWithSeed(b.N, 12345)
+		tree := rbtree.New[int64, int64](compare.Any[int64])
+		for i := 0; i < b.N; i++ {
+			tree.Put(data[i], data[i])
+		}
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
 			tree.Remove(data[i])
 		}
 	})
@@ -212,9 +255,19 @@ func BenchmarkTreeIterator(b *testing.B) {
 		tl.Put(data[i], data[i])
 	}
 
+	it := indextree.New(compare.Any[int64])
+	for i := 0; i < size; i++ {
+		it.Put(data[i], data[i])
+	}
+
 	ta := avl.New[int64, int64](compare.AnyEx[int64])
 	for i := 0; i < size; i++ {
 		ta.Put(data[i], data[i])
+	}
+
+	rb := rbtree.New[int64, int64](compare.Any[int64])
+	for i := 0; i < size; i++ {
+		rb.Put(data[i], data[i])
 	}
 
 	b.Run("skiplist", func(b *testing.B) {
@@ -241,10 +294,34 @@ func BenchmarkTreeIterator(b *testing.B) {
 		}
 	})
 
+	b.Run("indextree", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			iter := it.Iterator()
+			iter.SeekToFirst()
+			for iter.Valid() {
+				sink = iter.Value()
+				iter.Next()
+			}
+		}
+	})
+
 	b.Run("avl", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			iter := ta.Iterator()
+			iter.SeekToFirst()
+			for iter.Valid() {
+				sink = iter.Value()
+				iter.Next()
+			}
+		}
+	})
+
+	b.Run("rbtree", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			iter := rb.Iterator()
 			iter.SeekToFirst()
 			for iter.Valid() {
 				sink = iter.Value()
@@ -268,9 +345,19 @@ func BenchmarkTreeSeekGE(b *testing.B) {
 		tl.Put(data[i], data[i])
 	}
 
+	it := indextree.New(compare.Any[int64])
+	for i := 0; i < size; i++ {
+		it.Put(data[i], data[i])
+	}
+
 	ta := avl.New[int64, int64](compare.AnyEx[int64])
 	for i := 0; i < size; i++ {
 		ta.Put(data[i], data[i])
+	}
+
+	rb := rbtree.New[int64, int64](compare.Any[int64])
+	for i := 0; i < size; i++ {
+		rb.Put(data[i], data[i])
 	}
 
 	b.Run("skiplist", func(b *testing.B) {
@@ -301,10 +388,38 @@ func BenchmarkTreeSeekGE(b *testing.B) {
 		}
 	})
 
+	b.Run("indextree", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			iter := it.Iterator()
+			iter.SeekGE(data[i%size])
+			if iter.Valid() {
+				iter.Next()
+				if iter.Valid() {
+					sink = iter.Value()
+				}
+			}
+		}
+	})
+
 	b.Run("avl", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			iter := ta.Iterator()
+			iter.SeekGE(data[i%size])
+			if iter.Valid() {
+				iter.Next()
+				if iter.Valid() {
+					sink = iter.Value()
+				}
+			}
+		}
+	})
+
+	b.Run("rbtree", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			iter := rb.Iterator()
 			iter.SeekGE(data[i%size])
 			if iter.Valid() {
 				iter.Next()
@@ -330,17 +445,33 @@ func BenchmarkTreeIndex(b *testing.B) {
 		tl.Put(data[i], data[i])
 	}
 
+	it := indextree.New(compare.Any[int64])
+	for i := 0; i < size; i++ {
+		it.Put(data[i], data[i])
+	}
+
 	b.Run("skiplist", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			sink = sk.Index(int64(i % size))
+			slice := sk.Index(int64(i % size))
+			sinkInt64Key = slice.Key
+			sinkInt64Value = slice.Value
 		}
 	})
 
 	b.Run("treelist", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			sink = tl.Index(int64(i % size))
+			slice := tl.Index(int64(i % size))
+			sinkInt64Key = slice.Key
+			sinkInt64Value = slice.Value
+		}
+	})
+
+	b.Run("indextree", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			sinkInt64Key, sinkInt64Value = it.Index(int64(i % size))
 		}
 	})
 }

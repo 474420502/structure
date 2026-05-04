@@ -14,12 +14,12 @@ const (
 	color_9 = "\033[39m%v\033[0m"
 )
 
-type colorNode[T any] struct {
-	Node  *hNode[T]
+type colorNode[KEY any, VALUE any] struct {
+	Node  *hNode[KEY, VALUE]
 	Color string
 }
 
-func output[T any](node *hNode[T], prefix string, isTail bool, str *string) {
+func output[KEY any, VALUE any](node *hNode[KEY, VALUE], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -51,7 +51,7 @@ func output[T any](node *hNode[T], prefix string, isTail bool, str *string) {
 
 }
 
-func outputfordebug[T any](node *hNode[T], prefix string, isTail bool, str *string, deep int) {
+func outputfordebug[KEY any, VALUE any](node *hNode[KEY, VALUE], prefix string, isTail bool, str *string, deep int) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -95,7 +95,7 @@ func outputfordebug[T any](node *hNode[T], prefix string, isTail bool, str *stri
 	}
 }
 
-func outputfordebugNoSuffix[T any](node *hNode[T], prefix string, isTail bool, str *string) {
+func outputfordebugNoSuffix[KEY any, VALUE any](node *hNode[KEY, VALUE], prefix string, isTail bool, str *string) {
 
 	if node.Children[1] != nil {
 		newPrefix := prefix
@@ -128,7 +128,7 @@ func outputfordebugNoSuffix[T any](node *hNode[T], prefix string, isTail bool, s
 	}
 }
 
-func (tree *Tree[T]) debugString(isSuffix bool) string {
+func (tree *Tree[KEY, VALUE]) debugString(isSuffix bool) string {
 
 	str := "IndexTree\n"
 	root := tree.getRoot()
@@ -145,7 +145,7 @@ func (tree *Tree[T]) debugString(isSuffix bool) string {
 	return str
 }
 
-func lookTree[T any](root *hNode[T]) string {
+func lookTree[KEY any, VALUE any](root *hNode[KEY, VALUE]) string {
 	str := "\n"
 	if root == nil {
 		return str + "nil"

@@ -11,7 +11,7 @@ import (
 
 func TestCompareRotations(t *testing.T) {
 	avltree := New[int64, int](compare.Any[int64])
-	mainTree := indextree.New(compare.Any[int64])
+	mainTree := indextree.NewWithValue[int64, int](compare.Any[int64])
 	defaultTree := NewIndexTreeDefault[int64, int](compare.Any[int64])
 	shift3 := NewShiftTolerance[int64, int](compare.Any[int64], 3)
 
@@ -139,7 +139,7 @@ func TestIndexTreeDefaultMatchesMainPackage(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		mainTree := indextree.New(compare.Any[int64])
+		mainTree := indextree.NewWithValue[int64, int](compare.Any[int64])
 		defaultTree := NewIndexTreeDefault[int64, int](compare.Any[int64])
 
 		for _, key := range tc.keys {

@@ -39,18 +39,18 @@ func main1() {
 	//     └── 0
 
 	log.Println("Traverse")
-	tree.Traverse(func(k int, v interface{}) bool {
+	tree.Traverse(func(k int, v int) bool {
 		log.Println(k, v) // 0 0 1 1 2 2 3 3 4 4
 		return true
 	})
 
 	log.Println("Get")
 	log.Println(tree.Get(4)) // 4,true
-	log.Println(tree.Get(5)) // nil,false
+	log.Println(tree.Get(5)) // 0,false
 
 	log.Println("Delete")
 	log.Println(tree.Delete(2)) // 2, true
-	log.Println(tree.Delete(2)) // <nil>, false
+	log.Println(tree.Delete(2)) // 0, false
 	tree.InsertIfAbsent(5, 5)
 	tree.InsertIfAbsent(6, 6)
 	log.Println(tree.String())

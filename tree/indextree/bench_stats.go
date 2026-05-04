@@ -11,12 +11,12 @@ type BenchmarkStats struct {
 	P95Depth        int
 }
 
-func (tree *Tree[T]) ResetBenchmarkStats() {
+func (tree *Tree[KEY, VALUE]) ResetBenchmarkStats() {
 	tree.singleRotations = 0
 	tree.doubleRotations = 0
 }
 
-func (tree *Tree[T]) BenchmarkStats() BenchmarkStats {
+func (tree *Tree[KEY, VALUE]) BenchmarkStats() BenchmarkStats {
 	height, avgDepth, p50Depth, p95Depth := tree.shapeStats()
 	return BenchmarkStats{
 		SingleRotations: tree.singleRotations,
@@ -28,14 +28,14 @@ func (tree *Tree[T]) BenchmarkStats() BenchmarkStats {
 	}
 }
 
-func (tree *Tree[T]) shapeStats() (height int, avgDepth float64, p50Depth int, p95Depth int) {
+func (tree *Tree[KEY, VALUE]) shapeStats() (height int, avgDepth float64, p50Depth int, p95Depth int) {
 	root := tree.getRoot()
 	if root == nil {
 		return 0, 0, 0, 0
 	}
 
 	type depthNode struct {
-		node  *hNode[T]
+		node  *hNode[KEY, VALUE]
 		depth int
 	}
 

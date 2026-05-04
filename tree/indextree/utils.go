@@ -4,7 +4,7 @@ import (
 	"log"
 )
 
-func (tree *Tree[T]) fixPutSize(cur *hNode[T]) {
+func (tree *Tree[KEY, VALUE]) fixPutSize(cur *hNode[KEY, VALUE]) {
 	for cur != tree.root {
 		cur.Size++
 		cur.updateBalance()
@@ -12,16 +12,11 @@ func (tree *Tree[T]) fixPutSize(cur *hNode[T]) {
 	}
 }
 
-func (tree *Tree[T]) fixRemoveSize(cur *hNode[T]) {
+func (tree *Tree[KEY, VALUE]) fixRemoveSize(cur *hNode[KEY, VALUE]) {
 	for cur != tree.root {
 		cur.Size--
 		cur = cur.Parent
 	}
-}
-
-type heightLimitSize struct {
-	rootsize   int64
-	bottomsize int64
 }
 
 var sizeToleranceShift int64 = 2
@@ -30,31 +25,44 @@ func SetSizeToleranceShift(shift int64) {
 	sizeToleranceShift = shift
 }
 
-func getHeightLimit(height int64) *heightLimitSize {
+type heightLimitSize struct {
+	rootsize   int64
+	bottomsize int64
+}
+
+func getHeightLimit(height int64) heightLimitSize {
 	root2nsize := int64(1) << height
-	return &heightLimitSize{
+	return heightLimitSize{
 		rootsize:   root2nsize,
 		bottomsize: (root2nsize >> sizeToleranceShift) + 1,
 	}
 }
 
-func (tree *Tree[T]) fixPut(cur *hNode[T]) {
-
+func (tree *Tree[KEY, VALUE]) fixPut(cur *hNode[KEY, VALUE], childDir int) {
 	cur.Size++
-	cur.updateBalance()
+	if childDir == 0 {
+		cur.Balance++
+	} else {
+		cur.Balance--
+	}
 	if cur.Size == 3 {
 		tree.fixPutSize(cur.Parent)
 		return
 	}
 
 	var height int64 = 2
-	var parent *hNode[T]
+	var parent *hNode[KEY, VALUE]
+	child := cur
 
 	cur = cur.Parent
 
 	for cur != tree.root {
+		if cur.Children[0] == child {
+			cur.Balance++
+		} else {
+			cur.Balance--
+		}
 		cur.Size++
-		cur.updateBalance()
 		parent = cur.Parent
 
 		limitSize := getHeightLimit(height)
@@ -63,12 +71,28 @@ func (tree *Tree[T]) fixPut(cur *hNode[T]) {
 			balance := cur.Balance
 			if balance < 0 {
 				if -balance >= limitSize.bottomsize {
+					cur.updateBalance()
+					balance = cur.Balance
+					if -balance < limitSize.bottomsize {
+						height++
+						child = cur
+						cur = parent
+						continue
+					}
 					tree.sizeRRotate(cur)
 					tree.fixPutSize(parent)
 					return
 				}
 			} else {
 				if balance >= limitSize.bottomsize {
+					cur.updateBalance()
+					balance = cur.Balance
+					if balance < limitSize.bottomsize {
+						height++
+						child = cur
+						cur = parent
+						continue
+					}
 					tree.sizeLRotate(cur)
 					tree.fixPutSize(parent)
 					return
@@ -77,11 +101,12 @@ func (tree *Tree[T]) fixPut(cur *hNode[T]) {
 		}
 
 		height++
+		child = cur
 		cur = parent
 	}
 }
 
-func (tree *Tree[T]) sizeRRotate(cur *hNode[T]) *hNode[T] {
+func (tree *Tree[KEY, VALUE]) sizeRRotate(cur *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 	const R = 1
 	llsize, lrsize := getChildrenSize(cur.Children[R])
 	if llsize > lrsize {
@@ -93,7 +118,7 @@ func (tree *Tree[T]) sizeRRotate(cur *hNode[T]) *hNode[T] {
 	return tree.lrotate(cur)
 }
 
-func (tree *Tree[T]) sizeLRotate(cur *hNode[T]) *hNode[T] {
+func (tree *Tree[KEY, VALUE]) sizeLRotate(cur *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 	const L = 0
 	llsize, lrsize := getChildrenSize(cur.Children[L])
 	if llsize < lrsize {
@@ -105,7 +130,7 @@ func (tree *Tree[T]) sizeLRotate(cur *hNode[T]) *hNode[T] {
 	return tree.rrotate(cur)
 }
 
-func (tree *Tree[T]) lrotate(cur *hNode[T]) *hNode[T] {
+func (tree *Tree[KEY, VALUE]) lrotate(cur *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 
 	const L = 1
 	const R = 0
@@ -139,7 +164,7 @@ func (tree *Tree[T]) lrotate(cur *hNode[T]) *hNode[T] {
 	return mov
 }
 
-func (tree *Tree[T]) rrotate(cur *hNode[T]) *hNode[T] {
+func (tree *Tree[KEY, VALUE]) rrotate(cur *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 
 	const L = 0
 	const R = 1
@@ -173,33 +198,33 @@ func (tree *Tree[T]) rrotate(cur *hNode[T]) *hNode[T] {
 	return mov
 }
 
-func getChildrenSumSize[T any](cur *hNode[T]) int64 {
+func getChildrenSumSize[KEY any, VALUE any](cur *hNode[KEY, VALUE]) int64 {
 	return getSize(cur.Children[0]) + getSize(cur.Children[1])
 }
 
-func getChildrenSize[T any](cur *hNode[T]) (int64, int64) {
+func getChildrenSize[KEY any, VALUE any](cur *hNode[KEY, VALUE]) (int64, int64) {
 	return getSize(cur.Children[0]), getSize(cur.Children[1])
 }
 
-func getSize[T any](cur *hNode[T]) int64 {
+func getSize[KEY any, VALUE any](cur *hNode[KEY, VALUE]) int64 {
 	if cur == nil {
 		return 0
 	}
 	return cur.Size
 }
 
-func (node *hNode[T]) updateBalance() {
+func (node *hNode[KEY, VALUE]) updateBalance() {
 	node.Balance = getSize(node.Children[0]) - getSize(node.Children[1])
 }
 
-func getRelationship[T any](cur *hNode[T]) int {
+func getRelationship[KEY any, VALUE any](cur *hNode[KEY, VALUE]) int {
 	if cur.Parent.Children[1] == cur {
 		return 1
 	}
 	return 0
 }
 
-func (tree *Tree[T]) getRangeRoot(low, hight T) (root *hNode[T]) {
+func (tree *Tree[KEY, VALUE]) getRangeRoot(low, hight KEY) (root *hNode[KEY, VALUE]) {
 	const L = 0
 	const R = 1
 
@@ -222,7 +247,7 @@ func (tree *Tree[T]) getRangeRoot(low, hight T) (root *hNode[T]) {
 	return
 }
 
-func (tree *Tree[T]) mergeGroups(root *hNode[T], group *hNode[T], childGroup *hNode[T], childSize int64, LR int) {
+func (tree *Tree[KEY, VALUE]) mergeGroups(root *hNode[KEY, VALUE], group *hNode[KEY, VALUE], childGroup *hNode[KEY, VALUE], childSize int64, LR int) {
 	rparent := root.Parent
 	hand := group
 	for hand.Children[LR] != nil {
@@ -254,7 +279,7 @@ func (tree *Tree[T]) mergeGroups(root *hNode[T], group *hNode[T], childGroup *hN
 	}
 }
 
-func (tree *Tree[T]) fixRemoveRange(cur *hNode[T]) {
+func (tree *Tree[KEY, VALUE]) fixRemoveRange(cur *hNode[KEY, VALUE]) {
 	const L = 0
 	const R = 1
 
@@ -286,7 +311,7 @@ func (tree *Tree[T]) fixRemoveRange(cur *hNode[T]) {
 	}
 }
 
-func (tree *Tree[T]) index(i int64) *hNode[T] {
+func (tree *Tree[KEY, VALUE]) index(i int64) *hNode[KEY, VALUE] {
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -313,7 +338,7 @@ func (tree *Tree[T]) index(i int64) *hNode[T] {
 
 }
 
-func (tree *Tree[T]) getNode(key T) *hNode[T] {
+func (tree *Tree[KEY, VALUE]) getNode(key KEY) *hNode[KEY, VALUE] {
 	const L = 0
 	const R = 1
 
@@ -332,11 +357,11 @@ func (tree *Tree[T]) getNode(key T) *hNode[T] {
 	return nil
 }
 
-func (tree *Tree[T]) getRoot() *hNode[T] {
+func (tree *Tree[KEY, VALUE]) getRoot() *hNode[KEY, VALUE] {
 	return tree.root.Children[0]
 }
 
-func (tree *Tree[T]) check() {
+func (tree *Tree[KEY, VALUE]) check() {
 	const L = 0
 	const R = 1
 
@@ -345,8 +370,8 @@ func (tree *Tree[T]) check() {
 		panic("")
 	}
 
-	var tcheck func(root *hNode[T])
-	tcheck = func(root *hNode[T]) {
+	var tcheck func(root *hNode[KEY, VALUE])
+	tcheck = func(root *hNode[KEY, VALUE]) {
 
 		if root == nil {
 			return
@@ -379,13 +404,13 @@ func (tree *Tree[T]) check() {
 
 }
 
-func (tree *Tree[T]) hight() int {
+func (tree *Tree[KEY, VALUE]) hight() int {
 
 	root := tree.getRoot()
 
 	maxHight := 0
-	var getHigh func(cur *hNode[T], hight int)
-	getHigh = func(cur *hNode[T], hight int) {
+	var getHigh func(cur *hNode[KEY, VALUE], hight int)
+	getHigh = func(cur *hNode[KEY, VALUE], hight int) {
 		if cur == nil {
 			return
 		}
@@ -403,12 +428,12 @@ func (tree *Tree[T]) hight() int {
 	return maxHight
 }
 
-func (node *hNode[T]) hight() int {
+func (node *hNode[KEY, VALUE]) hight() int {
 	root := node
 
 	maxHight := 0
-	var getHigh func(cur *hNode[T], hight int)
-	getHigh = func(cur *hNode[T], hight int) {
+	var getHigh func(cur *hNode[KEY, VALUE], hight int)
+	getHigh = func(cur *hNode[KEY, VALUE], hight int) {
 		if cur == nil {
 			return
 		}

@@ -187,3 +187,54 @@ func TestIteratorSingleElement(t *testing.T) {
 		t.Error("SeekToLast failed on single element")
 	}
 }
+
+func TestIteratorSeekBounds(t *testing.T) {
+	tree := New(compare.Any[int])
+	for _, value := range []int{0, 2, 4, 6, 8, 10} {
+		tree.Put(value, value)
+	}
+
+	iter := tree.Iterator()
+
+	if exact := iter.SeekGE(5); exact {
+		t.Fatal("SeekGE(5) should report inexact match")
+	}
+	if !iter.Valid() || iter.Key() != 6 || iter.Index() != 3 {
+		t.Fatalf("SeekGE(5) should land on key 6 at index 3, got valid=%v key=%d index=%d", iter.Valid(), iter.Key(), iter.Index())
+	}
+
+	if exact := iter.SeekGT(6); !exact {
+		t.Fatal("SeekGT(6) should report exact match before moving to successor")
+	}
+	if !iter.Valid() || iter.Key() != 8 || iter.Index() != 4 {
+		t.Fatalf("SeekGT(6) should land on key 8 at index 4, got valid=%v key=%d index=%d", iter.Valid(), iter.Key(), iter.Index())
+	}
+
+	if exact := iter.SeekLE(5); exact {
+		t.Fatal("SeekLE(5) should report inexact match")
+	}
+	if !iter.Valid() || iter.Key() != 4 || iter.Index() != 2 {
+		t.Fatalf("SeekLE(5) should land on key 4 at index 2, got valid=%v key=%d index=%d", iter.Valid(), iter.Key(), iter.Index())
+	}
+
+	if exact := iter.SeekLT(4); !exact {
+		t.Fatal("SeekLT(4) should report exact match before moving to predecessor")
+	}
+	if !iter.Valid() || iter.Key() != 2 || iter.Index() != 1 {
+		t.Fatalf("SeekLT(4) should land on key 2 at index 1, got valid=%v key=%d index=%d", iter.Valid(), iter.Key(), iter.Index())
+	}
+
+	if exact := iter.SeekGE(11); exact || iter.Valid() {
+		t.Fatalf("SeekGE(11) should be invalid, got exact=%v valid=%v", exact, iter.Valid())
+	}
+	if iter.Index() != tree.Size() {
+		t.Fatalf("SeekGE(11) should set index to size, got %d", iter.Index())
+	}
+
+	if exact := iter.SeekLT(-1); exact || iter.Valid() {
+		t.Fatalf("SeekLT(-1) should be invalid, got exact=%v valid=%v", exact, iter.Valid())
+	}
+	if iter.Index() != -1 {
+		t.Fatalf("SeekLT(-1) should set index to -1, got %d", iter.Index())
+	}
+}

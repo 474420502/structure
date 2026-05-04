@@ -9,36 +9,42 @@ import (
 var IsDebugString = false
 
 // Node the node of tree
-type hNode[T any] struct {
-	Parent   *hNode[T]
-	Children [2]*hNode[T]
+type hNode[KEY any, VALUE any] struct {
+	Parent   *hNode[KEY, VALUE]
+	Children [2]*hNode[KEY, VALUE]
 
 	Size    int64
 	Balance int64
-	Key     T
-	Value   interface{}
+	Key     KEY
+	Value   VALUE
 }
 
 // Tree the struct of tree
-type Tree[T any] struct {
-	root            *hNode[T]
-	compare         compare.Compare[T]
+type Tree[KEY any, VALUE any] struct {
+	root            *hNode[KEY, VALUE]
+	compare         compare.Compare[KEY]
+	zero            VALUE
 	singleRotations int
 	doubleRotations int
 }
 
-// New create a object of tree
-func New[T any](comp compare.Compare[T]) *Tree[T] {
-	return &Tree[T]{compare: comp, root: &hNode[T]{}}
+// New creates a typed tree where the key and value share the same type.
+func New[KEY any](comp compare.Compare[KEY]) *Tree[KEY, KEY] {
+	return NewWithValue[KEY, KEY](comp)
+}
+
+// NewWithValue create a object of tree
+func NewWithValue[KEY any, VALUE any](comp compare.Compare[KEY]) *Tree[KEY, VALUE] {
+	return &Tree[KEY, VALUE]{compare: comp, root: &hNode[KEY, VALUE]{}}
 }
 
 // String show the view of tree by chars
-func (tree *Tree[T]) String() string {
+func (tree *Tree[KEY, VALUE]) String() string {
 	return tree.debugString(IsDebugString)
 }
 
 // Size get the size of tree
-func (tree *Tree[T]) Size() int64 {
+func (tree *Tree[KEY, VALUE]) Size() int64 {
 	if root := tree.getRoot(); root != nil {
 		return root.Size
 	}
@@ -46,24 +52,24 @@ func (tree *Tree[T]) Size() int64 {
 }
 
 // Iterator return a new iterator for the tree
-func (tree *Tree[T]) Iterator() *Iterator[T] {
+func (tree *Tree[KEY, VALUE]) Iterator() *Iterator[KEY, VALUE] {
 	return newIterator(tree)
 }
 
 // Get get value by key
-func (tree *Tree[T]) Get(key T) (interface{}, bool) {
+func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	if cur := tree.getNode(key); cur != nil {
 		return cur.Value, true
 	}
-	return nil, false
+	return tree.zero, false
 }
 
 // Put put value into tree  by Key . if key exists,not cover the value and return false. else return true
-func (tree *Tree[T]) Put(key T, value interface{}) bool {
+func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		tree.root.Children[0] = &hNode[T]{Key: key, Value: value, Size: 1, Parent: tree.root}
+		tree.root.Children[0] = &hNode[KEY, VALUE]{Key: key, Value: value, Size: 1, Parent: tree.root}
 		return true
 	}
 
@@ -78,9 +84,9 @@ func (tree *Tree[T]) Put(key T, value interface{}) bool {
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
-				node := &hNode[T]{Parent: cur, Key: key, Value: value, Size: 1}
+				node := &hNode[KEY, VALUE]{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[L] = node
-				tree.fixPut(cur)
+				tree.fixPut(cur, L)
 				return true
 			}
 
@@ -89,9 +95,9 @@ func (tree *Tree[T]) Put(key T, value interface{}) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &hNode[T]{Parent: cur, Key: key, Value: value, Size: 1}
+				node := &hNode[KEY, VALUE]{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[R] = node
-				tree.fixPut(cur)
+				tree.fixPut(cur, R)
 				return true
 			}
 		default:
@@ -102,16 +108,16 @@ func (tree *Tree[T]) Put(key T, value interface{}) bool {
 }
 
 // InsertIfAbsent inserts a value only when the key does not exist.
-func (tree *Tree[T]) InsertIfAbsent(key T, value interface{}) bool {
+func (tree *Tree[KEY, VALUE]) InsertIfAbsent(key KEY, value VALUE) bool {
 	return tree.Put(key, value)
 }
 
 // Set set value by Key. if key exists, cover the value and return true. else return false and put value into tree
-func (tree *Tree[T]) Set(key T, value interface{}) bool {
+func (tree *Tree[KEY, VALUE]) Set(key KEY, value VALUE) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		tree.root.Children[0] = &hNode[T]{Key: key, Value: value, Size: 1, Parent: tree.root}
+		tree.root.Children[0] = &hNode[KEY, VALUE]{Key: key, Value: value, Size: 1, Parent: tree.root}
 		return true
 	}
 
@@ -126,9 +132,9 @@ func (tree *Tree[T]) Set(key T, value interface{}) bool {
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
-				node := &hNode[T]{Parent: cur, Key: key, Value: value, Size: 1}
+				node := &hNode[KEY, VALUE]{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[L] = node
-				tree.fixPut(cur)
+				tree.fixPut(cur, L)
 				return false
 			}
 
@@ -137,9 +143,9 @@ func (tree *Tree[T]) Set(key T, value interface{}) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &hNode[T]{Parent: cur, Key: key, Value: value, Size: 1}
+				node := &hNode[KEY, VALUE]{Parent: cur, Key: key, Value: value, Size: 1}
 				cur.Children[R] = node
-				tree.fixPut(cur)
+				tree.fixPut(cur, R)
 				return false
 			}
 		default:
@@ -152,7 +158,7 @@ func (tree *Tree[T]) Set(key T, value interface{}) bool {
 }
 
 // Upsert sets the value and reports whether an existing value was replaced.
-func (tree *Tree[T]) Upsert(key T, value interface{}) bool {
+func (tree *Tree[KEY, VALUE]) Upsert(key KEY, value VALUE) bool {
 	if cur := tree.getNode(key); cur != nil {
 		cur.Value = value
 		return true
@@ -162,13 +168,13 @@ func (tree *Tree[T]) Upsert(key T, value interface{}) bool {
 }
 
 // Index Indexing Ordered Data. like TopN
-func (tree *Tree[T]) Index(i int64) (key T, value interface{}) {
+func (tree *Tree[KEY, VALUE]) Index(i int64) (key KEY, value VALUE) {
 	node := tree.index(i)
 	return node.Key, node.Value
 }
 
 // Index Indexing Ordered Data. like TopN
-func (tree *Tree[T]) IndexOf(key T) int64 {
+func (tree *Tree[KEY, VALUE]) IndexOf(key KEY) int64 {
 	const L = 0
 	const R = 1
 
@@ -210,14 +216,11 @@ func (tree *Tree[T]) IndexOf(key T) int64 {
 // 	}
 
 // 	var offset int64 = getSize(cur.Children[L])
-// 	for {
 // 		c := tree.compare(key, cur.Key)
 // 		switch {
 // 		case c < 0:
 // 			cur = cur.Children[L]
 // 			if cur == nil {
-// 				return offset - 1, false
-// 			}
 // 			offset -= getSize(cur.Children[R]) + 1
 // 		case c > 0:
 // 			cur = cur.Children[R]
@@ -233,14 +236,14 @@ func (tree *Tree[T]) IndexOf(key T) int64 {
 // }
 
 // Traverse the traversal method defaults to LDR. from smallest to largest.
-func (tree *Tree[T]) Traverse(every func(k T, v interface{}) bool) {
+func (tree *Tree[KEY, VALUE]) Traverse(every func(k KEY, v VALUE) bool) {
 	root := tree.getRoot()
 	if root == nil {
 		return
 	}
 
-	var traverasl func(cur *hNode[T]) bool
-	traverasl = func(cur *hNode[T]) bool {
+	var traverasl func(cur *hNode[KEY, VALUE]) bool
+	traverasl = func(cur *hNode[KEY, VALUE]) bool {
 		if cur == nil {
 			return true
 		}
@@ -259,14 +262,14 @@ func (tree *Tree[T]) Traverse(every func(k T, v interface{}) bool) {
 }
 
 // Values return all values. in order
-func (tree *Tree[T]) Values() []interface{} {
+func (tree *Tree[KEY, VALUE]) Values() []VALUE {
 	var mszie int64
 	root := tree.getRoot()
 	if root != nil {
 		mszie = root.Size
 	}
-	result := make([]interface{}, 0, mszie)
-	tree.Traverse(func(k T, v interface{}) bool {
+	result := make([]VALUE, 0, mszie)
+	tree.Traverse(func(k KEY, v VALUE) bool {
 		result = append(result, v)
 		return true
 	})
@@ -274,7 +277,7 @@ func (tree *Tree[T]) Values() []interface{} {
 }
 
 // Remove remove key value and return value that be removed
-func (tree *Tree[T]) Remove(key T) interface{} {
+func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
 	const L = 0
 	const R = 1
 
@@ -284,7 +287,7 @@ func (tree *Tree[T]) Remove(key T) interface{} {
 			parent := cur.Parent
 			parent.Children[getRelationship(cur)] = nil
 			tree.fixRemoveSize(parent)
-			return cur.Value
+			return cur.Value, true
 		}
 
 		lsize, rsize := getChildrenSize(cur)
@@ -313,7 +316,7 @@ func (tree *Tree[T]) Remove(key T) interface{} {
 				tree.fixRemoveSize(prevParent)
 			}
 
-			return value
+			return value, true
 		} else {
 
 			next := cur.Children[R]
@@ -340,30 +343,26 @@ func (tree *Tree[T]) Remove(key T) interface{} {
 				tree.fixRemoveSize(nextParent)
 			}
 
-			return value
+			return value, true
 
 		}
 	}
 
-	return nil
+	return tree.zero, false
 }
 
 // Delete removes a key and reports whether a value was present.
-func (tree *Tree[T]) Delete(key T) (interface{}, bool) {
-	v := tree.Remove(key)
-	if v == nil {
-		return nil, false
-	}
-	return v, true
+func (tree *Tree[KEY, VALUE]) Delete(key KEY) (VALUE, bool) {
+	return tree.Remove(key)
 }
 
 // Len returns the number of elements.
-func (tree *Tree[T]) Len() int {
+func (tree *Tree[KEY, VALUE]) Len() int {
 	return int(tree.Size())
 }
 
 // RemoveIndex remove key value by index and return value that be removed
-func (tree *Tree[T]) RemoveIndex(index int64) interface{} {
+func (tree *Tree[KEY, VALUE]) RemoveIndex(index int64) (VALUE, bool) {
 	const L = 0
 	const R = 1
 
@@ -373,7 +372,7 @@ func (tree *Tree[T]) RemoveIndex(index int64) interface{} {
 			parent := cur.Parent
 			parent.Children[getRelationship(cur)] = nil
 			tree.fixRemoveSize(parent)
-			return cur.Value
+			return cur.Value, true
 		}
 
 		lsize, rsize := getChildrenSize(cur)
@@ -402,7 +401,7 @@ func (tree *Tree[T]) RemoveIndex(index int64) interface{} {
 				tree.fixRemoveSize(prevParent)
 			}
 
-			return value
+			return value, true
 		} else {
 
 			next := cur.Children[R]
@@ -429,16 +428,16 @@ func (tree *Tree[T]) RemoveIndex(index int64) interface{} {
 				tree.fixRemoveSize(nextParent)
 			}
 
-			return value
+			return value, true
 
 		}
 	}
 
-	return nil
+	return tree.zero, false
 }
 
 // RemoveRange remove keys values by range. [low, high]
-func (tree *Tree[T]) RemoveRange(low, high T) {
+func (tree *Tree[KEY, VALUE]) RemoveRange(low, high KEY) {
 
 	const L = 0
 	const R = 1
@@ -456,8 +455,8 @@ func (tree *Tree[T]) RemoveRange(low, high T) {
 		return
 	}
 
-	var ltrim, rtrim func(*hNode[T]) *hNode[T]
-	ltrim = func(root *hNode[T]) *hNode[T] {
+	var ltrim, rtrim func(*hNode[KEY, VALUE]) *hNode[KEY, VALUE]
+	ltrim = func(root *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 		if root == nil {
 			return nil
 		}
@@ -475,12 +474,12 @@ func (tree *Tree[T]) RemoveRange(low, high T) {
 		}
 	}
 
-	var lgroup *hNode[T]
+	var lgroup *hNode[KEY, VALUE]
 	if root.Children[L] != nil {
 		lgroup = ltrim(root.Children[L])
 	}
 
-	rtrim = func(root *hNode[T]) *hNode[T] {
+	rtrim = func(root *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 		if root == nil {
 			return nil
 		}
@@ -498,7 +497,7 @@ func (tree *Tree[T]) RemoveRange(low, high T) {
 		}
 	}
 
-	var rgroup *hNode[T]
+	var rgroup *hNode[KEY, VALUE]
 	if root.Children[R] != nil {
 		rgroup = rtrim(root.Children[R])
 	}
@@ -527,7 +526,7 @@ func (tree *Tree[T]) RemoveRange(low, high T) {
 
 // RemoveRangeByIndex 1.remove range [low:hight]
 // 2.low and hight that the range must contain a value that exists. eg: [low: hight+1] [low-1: hight].  [low-1: hight+1]. error: [low-1:low-2] or [hight+1:hight+2]
-func (tree *Tree[T]) RemoveRangeByIndex(low, hight int64) {
+func (tree *Tree[KEY, VALUE]) RemoveRangeByIndex(low, hight int64) {
 	if low > hight {
 		return
 	}
@@ -556,8 +555,8 @@ func (tree *Tree[T]) RemoveRangeByIndex(low, hight int64) {
 	}
 
 	root := cur
-	var ltrim, rtrim func(idx int64, dir int, root *hNode[T]) *hNode[T]
-	ltrim = func(idx int64, dir int, root *hNode[T]) *hNode[T] {
+	var ltrim, rtrim func(idx int64, dir int, root *hNode[KEY, VALUE]) *hNode[KEY, VALUE]
+	ltrim = func(idx int64, dir int, root *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 		if root == nil {
 			return nil
 		}
@@ -583,12 +582,12 @@ func (tree *Tree[T]) RemoveRangeByIndex(low, hight int64) {
 		}
 	}
 
-	var lgroup *hNode[T]
+	var lgroup *hNode[KEY, VALUE]
 	if root.Children[L] != nil {
 		lgroup = ltrim(idx, L, root.Children[L])
 	}
 
-	rtrim = func(idx int64, dir int, root *hNode[T]) *hNode[T] {
+	rtrim = func(idx int64, dir int, root *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 		if root == nil {
 			return nil
 		}
@@ -614,7 +613,7 @@ func (tree *Tree[T]) RemoveRangeByIndex(low, hight int64) {
 		}
 	}
 
-	var rgroup *hNode[T]
+	var rgroup *hNode[KEY, VALUE]
 	if root.Children[R] != nil {
 		rgroup = rtrim(idx, R, root.Children[R])
 	}
@@ -641,7 +640,7 @@ func (tree *Tree[T]) RemoveRangeByIndex(low, hight int64) {
 }
 
 // Trim retain the value of the range . [low high]
-func (tree *Tree[T]) Trim(low, high T) {
+func (tree *Tree[KEY, VALUE]) Trim(low, high KEY) {
 	// root := tree.getRoot()
 
 	if tree.compare(low, high) > 0 {
@@ -653,8 +652,8 @@ func (tree *Tree[T]) Trim(low, high T) {
 
 	root := tree.getRangeRoot(low, high)
 
-	var ltrim func(root *hNode[T]) *hNode[T]
-	ltrim = func(root *hNode[T]) *hNode[T] {
+	var ltrim func(root *hNode[KEY, VALUE]) *hNode[KEY, VALUE]
+	ltrim = func(root *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 		if root == nil {
 			return nil
 		}
@@ -678,8 +677,8 @@ func (tree *Tree[T]) Trim(low, high T) {
 
 	ltrim(root)
 
-	var rtrim func(root *hNode[T]) *hNode[T]
-	rtrim = func(root *hNode[T]) *hNode[T] {
+	var rtrim func(root *hNode[KEY, VALUE]) *hNode[KEY, VALUE]
+	rtrim = func(root *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 		if root == nil {
 			return nil
 		}
@@ -714,7 +713,7 @@ func (tree *Tree[T]) Trim(low, high T) {
 }
 
 // TrimByIndex retain the value of the index range . [low high]
-func (tree *Tree[T]) TrimByIndex(low, high int64) {
+func (tree *Tree[KEY, VALUE]) TrimByIndex(low, high int64) {
 	if low > high {
 		panic(errLowerGtHigh)
 	}
@@ -743,8 +742,8 @@ func (tree *Tree[T]) TrimByIndex(low, high int64) {
 		}
 	}
 
-	var ltrim func(idx int64, root *hNode[T]) *hNode[T]
-	ltrim = func(idx int64, root *hNode[T]) *hNode[T] {
+	var ltrim func(idx int64, root *hNode[KEY, VALUE]) *hNode[KEY, VALUE]
+	ltrim = func(idx int64, root *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 		if root == nil {
 			return nil
 		}
@@ -768,8 +767,8 @@ func (tree *Tree[T]) TrimByIndex(low, high int64) {
 
 	ltrim(idx, root)
 
-	var rtrim func(idx int64, root *hNode[T]) *hNode[T]
-	rtrim = func(idx int64, root *hNode[T]) *hNode[T] {
+	var rtrim func(idx int64, root *hNode[KEY, VALUE]) *hNode[KEY, VALUE]
+	rtrim = func(idx int64, root *hNode[KEY, VALUE]) *hNode[KEY, VALUE] {
 		if root == nil {
 			return nil
 		}
@@ -815,7 +814,7 @@ func (tree *Tree[T]) TrimByIndex(low, high int64) {
 }
 
 // Split Contain Split  Original tree not contain Key. return  the splited tree
-func (tree *Tree[T]) Split(key T) *Tree[T] {
+func (tree *Tree[KEY, VALUE]) Split(key KEY) *Tree[KEY, VALUE] {
 	root := tree.getRoot()
 	if root == nil {
 		return nil
@@ -826,7 +825,7 @@ func (tree *Tree[T]) Split(key T) *Tree[T] {
 
 	cur := root
 	// 寻找左右根
-	var lroot, rroot *hNode[T]
+	var lroot, rroot *hNode[KEY, VALUE]
 
 	for cur != nil {
 		c := tree.compare(cur.Key, key)
@@ -846,8 +845,8 @@ func (tree *Tree[T]) Split(key T) *Tree[T] {
 		}
 	}
 
-	var traverse func(cur *hNode[T], lroot, rroot *hNode[T])
-	traverse = func(cur, lroot, rroot *hNode[T]) {
+	var traverse func(cur *hNode[KEY, VALUE], lroot, rroot *hNode[KEY, VALUE])
+	traverse = func(cur, lroot, rroot *hNode[KEY, VALUE]) {
 		if cur == nil { // 就算是nil也要赋值拼接
 			lroot.Children[R] = nil
 			lroot.Size = getSize(lroot.Children[L]) + 1
@@ -893,17 +892,17 @@ func (tree *Tree[T]) Split(key T) *Tree[T] {
 	if lroot == nil {
 		tree.root.Children[0] = nil
 
-		rtree := New(tree.compare)
+		rtree := NewWithValue[KEY, VALUE](tree.compare)
 		rtree.root.Children[0] = root
 		root.Parent = rtree.root
 		return rtree
 	}
 
 	if rroot == nil {
-		return New(tree.compare)
+		return NewWithValue[KEY, VALUE](tree.compare)
 	}
 
-	rtree := New(tree.compare)
+	rtree := NewWithValue[KEY, VALUE](tree.compare)
 	if lroot.Parent != rroot {
 		rtree.root.Children[0] = rroot
 		rroot.Parent = rtree.root
@@ -938,7 +937,7 @@ func (tree *Tree[T]) Split(key T) *Tree[T] {
 }
 
 // SplitContain  Original tree contain Key. return  the splited tree
-func (tree *Tree[T]) SplitContain(key T) *Tree[T] {
+func (tree *Tree[KEY, VALUE]) SplitContain(key KEY) *Tree[KEY, VALUE] {
 	root := tree.getRoot()
 	if root == nil {
 		return nil
@@ -949,7 +948,7 @@ func (tree *Tree[T]) SplitContain(key T) *Tree[T] {
 
 	cur := root
 	// 寻找左右根
-	var lroot, rroot *hNode[T]
+	var lroot, rroot *hNode[KEY, VALUE]
 
 	for cur != nil {
 		c := tree.compare(cur.Key, key)
@@ -968,8 +967,8 @@ func (tree *Tree[T]) SplitContain(key T) *Tree[T] {
 		}
 	}
 
-	var traverse func(cur *hNode[T], lroot, rroot *hNode[T])
-	traverse = func(cur, lroot, rroot *hNode[T]) {
+	var traverse func(cur *hNode[KEY, VALUE], lroot, rroot *hNode[KEY, VALUE])
+	traverse = func(cur, lroot, rroot *hNode[KEY, VALUE]) {
 		if cur == nil { // 就算是nil也要赋值拼接
 			lroot.Children[R] = nil
 			lroot.Size = getSize(lroot.Children[L]) + 1
@@ -1015,17 +1014,17 @@ func (tree *Tree[T]) SplitContain(key T) *Tree[T] {
 	if lroot == nil {
 		tree.root.Children[0] = nil
 
-		rtree := New(tree.compare)
+		rtree := NewWithValue[KEY, VALUE](tree.compare)
 		rtree.root.Children[0] = root
 		root.Parent = rtree.root
 		return rtree
 	}
 
 	if rroot == nil {
-		return New(tree.compare)
+		return NewWithValue[KEY, VALUE](tree.compare)
 	}
 
-	rtree := New(tree.compare)
+	rtree := NewWithValue[KEY, VALUE](tree.compare)
 	if lroot.Parent != rroot {
 		rtree.root.Children[0] = rroot
 		rroot.Parent = rtree.root
@@ -1060,6 +1059,6 @@ func (tree *Tree[T]) SplitContain(key T) *Tree[T] {
 }
 
 // Clear clear all node.
-func (tree *Tree[T]) Clear() {
+func (tree *Tree[KEY, VALUE]) Clear() {
 	tree.root.Children[0] = nil
 }

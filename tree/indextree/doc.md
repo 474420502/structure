@@ -8,7 +8,7 @@ import "github.com/474420502/structure/tree/indextree"
 
 ## Features
 
-- generic ordered keys with `interface{}` values
+- generic ordered keys and typed generic values
 - direct lookup by key and by in-order index
 - point removal, range removal, and trimming by key or index
 - split operations for partitioning a tree around a key
@@ -18,30 +18,31 @@ import "github.com/474420502/structure/tree/indextree"
 
 ## API Snapshot
 
-- `New[T any](comp compare.Compare[T]) *Tree[T]`
-- `Put(key T, value interface{}) bool`
-- `InsertIfAbsent(key T, value interface{}) bool`
-- `Set(key T, value interface{}) bool`
-- `Upsert(key T, value interface{}) bool`
-- `Get(key T) (interface{}, bool)`
-- `Index(i int64) (key T, value interface{})`
-- `IndexOf(key T) int64`
-- `Remove(key T) interface{}`
-- `Delete(key T) (interface{}, bool)`
-- `RemoveIndex(index int64) interface{}`
-- `RemoveRange(low, high T)`
+- `New[T any](comp compare.Compare[T]) *Tree[T, T]`
+- `NewWithValue[KEY, VALUE any](comp compare.Compare[KEY]) *Tree[KEY, VALUE]`
+- `Put(key KEY, value VALUE) bool`
+- `InsertIfAbsent(key KEY, value VALUE) bool`
+- `Set(key KEY, value VALUE) bool`
+- `Upsert(key KEY, value VALUE) bool`
+- `Get(key KEY) (VALUE, bool)`
+- `Index(i int64) (key KEY, value VALUE)`
+- `IndexOf(key KEY) int64`
+- `Remove(key KEY) (VALUE, bool)`
+- `Delete(key KEY) (VALUE, bool)`
+- `RemoveIndex(index int64) (VALUE, bool)`
+- `RemoveRange(low, high KEY)`
 - `RemoveRangeByIndex(low, hight int64)`
-- `Trim(low, high T)`
+- `Trim(low, high KEY)`
 - `TrimByIndex(low, high int64)`
-- `Split(key T) *Tree[T]`
-- `SplitContain(key T) *Tree[T]`
-- `Traverse(func(T, interface{}) bool)`
-- `Values() []interface{}`
+- `Split(key KEY) *Tree[KEY, VALUE]`
+- `SplitContain(key KEY) *Tree[KEY, VALUE]`
+- `Traverse(func(KEY, VALUE) bool)`
+- `Values() []VALUE`
 - `Clear()`
 - `Size() int64`
 - `Len() int`
 - `String() string`
-- `Iterator() *Iterator[T]`
+- `Iterator() *Iterator[KEY, VALUE]`
 - `ResetBenchmarkStats()`
 - `BenchmarkStats() BenchmarkStats`
 
@@ -56,6 +57,7 @@ The iterator supports:
 
 - `Put` preserves the existing value when the key already exists and returns `false` in that case.
 - `Set` overwrites existing keys and inserts missing ones.
+- `New` is the convenience constructor for the common `key == value` case; use `NewWithValue` when the value type differs from the key type.
 - `InsertIfAbsent` is the preferred explicit name for insert-only writes.
 - `Upsert` is the preferred explicit name for overwrite-or-create writes and returns whether an existing value was replaced.
 - `Delete` and `Len` provide the preferred cross-package removal and size entry points for new code.

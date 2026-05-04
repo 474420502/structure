@@ -83,10 +83,10 @@ func TestTreeRemove(t *testing.T) {
 	tree := New(compare.Any[int])
 	tree.Put(1, 100)
 
-	if tree.Remove(2) != nil {
-		t.Error("Remove non-existent should return nil")
+	if _, ok := tree.Remove(2); ok {
+		t.Error("Remove non-existent should return ok=false")
 	}
-	if tree.Remove(1) != 100 {
+	if value, ok := tree.Remove(1); !ok || value != 100 {
 		t.Error("Remove should return correct value")
 	}
 	if tree.Size() != 0 {
@@ -101,7 +101,7 @@ func TestTreeTraverse(t *testing.T) {
 	}
 
 	var keys []int
-	tree.Traverse(func(k int, v interface{}) bool {
+	tree.Traverse(func(k int, v int) bool {
 		keys = append(keys, k)
 		return true
 	})
@@ -124,7 +124,7 @@ func TestTreeTraverseEarlyExit(t *testing.T) {
 	}
 
 	count := 0
-	tree.Traverse(func(k int, v interface{}) bool {
+	tree.Traverse(func(k int, v int) bool {
 		count++
 		if k >= 10 {
 			return false
@@ -149,7 +149,7 @@ func TestTreeValues(t *testing.T) {
 	}
 
 	for i := 0; i < len(values)-1; i++ {
-		if values[i].(int) >= values[i+1].(int) {
+		if values[i] >= values[i+1] {
 			t.Error("Values should be in ascending order")
 		}
 	}
@@ -364,7 +364,7 @@ func TestTreeIteratorConsistency(t *testing.T) {
 	}
 
 	var traverseValues []int
-	tree.Traverse(func(k int, v interface{}) bool {
+	tree.Traverse(func(k int, v int) bool {
 		traverseValues = append(traverseValues, k)
 		return true
 	})

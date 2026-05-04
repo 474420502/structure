@@ -114,7 +114,7 @@ func TestRemove1(t *testing.T) {
 	}
 
 	for _, v := range tree.Values() {
-		if tree.Remove(v.(int)) != v {
+		if removed, ok := tree.Remove(v); !ok || removed != v {
 			t.Error("remove error check it")
 		}
 	}
@@ -137,7 +137,7 @@ func TestRemove2(t *testing.T) {
 	}
 
 	for _, v := range tree.Values() {
-		tree.Remove(v.(int))
+		tree.Remove(v)
 	}
 
 	if tree.Size() != 0 {
@@ -157,11 +157,11 @@ func TestRemove3(t *testing.T) {
 		for i := 0; i < 10; i += rand.Intn(3) + 1 {
 			v := rand.Intn(100)
 			if _, ok := tree.Get(v); ok {
-				if tree.Remove(v) == nil {
+				if _, ok := tree.Remove(v); !ok {
 					t.Error("remove error")
 				}
 			} else {
-				if tree.Remove(v) != nil {
+				if _, ok := tree.Remove(v); ok {
 					t.Error("remove error")
 				}
 			}
@@ -406,8 +406,8 @@ func TestTrimIndex(t *testing.T) {
 		t.Error()
 	}
 
-	var result []interface{}
-	tree.Traverse(func(k int, v interface{}) bool {
+	var result []int
+	tree.Traverse(func(k int, v int) bool {
 		result = append(result, k)
 		return true
 	})
