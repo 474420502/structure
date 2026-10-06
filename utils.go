@@ -9,7 +9,13 @@ import (
 
 func TryPanic(do func()) (err error) {
 	defer func() {
-		err = recover().(error)
+		if recovered := recover(); recovered != nil {
+			if e, ok := recovered.(error); ok {
+				err = e
+			} else {
+				err = fmt.Errorf("%v", recovered)
+			}
+		}
 	}()
 	do()
 	return nil

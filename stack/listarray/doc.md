@@ -24,6 +24,7 @@ import lastack "github.com/474420502/structure/stack/listarray"
 - `Clear()`
 - `Empty() bool`
 - `Size() uint`
+- `Len() int`
 - `Values() []T`
 - `String() string`
 

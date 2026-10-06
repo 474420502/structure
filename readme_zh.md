@@ -7,6 +7,10 @@
 ## 文档导航
 
 - 英文总览: [readme.md](./readme.md)
+- API 标准草案: [api_standard.md](./api_standard.md)
+- API 迁移策略: [api_migration_strategy.md](./api_migration_strategy.md)
+- API 一致性审查: [api_consistency_review.md](./api_consistency_review.md)
+- 比较器契约: [compare/doc.md](./compare/doc.md)
 - IndexTree 基准对比: [tree/indextree/benchmark-comparison.md](./tree/indextree/benchmark-comparison.md)
 - IndexTree 基准对比中文: [tree/indextree/benchmark-comparison.zh.md](./tree/indextree/benchmark-comparison.zh.md)
 - IndexTree 旋转分析: [tree/indextree/rotation-analysis.md](./tree/indextree/rotation-analysis.md)
@@ -17,6 +21,12 @@
 ```go
 module github.com/474420502/structure
 ```
+
+## 比较器契约
+
+所有有序容器统一使用同一个 `compare.Compare[KEY]` 契约：负数表示小于，正数表示大于，零表示相等。同一个比较器可以传给仓库中的任意树、集合、映射、优先队列、堆或线性表。
+
+标量键使用 `compare.Any`，字节切片/字符串键使用 `compare.ArrayAny`。完整辅助函数列表见 [compare/doc.md](./compare/doc.md)。
 
 ## 实现目录
 
@@ -31,9 +41,9 @@ module github.com/474420502/structure
 
 | 包 | 说明 | 文档 | 示例 |
 |----|------|------|------|
-| `map/hashmap` | 基础哈希表封装，提供 `Put`、`Set`、`Get`、`Keys`、`Values`、`Slices` | [doc](./map/hashmap/doc.md) | [example](./example/hashmap/main.go) |
+| `map/hashmap` | 基础哈希表封装，提供 `Put`、`Set`、`Get`，以及标准化 `InsertIfAbsent`、`Upsert`、`Delete`、`Len` | [doc](./map/hashmap/doc.md) | [example](./example/hashmap/main.go) |
 | `map/linkedhashmap` | 保留插入顺序的哈希表，支持头尾移动与覆盖更新 | [doc](./map/linkedhashmap/doc.md) | [example](./example/linkedhashmap/main.go) |
-| `map/orderedmap.go` | 有序映射预留目录，目前只有空的 `OrderedMap` 类型，占位中 | [doc](./map/orderedmap.go/doc.md) | - |
+| `map/orderedmap.go` | 基于 `tree/indextree` 的有序映射，支持迭代器、按索引访问和标准化写入 | [doc](./map/orderedmap.go/doc.md) | - |
 
 ### Queue
 
@@ -41,14 +51,14 @@ module github.com/474420502/structure
 |----|------|------|------|
 | `queue/linkedarray` | 环形数组双端队列，支持头尾进出、按序号访问、遍历 | [doc](./queue/linkedarray/doc.md) | - |
 | `queue/list` | 双向链表双端队列，`Front`/`Back` 返回节点句柄 | [doc](./queue/list/doc.md) | - |
-| `queue/priority` | 基于大小平衡树的有序优先队列，支持迭代器与按索引删除 | [doc](./queue/priority/doc.md) | [example](./example/priority_queue/main.go) |
+| `queue/priority` | 基于大小平衡树的有序优先队列，支持重复键、迭代器与按索引删除 | [doc](./queue/priority/doc.md) | [example](./example/priority_queue/main.go) |
 
 ### Set
 
 | 包 | 说明 | 文档 | 示例 |
 |----|------|------|------|
 | `set/hashset` | 无序哈希集合，适合快速成员判断 | [doc](./set/hashset/doc.md) | - |
-| `set/treeset` | 基于 AVL 风格平衡树的有序集合，支持双向迭代 | [doc](./set/treeset/doc.md) | [example](./example/treeset/main.go) |
+| `set/treeset` | 基于 AVL 风格平衡树的有序集合，支持双向迭代与集合运算 | [doc](./set/treeset/doc.md) | [example](./example/treeset/main.go) |
 
 ### Stack
 
@@ -62,10 +72,12 @@ module github.com/474420502/structure
 
 | 包 | 说明 | 文档 | 示例 |
 |----|------|------|------|
-| `tree/avl` | 经典 AVL 平衡树，支持迭代器 | [doc](./tree/avl/doc.md) | [example](./example/avl/main.go) |
+| `tree/avl` | 经典 AVL 平衡树，支持迭代器与语义别名 | [doc](./tree/avl/doc.md) | [example](./example/avl/main.go) |
 | `tree/avls` | 支持重复键的 AVL 变体 | [doc](./tree/avls/doc.md) | - |
+| `tree/btree` | 泛型内存 B 树，高扇出节点、插入 0 分配、遍历缓存友好 | [doc](./tree/btree/doc.md) | - |
 | `tree/heap` | 基于比较器的二叉堆 | [doc](./tree/heap/doc.md) | [example](./example/heap/main.go) |
 | `tree/indextree` | 以子树大小维持平衡的有序树，支持排名、索引、切分、裁剪 | [doc](./tree/indextree/doc.md) | [example](./example/indextree/main.go) |
+| `tree/rbtree` | 经典红黑树，父指针节点、双向迭代器与语义别名 | [doc](./tree/rbtree/doc.md) | [example](./example/rbtree/main.go) |
 | `tree/skiplist` | 带 `RWMutex` 的并发跳表，支持迭代器、索引、裁剪、集合运算 | [doc](./tree/skiplist/doc.md) | - |
 | `tree/treelist` | 带链式顺序指针的有序树，支持范围迭代与集合运算 | [doc](./tree/treelist/doc.md) | [example](./example/tree-treelist/main.go) |
 
@@ -81,16 +93,17 @@ module github.com/474420502/structure
 |----|------|------|------|
 | `graph/astar` | 网格版 A* 搜索，支持自定义邻接、代价、权重策略 | [doc](./graph/astar/doc.md) | - |
 
-### Search
+### Comparator
 
 | 包 | 说明 | 文档 | 示例 |
 |----|------|------|------|
-| `search/treelist` | 面向搜索索引场景的字节串有序树 | [doc](./search/treelist/doc.md) | [example](./example/search-treelist/main.go) |
-| `search/searchtree` | 搜索索引抽象预留目录，目前没有可直接使用的公开 API | [doc](./search/searchtree/doc.md) | - |
+| `compare` | 共享比较器契约与可复用键比较函数 | [doc](./compare/doc.md) | - |
 
 ## 选型建议
 
+- 需要最佳有序映射吞吐与缓存友好遍历: `tree/btree`
 - 需要综合读写性能与排名能力: `tree/indextree`
+- 需要经典红黑树实现的有序映射: `tree/rbtree`
 - 需要顺序访问、头尾访问与范围迭代: `tree/treelist`
 - 需要并发安全的有序结构: `tree/skiplist`
 - 需要经典平衡二叉树: `tree/avl`

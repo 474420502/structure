@@ -3,7 +3,7 @@ package linkedhashmap
 import "testing"
 
 func TestSemanticAliases(t *testing.T) {
-	lhm := New()
+	lhm := New[string, int]()
 
 	if !lhm.InsertIfAbsent("a", 1) {
 		t.Fatal("InsertIfAbsent should insert a missing key")

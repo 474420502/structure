@@ -7,19 +7,18 @@ import (
 
 var nullItem = struct{}{}
 
-// HashSet
-type HashSet struct {
-	hm map[interface{}]struct{}
+// HashSet is a generic unordered set on top of Go's native map.
+type HashSet[T comparable] struct {
+	hm map[T]struct{}
 }
 
-// New
-func New() *HashSet {
-
-	return &HashSet{hm: make(map[interface{}]struct{})}
+// New instantiates an empty set.
+func New[T comparable]() *HashSet[T] {
+	return &HashSet[T]{hm: make(map[T]struct{})}
 }
 
-// Add
-func (set *HashSet) Add(items ...interface{}) {
+// Add inserts items into the set.
+func (set *HashSet[T]) Add(items ...T) {
 	for _, item := range items {
 		if _, ok := set.hm[item]; !ok {
 			set.hm[item] = nullItem
@@ -27,51 +26,52 @@ func (set *HashSet) Add(items ...interface{}) {
 	}
 }
 
-// Remove
-func (set *HashSet) Remove(items ...interface{}) {
+// Remove deletes items from the set.
+func (set *HashSet[T]) Remove(items ...T) {
 	for _, item := range items {
 		delete(set.hm, item)
 	}
 }
 
-// Values
-func (set *HashSet) Values() []interface{} {
-	values := make([]interface{}, set.Size())
-	count := 0
+// Values returns an unordered snapshot of all items.
+func (set *HashSet[T]) Values() []T {
+	values := make([]T, 0, len(set.hm))
 	for item := range set.hm {
-		values[count] = item
-		count++
+		values = append(values, item)
 	}
 	return values
 }
 
-// Contains
-func (set *HashSet) Contains(item interface{}) bool {
-	if _, contains := set.hm[item]; contains {
-		return true
-	}
-	return false
+// Contains reports whether item is a member of the set.
+func (set *HashSet[T]) Contains(item T) bool {
+	_, contains := set.hm[item]
+	return contains
 }
 
-// Empty
-func (set *HashSet) Empty() bool {
-	return set.Size() == 0
+// Empty reports whether the set has no items.
+func (set *HashSet[T]) Empty() bool {
+	return len(set.hm) == 0
 }
 
-// Clear
-func (set *HashSet) Clear() {
-	set.hm = make(map[interface{}]struct{})
+// Clear removes every item.
+func (set *HashSet[T]) Clear() {
+	set.hm = make(map[T]struct{})
 }
 
-// Size
-func (set *HashSet) Size() int {
+// Size returns the number of items.
+func (set *HashSet[T]) Size() int {
 	return len(set.hm)
 }
 
-// String
-func (set *HashSet) String() string {
+// Len returns the number of items.
+func (set *HashSet[T]) Len() int {
+	return len(set.hm)
+}
+
+// String renders the set for debugging.
+func (set *HashSet[T]) String() string {
 	content := "["
-	items := []string{}
+	items := make([]string, 0, len(set.hm))
 	for k := range set.hm {
 		items = append(items, fmt.Sprintf("%v", k))
 	}

@@ -9,6 +9,8 @@ This repository contains multiple implementations of ordered trees, lists, stack
 - Chinese overview: [readme_zh.md](./readme_zh.md)
 - API standard draft: [api_standard.md](./api_standard.md)
 - API migration strategy: [api_migration_strategy.md](./api_migration_strategy.md)
+- API consistency review: [api_consistency_review.md](./api_consistency_review.md)
+- Comparator contract: [compare/doc.md](./compare/doc.md)
 - IndexTree benchmark summary: [tree/indextree/benchmark-comparison.md](./tree/indextree/benchmark-comparison.md)
 - IndexTree benchmark summary in Chinese: [tree/indextree/benchmark-comparison.zh.md](./tree/indextree/benchmark-comparison.zh.md)
 - Rotation analysis deep dive: [tree/indextree/rotation-analysis.md](./tree/indextree/rotation-analysis.md)
@@ -19,6 +21,12 @@ This repository contains multiple implementations of ordered trees, lists, stack
 ```go
 module github.com/474420502/structure
 ```
+
+## Comparator Contract
+
+Ordered containers take a single `compare.Compare[KEY]` function: negative means less-than, positive means greater-than, and zero means equal. The same comparator can be passed to any tree, set, map, priority queue, heap, or list in the repository.
+
+Use `compare.Any` for scalar keys and `compare.ArrayAny` for byte-slice or string keys. See [compare/doc.md](./compare/doc.md) for the full helper list.
 
 ## Package Index
 
@@ -66,8 +74,10 @@ module github.com/474420502/structure
 |---------|---------|------|---------|
 | `tree/avl` | Classic AVL tree with iterator support and semantic alias helpers | [doc](./tree/avl/doc.md) | [example](./example/avl/main.go) |
 | `tree/avls` | Duplicate-key AVL variant with explicit insert-if-absent and upsert helpers | [doc](./tree/avls/doc.md) | - |
+| `tree/btree` | Generic in-memory B-tree with high-fan-out nodes, 0-alloc inserts, and cache-friendly ordering | [doc](./tree/btree/doc.md) | - |
 | `tree/heap` | Binary heap based on comparator ordering | [doc](./tree/heap/doc.md) | [example](./example/heap/main.go) |
 | `tree/indextree` | Size-balanced ordered tree with rank/index operations, split/trim support, and semantic alias helpers | [doc](./tree/indextree/doc.md) | [example](./example/indextree/main.go) |
+| `tree/rbtree` | Classic red-black tree with parent-linked nodes, iterator, and semantic alias helpers | [doc](./tree/rbtree/doc.md) | [example](./example/rbtree/main.go) |
 | `tree/skiplist` | Concurrent skip list with iterator, index, trim, and set-operation helpers | [doc](./tree/skiplist/doc.md) | - |
 | `tree/treelist` | Ordered map/tree list with linked ordering, range iterator, and set algebra | [doc](./tree/treelist/doc.md) | [example](./example/tree-treelist/main.go) |
 
@@ -83,16 +93,17 @@ module github.com/474420502/structure
 |---------|---------|------|---------|
 | `graph/astar` | Grid-based A* search with pluggable neighbor, cost, and weight strategies | [doc](./graph/astar/doc.md) | - |
 
-### Search Utilities
+### Comparators
 
 | Package | Summary | Docs | Example |
 |---------|---------|------|---------|
-| `search/treelist` | Byte-key ordered tree for search/index use cases | [doc](./search/treelist/doc.md) | [example](./example/search-treelist/main.go) |
-| `search/searchtree` | Placeholder for higher-level search index abstractions. No usable public API yet. | [doc](./search/searchtree/doc.md) | - |
+| `compare` | Shared comparator contract and reusable key comparators | [doc](./compare/doc.md) | - |
 
 ## Recommended Starting Points
 
-- For a general ordered map with strong read/write performance: `tree/indextree`
+- For the best ordered-map throughput with cache-friendly iteration: `tree/btree`
+- For a general ordered map with strong read/write performance and rank access: `tree/indextree`
+- For an ordered map with a classic red-black tree: `tree/rbtree`
 - For ordered iteration plus head/tail access: `tree/treelist`
 - For concurrent ordered access: `tree/skiplist`
 - For a conventional self-balancing BST: `tree/avl`

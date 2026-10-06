@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// []
-	lmap := linkedhashmap.New()
+	lmap := linkedhashmap.New[int, int]()
 
 	log.Println("InsertIfAbsent PushFront PushBack Get String")
 	// [{1:1}]
@@ -23,7 +23,7 @@ func main() {
 	log.Println(lmap.PushFront(0, 0)) // true
 
 	log.Println(lmap.Get(0))   // 0 true
-	log.Println(lmap.Get(100)) // nil false
+	log.Println(lmap.Get(100)) // 0 false
 
 	log.Println(lmap.String()) // [{0:0} {1:1} {2:2} {3:3}]
 
@@ -55,7 +55,7 @@ func main() {
 
 	log.Println("Len Delete Empty Clear")
 
-	log.Println(lmap.Len())   // 6
+	log.Println(lmap.Len()) // 6
 	log.Println(lmap.Delete(2))
 	log.Println(lmap.Empty()) // false
 	lmap.Clear()

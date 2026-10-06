@@ -3,7 +3,7 @@ package hashmap
 import "testing"
 
 func TestSemanticAliases(t *testing.T) {
-	hm := New()
+	hm := New[string, int]()
 
 	if !hm.InsertIfAbsent("a", 1) {
 		t.Fatal("InsertIfAbsent should insert a missing key")

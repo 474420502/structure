@@ -121,10 +121,13 @@ func (tree *ShiftToleranceTree[KEY, VALUE]) get(key KEY, cur *ShiftToleranceNode
 		return nil
 	}
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
+	if cmp == 0 {
 		return cur
 	}
-	return tree.get(key, cur.Children[cmp])
+	if cmp < 0 {
+		return tree.get(key, cur.Children[1])
+	}
+	return tree.get(key, cur.Children[0])
 }
 
 func (tree *ShiftToleranceTree[KEY, VALUE]) fixPutSize(cur *ShiftToleranceNode[KEY, VALUE]) {

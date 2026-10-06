@@ -242,7 +242,7 @@ func TestRange(t *testing.T) {
 		}
 		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		tree.compare = compare.ArrayLenAny[[]byte]
-		avltree := avl.New[int, int](compare.AnyEx[int])
+		avltree := avl.New[int, int](compare.Any[int])
 
 		for i := 0; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))
@@ -332,7 +332,7 @@ func TestRangeReturn(t *testing.T) {
 
 		tree := New[[]byte, []byte](compare.ArrayAny[[]byte])
 		tree.compare = compare.ArrayLenAny[[]byte]
-		avltree := avl.New[int, int](compare.AnyEx[int])
+		avltree := avl.New[int, int](compare.Any[int])
 
 		for i := 100; i < 200; i += rand.Intn(8) + 2 {
 			v := []byte(strconv.Itoa(i))

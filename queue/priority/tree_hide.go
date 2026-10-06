@@ -25,11 +25,12 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 	}
 
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
-		cmp = 1
+	dir := 0
+	if cmp <= 0 {
+		dir = 1
 	}
 
-	target, isExists = tree.put(cur, cmp, key)
+	target, isExists = tree.put(cur, dir, key)
 	if isExists == 1 {
 		return target, isExists
 	}
@@ -48,12 +49,13 @@ func (tree *Tree[KEY, VALUE]) seekRoot(key KEY, cur *Node[KEY, VALUE]) *Node[KEY
 		return nil
 	}
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
-		// cmp = 0
+	if cmp == 0 {
 		return cur
 	}
-
-	return tree.seekRoot(key, cur.Children[cmp])
+	if cmp < 0 {
+		return tree.seekRoot(key, cur.Children[1])
+	}
+	return tree.seekRoot(key, cur.Children[0])
 }
 
 // traverse
@@ -62,12 +64,14 @@ func (tree *Tree[KEY, VALUE]) traverse(key KEY, cur *Node[KEY, VALUE], result *[
 		return
 	}
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
+	if cmp == 0 {
 		*result = append(*result, cur.Value)
 		tree.traverse(key, cur.Children[0], result)
 		tree.traverse(key, cur.Children[1], result)
+	} else if cmp < 0 {
+		tree.traverse(key, cur.Children[1], result)
 	} else {
-		tree.traverse(key, cur.Children[cmp], result)
+		tree.traverse(key, cur.Children[0], result)
 	}
 }
 
@@ -78,11 +82,13 @@ func (tree *Tree[KEY, VALUE]) getfirst(key KEY, parent *Node[KEY, VALUE], child 
 	}
 
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
-		cmp = 0
+	dir := 0
+	if cmp == 0 {
 		sel = cur
+	} else if cmp < 0 {
+		dir = 1
 	}
-	return tree.getfirst(key, cur, cmp, sel)
+	return tree.getfirst(key, cur, dir, sel)
 }
 
 func (tree *Tree[KEY, VALUE]) index(i int) *Node[KEY, VALUE] {
@@ -156,7 +162,7 @@ func (tree *Tree[KEY, VALUE]) removeLeft(key KEY, grandpa *Node[KEY, VALUE], chi
 	}
 
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
+	if cmp == 0 {
 
 		target := tree.removeLeft(key, parent, child1, 0)
 		if target != nil {
@@ -189,7 +195,12 @@ func (tree *Tree[KEY, VALUE]) removeLeft(key KEY, grandpa *Node[KEY, VALUE], chi
 		return target
 	}
 
-	target = tree.removeLeft(key, parent, child1, cmp)
+	dir := 0
+	if cmp < 0 {
+		dir = 1
+	}
+
+	target = tree.removeLeft(key, parent, child1, dir)
 	if target != nil {
 		cur.Size--
 		if cur != tree.Center {
@@ -275,13 +286,13 @@ func (tree *Tree[KEY, VALUE]) trimLow(cur *Node[KEY, VALUE], key KEY) *Node[KEY,
 	}
 
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
+	if cmp == 0 {
 		cur.Children[0] = nil
 		cur.updateSize()
 		return cur
 	}
 
-	if cmp == 1 {
+	if cmp < 0 {
 		cur = tree.trimLow(cur.Children[1], key)
 	} else {
 		cur.Children[0] = tree.trimLow(cur.Children[0], key)
@@ -299,13 +310,13 @@ func (tree *Tree[KEY, VALUE]) trimHigh(cur *Node[KEY, VALUE], key KEY) *Node[KEY
 	}
 
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
+	if cmp == 0 {
 		cur.Children[1] = nil
 		cur.updateSize()
 		return cur
 	}
 
-	if cmp == 0 {
+	if cmp > 0 {
 		cur = tree.trimHigh(cur.Children[0], key)
 	} else {
 		cur.Children[1] = tree.trimHigh(cur.Children[1], key)
@@ -323,11 +334,11 @@ func (tree *Tree[KEY, VALUE]) seekRangeRoot(cur *Node[KEY, VALUE], low, high KEY
 	}
 
 	cmplow := tree.Compare(cur.Key, low)
-	if cmplow < 0 {
+	if cmplow == 0 {
 		return cur
 	}
 	cmphigh := tree.Compare(cur.Key, high)
-	if cmplow < 0 {
+	if cmphigh == 0 {
 		return cur
 	}
 
@@ -335,7 +346,12 @@ func (tree *Tree[KEY, VALUE]) seekRangeRoot(cur *Node[KEY, VALUE], low, high KEY
 		return cur
 	}
 
-	return tree.seekRangeRoot(cur.Children[cmplow], low, high)
+	dir := 0
+	if cmplow < 0 {
+		dir = 1
+	}
+
+	return tree.seekRangeRoot(cur.Children[dir], low, high)
 }
 
 func (tree *Tree[KEY, VALUE]) seekTrimIndexRoot(cur *Node[KEY, VALUE], idx, low, high int) (*Node[KEY, VALUE], int) {
@@ -420,15 +436,20 @@ func (tree *Tree[KEY, VALUE]) removeCollectLows(collect *[]*Node[KEY, VALUE], cu
 	}
 
 	cmp := tree.Compare(cur.Key, low)
-	if cmp < 0 {
+	if cmp == 0 {
 		tree.removeCollectLows(collect, cur.Children[0], low)
 		return
 	}
 
-	if cmp == 1 {
+	if cmp < 0 {
 		*collect = append(*collect, cur)
 	}
-	tree.removeCollectLows(collect, cur.Children[cmp], low)
+
+	dir := 0
+	if cmp < 0 {
+		dir = 1
+	}
+	tree.removeCollectLows(collect, cur.Children[dir], low)
 }
 
 func (tree *Tree[KEY, VALUE]) removeCollectHighs(collect *[]*Node[KEY, VALUE], cur *Node[KEY, VALUE], high KEY) {
@@ -438,15 +459,20 @@ func (tree *Tree[KEY, VALUE]) removeCollectHighs(collect *[]*Node[KEY, VALUE], c
 	}
 
 	cmp := tree.Compare(cur.Key, high)
-	if cmp < 0 {
+	if cmp == 0 {
 		tree.removeCollectHighs(collect, cur.Children[1], high)
 		return
 	}
 
-	if cmp == 0 {
+	if cmp > 0 {
 		*collect = append(*collect, cur)
 	}
-	tree.removeCollectHighs(collect, cur.Children[cmp], high)
+
+	dir := 0
+	if cmp < 0 {
+		dir = 1
+	}
+	tree.removeCollectHighs(collect, cur.Children[dir], high)
 }
 
 // megreThreshold 合并收集的范围节点
@@ -518,12 +544,12 @@ func (tree *Tree[KEY, VALUE]) split(left, right *[]*Node[KEY, VALUE], cur *Node[
 		return
 	}
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
+	if cmp == 0 {
 		*left = append(*left, cur)
 		tree.split(left, right, cur.Children[1], key)
 		return
 	}
-	if cmp == 0 {
+	if cmp > 0 {
 		*right = append(*right, cur)
 		tree.split(left, right, cur.Children[0], key)
 	} else {

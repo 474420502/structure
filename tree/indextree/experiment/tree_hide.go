@@ -31,12 +31,12 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 	cmp := tree.Compare(cur.Key, key)
 
 	if cmp < 0 {
-		target, isExists, isRebalance = tree.put(cur, 0, key)
+		target, isExists, isRebalance = tree.put(cur, 1, key)
 		if isExists || !isRebalance {
 			return target, isExists, isRebalance
 		}
 	} else if cmp > 0 {
-		target, isExists, isRebalance = tree.put(cur, 1, key)
+		target, isExists, isRebalance = tree.put(cur, 0, key)
 		if isExists || !isRebalance {
 			return target, isExists, isRebalance
 		}
@@ -59,10 +59,13 @@ func (tree *Tree[KEY, VALUE]) get(key KEY, cur *Node[KEY, VALUE]) *Node[KEY, VAL
 		return nil
 	}
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
+	if cmp == 0 {
 		return cur
 	}
-	return tree.get(key, cur.Children[cmp])
+	if cmp < 0 {
+		return tree.get(key, cur.Children[1])
+	}
+	return tree.get(key, cur.Children[0])
 }
 
 func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (target *VALUE, isRebalance bool) {
@@ -74,7 +77,7 @@ func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2,
 	}
 
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
+	if cmp == 0 {
 
 		// remove 两种状态. 当前值不在底, 在底
 		if cur.Children[0] == nil {
@@ -97,7 +100,12 @@ func (tree *Tree[KEY, VALUE]) remove(key KEY, grandpa *Node[KEY, VALUE], child2,
 		return target, tree.rebalance(parent, child1)
 	}
 
-	target, isRebalance = tree.remove(key, parent, child1, cmp)
+	dir := 0
+	if cmp < 0 {
+		dir = 1
+	}
+
+	target, isRebalance = tree.remove(key, parent, child1, dir)
 	if cur != tree.Center && isRebalance {
 		isRebalance = tree.rebalance(parent, child1)
 	}

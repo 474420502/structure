@@ -95,7 +95,7 @@ func (s *SkipList[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 	newNode := &Node[KEY, VALUE]{
 		Key:     key,
 		Value:   value,
-		Forward: make([]*Node[KEY, VALUE], s.level),
+		Forward: make([]*Node[KEY, VALUE], newLevel),
 	}
 
 	for i := 0; i < newLevel; i++ {
@@ -108,8 +108,8 @@ func (s *SkipList[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 }
 
 func (s *SkipList[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 
 	current := s.header
 	for i := s.level - 1; i >= 0; i-- {
@@ -163,9 +163,15 @@ func (s *SkipList[KEY, VALUE]) Remove(key KEY) *Slice[KEY, VALUE] {
 }
 
 func (s *SkipList[KEY, VALUE]) Size() int64 {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	return s.size
+}
+
+// Len returns the number of stored keys as an int. It is the preferred
+// cross-package size accessor for new code.
+func (s *SkipList[KEY, VALUE]) Len() int {
+	return int(s.Size())
 }
 
 func (s *SkipList[KEY, VALUE]) Iterator() *Iterator[KEY, VALUE] {
@@ -177,8 +183,8 @@ func (s *SkipList[KEY, VALUE]) Iterator() *Iterator[KEY, VALUE] {
 }
 
 func (s *SkipList[KEY, VALUE]) Head() *Slice[KEY, VALUE] {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	if s.header.Forward[0] == nil {
 		return nil
 	}
@@ -189,8 +195,8 @@ func (s *SkipList[KEY, VALUE]) Head() *Slice[KEY, VALUE] {
 }
 
 func (s *SkipList[KEY, VALUE]) Tail() *Slice[KEY, VALUE] {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 
 	current := s.header.Forward[0]
 	if current == nil {
@@ -206,8 +212,8 @@ func (s *SkipList[KEY, VALUE]) Tail() *Slice[KEY, VALUE] {
 }
 
 func (s *SkipList[KEY, VALUE]) Index(i int64) *Slice[KEY, VALUE] {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 
 	if i < 0 || i >= s.size {
 		return nil
@@ -225,8 +231,8 @@ func (s *SkipList[KEY, VALUE]) Index(i int64) *Slice[KEY, VALUE] {
 }
 
 func (s *SkipList[KEY, VALUE]) IndexOf(key KEY) int64 {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 
 	var index int64 = 0
 	current := s.header.Forward[0]
@@ -252,18 +258,23 @@ func (s *SkipList[KEY, VALUE]) Clear() {
 }
 
 func (s *SkipList[KEY, VALUE]) Height() int {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 	return s.level
 }
 
 func (s *SkipList[KEY, VALUE]) Traverse(every func(s *Slice[KEY, VALUE]) bool) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 
+	// Reuse a single Slice so iteration does not allocate one value per node.
+	// The pointer is only valid for the duration of the callback.
+	var slice Slice[KEY, VALUE]
 	current := s.header.Forward[0]
 	for current != nil {
-		if !every(&Slice[KEY, VALUE]{Key: current.Key, Value: current.Value}) {
+		slice.Key = current.Key
+		slice.Value = current.Value
+		if !every(&slice) {
 			break
 		}
 		current = current.Forward[0]
@@ -502,6 +513,42 @@ func (s *SkipList[KEY, VALUE]) Set(key KEY, value VALUE) bool {
 	return s.Put(key, value)
 }
 
+// InsertIfAbsent inserts the key only when it is absent. It returns true when a
+// new entry was inserted and false when the key already existed.
+func (s *SkipList[KEY, VALUE]) InsertIfAbsent(key KEY, value VALUE) bool {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	if s.searchInternal(key) != nil {
+		return false
+	}
+	s.putInternal(key, value)
+	return true
+}
+
+// Upsert ensures the key exists with the provided value. It returns true when
+// an existing entry was replaced and false when a new entry was inserted.
+func (s *SkipList[KEY, VALUE]) Upsert(key KEY, value VALUE) bool {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	if current := s.searchInternal(key); current != nil {
+		current.Value = value
+		return true
+	}
+	s.putInternal(key, value)
+	return false
+}
+
+// Delete removes key if present and returns the removed value and true. It
+// returns the zero value and false when the key is absent.
+func (s *SkipList[KEY, VALUE]) Delete(key KEY) (value VALUE, ok bool) {
+	if removed := s.Remove(key); removed != nil {
+		return removed.Value, true
+	}
+	return value, false
+}
+
 func (s *SkipList[KEY, VALUE]) PutDuplicate(key KEY, value VALUE, do func(*Slice[KEY, VALUE])) bool {
 	s.lock.Lock()
 	defer s.lock.Unlock()
@@ -542,7 +589,7 @@ func (s *SkipList[KEY, VALUE]) PutDuplicate(key KEY, value VALUE, do func(*Slice
 	newNode := &Node[KEY, VALUE]{
 		Key:     key,
 		Value:   value,
-		Forward: make([]*Node[KEY, VALUE], s.level),
+		Forward: make([]*Node[KEY, VALUE], newLevel),
 	}
 
 	for i := 0; i < newLevel; i++ {
@@ -663,8 +710,8 @@ func (s *SkipList[KEY, VALUE]) RemoveRangeByIndex(low, high int64) {
 }
 
 func (s *SkipList[KEY, VALUE]) Slice() []Slice[KEY, VALUE] {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 
 	result := make([]Slice[KEY, VALUE], 0, s.size)
 	current := s.header.Forward[0]
@@ -742,7 +789,7 @@ func (s *SkipList[KEY, VALUE]) putInternal(key KEY, value VALUE) {
 	newNode := &Node[KEY, VALUE]{
 		Key:     key,
 		Value:   value,
-		Forward: make([]*Node[KEY, VALUE], s.level),
+		Forward: make([]*Node[KEY, VALUE], newLevel),
 	}
 
 	for i := 0; i < newLevel; i++ {

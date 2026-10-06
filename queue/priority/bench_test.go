@@ -9,7 +9,7 @@ package treequeue
 // }
 
 // func BenchmarkAvlPut(b *testing.B) {
-// 	tree := avl.New[int, int](compare.AnyEx[int])
+// 	tree := avl.New[int, int](compare.Any[int])
 // 	for i := 0; i < b.N; i++ {
 // 		v := rand.Int()
 // 		tree.Set(v, v)

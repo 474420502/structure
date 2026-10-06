@@ -73,7 +73,7 @@ type avlTreeAdapter struct {
 }
 
 func newAVLTreeAdapter() benchTree {
-	return &avlTreeAdapter{tree: avl.New[int, int](compare.AnyEx[int])}
+	return &avlTreeAdapter{tree: avl.New[int, int](compare.Any[int])}
 }
 
 func (adapter *avlTreeAdapter) Put(key int) {

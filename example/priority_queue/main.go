@@ -14,7 +14,7 @@ func main() {
 		queue.InsertIfAbsent(v, v)
 	}
 
-	log.Println(queue.Values())  // [1 4 5 7 9]
+	log.Println(queue.Values())      // [1 4 5 7 9]
 	log.Println(queue.Upsert(7, 70)) // true
 	log.Println(queue.Get(7))        // 70 true
 	log.Println(queue.Len())         // 5

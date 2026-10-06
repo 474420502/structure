@@ -25,6 +25,7 @@ import "github.com/474420502/structure/queue/linkedarray"
 - `Back() interface{}`
 - `Index(idx int64) interface{}`
 - `Size() int64`
+- `Len() int`
 - `Traverse(func(idx int64, value T) bool)`
 - `Values() []T`
 

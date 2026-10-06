@@ -6,7 +6,7 @@ type Iterator[T any] struct {
 	cur *hNode[T]
 }
 
-// InsertBefore insert T before the iterator. must iter.Vaild() == true
+// InsertBefore insert T before the iterator. must iter.Valid() == true
 func (iter *Iterator[T]) InsertBefore(values ...T) {
 
 	var start *hNode[T]
@@ -33,7 +33,7 @@ func (iter *Iterator[T]) InsertBefore(values ...T) {
 	iter.cur.prev = end
 }
 
-// InsertAfter insert T after the iterator.  must iter.Vaild() == true
+// InsertAfter insert T after the iterator.  must iter.Valid() == true
 func (iter *Iterator[T]) InsertAfter(values ...T) {
 
 	var start *hNode[T]
@@ -111,7 +111,7 @@ func (iter *Iterator[T]) MoveAfter(mark *Iterator[T]) {
 	iter.cur.prev = mark.cur
 }
 
-// RemoveToNext Remove self and to Next. If iterator is removed. return true.  must iter.Vaild() == true
+// RemoveToNext Remove self and to Next. If iterator is removed. return true.  must iter.Valid() == true
 func (iter *Iterator[T]) RemoveToNext() {
 	temp := iter.cur.next
 	remove(iter.cur)
@@ -119,7 +119,7 @@ func (iter *Iterator[T]) RemoveToNext() {
 	iter.ll.size--
 }
 
-// RemoveToNext Remove self and to Prev. If iterator is removed. return true.  must iter.Vaild() == true
+// RemoveToNext Remove self and to Prev. If iterator is removed. return true.  must iter.Valid() == true
 func (iter *Iterator[T]) RemoveToPrev() {
 	temp := iter.cur.prev
 	remove(iter.cur)
@@ -127,23 +127,25 @@ func (iter *Iterator[T]) RemoveToPrev() {
 	iter.ll.size--
 }
 
-// Swap  must iter.Vaild() == true
+// Swap  must iter.Valid() == true
 func (iter *Iterator[T]) Swap(other *Iterator[T]) {
 	iter.cur.value, other.cur.value = other.cur.value, iter.cur.value
 }
 
-//SetValue  must iter.Vaild() == true
+// SetValue  must iter.Valid() == true
 func (iter *Iterator[T]) SetValue(v T) {
 	iter.cur.value = v
 }
 
-// Value must iter.Vaild() == true
+// Value must iter.Valid() == true
 func (iter *Iterator[T]) Value() T {
 	return iter.cur.value
 }
 
 // Deprecated: use Valid.
-// Vaild current is Vaild ?
+// Vaild is a compatibility alias for Valid.
+//
+// Deprecated: use Valid.
 func (iter *Iterator[T]) Vaild() bool {
 	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
 		return false
@@ -196,12 +198,12 @@ func (iter *Iterator[T]) Next() {
 	iter.cur = iter.cur.next
 }
 
-// ToHead. to head and must iter.Vaild() == true
+// ToHead. to head and must iter.Valid() == true
 func (iter *Iterator[T]) ToHead() {
 	iter.cur = iter.ll.head.next
 }
 
-// ToTail. to tail and must iter.Vaild() == true
+// ToTail. to tail and must iter.Valid() == true
 func (iter *Iterator[T]) ToTail() {
 	iter.cur = iter.ll.tail.prev
 }

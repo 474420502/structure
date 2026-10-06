@@ -23,6 +23,7 @@ import "github.com/474420502/structure/tree/skiplist"
 - `New[KEY, VALUE any](comp compare.Compare[KEY]) *SkipList[KEY, VALUE]`
 - `NewWithMaxLevel[KEY, VALUE any](level int, comp compare.Compare[KEY]) *SkipList[KEY, VALUE]`
 - `Put`, `Set`, `PutDuplicate`
+- `InsertIfAbsent`, `Upsert`, `Delete`, `Len`
 - `Get`, `Remove`, `RemoveHead`, `RemoveTail`, `RemoveIndex`, `RemoveRangeByIndex`
 - `Head`, `Tail`, `Index`, `IndexOf`, `Size`, `Height`, `Clear`
 - `Traverse`, `Slice`, `Slices`, `String`
@@ -33,6 +34,8 @@ import "github.com/474420502/structure/tree/skiplist"
 
 - This is the only ordered structure in the repository explicitly designed for concurrent use.
 - It offers a broader API surface than a minimal skip list, including rank and set-operation helpers.
+- Read accessors (`Get`, `Size`, `Head`, `Tail`, `Index`, `IndexOf`, `Height`, `Traverse`, `Slice`) take the read lock, so concurrent readers are not serialized behind each other.
+- The `*Slice` passed to the `Traverse` callback is reused between iterations; copy it if you need to retain the value.
 - Benchmark comparisons with tree-based structures are documented under `tree/indextree/`.
 
 ## Validation

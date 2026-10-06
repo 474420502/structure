@@ -55,7 +55,7 @@ func BenchmarkTreePut(b *testing.B) {
 
 	b.Run("avl", func(b *testing.B) {
 		data := newBenchDataWithSeed(b.N, 12345)
-		tree := avl.New[int64, int64](compare.AnyEx[int64])
+		tree := avl.New[int64, int64](compare.Any[int64])
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			sink = tree.Put(data[i], data[i])
@@ -98,7 +98,7 @@ func BenchmarkTreePutSequential(b *testing.B) {
 	})
 
 	b.Run("avl", func(b *testing.B) {
-		tree := avl.New[int, int](compare.AnyEx[int])
+		tree := avl.New[int, int](compare.Any[int])
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			sink = tree.Put(i, i)
@@ -133,7 +133,7 @@ func BenchmarkTreeGet(b *testing.B) {
 		it.Put(data[i], data[i])
 	}
 
-	ta := avl.New[int64, int64](compare.AnyEx[int64])
+	ta := avl.New[int64, int64](compare.Any[int64])
 	for i := 0; i < size; i++ {
 		ta.Put(data[i], data[i])
 	}
@@ -218,7 +218,7 @@ func BenchmarkTreeRemove(b *testing.B) {
 
 	b.Run("avl", func(b *testing.B) {
 		data := newBenchDataWithSeed(b.N, 12345)
-		tree := avl.New[int64, int64](compare.AnyEx[int64])
+		tree := avl.New[int64, int64](compare.Any[int64])
 		for i := 0; i < b.N; i++ {
 			tree.Put(data[i], data[i])
 		}
@@ -260,7 +260,7 @@ func BenchmarkTreeIterator(b *testing.B) {
 		it.Put(data[i], data[i])
 	}
 
-	ta := avl.New[int64, int64](compare.AnyEx[int64])
+	ta := avl.New[int64, int64](compare.Any[int64])
 	for i := 0; i < size; i++ {
 		ta.Put(data[i], data[i])
 	}
@@ -350,7 +350,7 @@ func BenchmarkTreeSeekGE(b *testing.B) {
 		it.Put(data[i], data[i])
 	}
 
-	ta := avl.New[int64, int64](compare.AnyEx[int64])
+	ta := avl.New[int64, int64](compare.Any[int64])
 	for i := 0; i < size; i++ {
 		ta.Put(data[i], data[i])
 	}
@@ -500,7 +500,7 @@ func TestTreeHeightCompare(t *testing.T) {
 			}
 			itStats := it.BenchmarkStats()
 
-			ta := avl.New[int64, int64](compare.AnyEx[int64])
+			ta := avl.New[int64, int64](compare.Any[int64])
 			for i := 0; i < size; i++ {
 				ta.Put(data[i], data[i])
 			}
@@ -519,7 +519,7 @@ func TestTreeOperations(t *testing.T) {
 	sk := New[int64, int64](compare.Any[int64])
 	tl := treelist.New[int64, int64](compare.Any[int64])
 	it := indextree.New(compare.Any[int64])
-	ta := avl.New[int64, int64](compare.AnyEx[int64])
+	ta := avl.New[int64, int64](compare.Any[int64])
 
 	for i := 0; i < 5000; i++ {
 		sk.Put(data[i], data[i])

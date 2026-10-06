@@ -7,7 +7,7 @@ import (
 )
 
 func TestSemanticAliases(t *testing.T) {
-	tree := New[int, string](compare.AnyEx[int])
+	tree := New[int, string](compare.Any[int])
 
 	if !tree.InsertIfAbsent(1, "a") {
 		t.Fatal("InsertIfAbsent should insert a missing key")

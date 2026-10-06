@@ -42,10 +42,11 @@ The iterator supports:
 - `SeekGE`, `SeekGT`, `SeekLE`, `SeekLT`
 - `SeekGEExact`, `SeekGTExact`, `SeekLEExact`, `SeekLTExact`
 - `Next`, `Prev`, `Clone`
-- `Key`, `Value`, `Vaild`
+- `Key`, `Value`, `Valid` (`Vaild` remains as a deprecated alias)
 
 ## Notes
 
+- The comparator follows the standard repository contract: negative means less-than, positive means greater-than, and zero means equal.
 - Despite the package path, this behaves like an ordered tree container rather than a binary heap.
 - The package name used in code is `treequeue`.
 - `Put` keeps its historical duplicate-key behavior.

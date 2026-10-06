@@ -17,6 +17,7 @@ import "github.com/474420502/structure/queue/list"
 
 - `New[T any]() *ListQueue[T]`
 - `Size() int64`
+- `Len() int`
 - `Front() *Element[T]`
 - `Back() *Element[T]`
 - `PushFront(value T)`

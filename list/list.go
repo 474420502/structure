@@ -22,7 +22,7 @@ package ilist
 // 	RemoveToPrev()
 // 	SetValue(v T)
 // 	Value() T
-// 	Vaild() bool
+// 	Valid() bool
 // 	Prev()
 // 	Next()
 // 	ToHead()

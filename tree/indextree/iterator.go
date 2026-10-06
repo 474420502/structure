@@ -5,7 +5,7 @@ type Iterator[KEY any, VALUE any] struct {
 
 	cur *hNode[KEY, VALUE]
 
-	pos   int64
+	pos int64
 }
 
 func (iter *Iterator[KEY, VALUE]) Key() KEY {

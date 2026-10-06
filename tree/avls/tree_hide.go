@@ -10,8 +10,16 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 
 	cur := parent.Children[child]
 	if cur == nil {
-		target = newNode[KEY, VALUE]()
+		if tree.free != nil {
+			target = tree.free
+			tree.free = target.Children[0]
+		} else {
+			target = &Node[KEY, VALUE]{}
+		}
 		target.Key = key
+		target.Height = 1
+		target.Children[0] = nil
+		target.Children[1] = nil
 		parent.Children[child] = target
 		if parent.Children[^child+2] == nil {
 			return target, true
@@ -20,11 +28,12 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 	}
 
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
-		cmp = 1
+	dir := 0
+	if cmp <= 0 {
+		dir = 1
 	}
 
-	target, isRebalance = tree.put(cur, cmp, key)
+	target, isRebalance = tree.put(cur, dir, key)
 
 	if isRebalance {
 		isRebalance = tree.rebalance(parent, child)
@@ -34,65 +43,94 @@ func (tree *Tree[KEY, VALUE]) put(parent *Node[KEY, VALUE], child int, key KEY) 
 }
 
 func (tree *Tree[KEY, VALUE]) get(key KEY, cur *Node[KEY, VALUE]) *Node[KEY, VALUE] {
-	if cur == nil {
-		return nil
-	}
-
-	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
-		if left := tree.get(key, cur.Children[0]); left != nil {
-			return left
+	// Iterative version that returns the left-most equal key.
+	var found *Node[KEY, VALUE]
+	for cur != nil {
+		cmp := tree.Compare(cur.Key, key)
+		if cmp == 0 {
+			found = cur
+			cur = cur.Children[0]
+			continue
 		}
-		return cur
+		if cmp < 0 {
+			cur = cur.Children[1]
+		} else {
+			cur = cur.Children[0]
+		}
 	}
-
-	return tree.get(key, cur.Children[cmp])
+	return found
 }
 
-func (tree *Tree[KEY, VALUE]) removeLeft(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (target *VALUE, isRebalance bool) {
+// recycle resets a detached node and pushes it onto the free list.
+func (tree *Tree[KEY, VALUE]) recycle(node *Node[KEY, VALUE]) {
+	var zeroKey KEY
+	var zeroValue VALUE
+	node.Key = zeroKey
+	node.Value = zeroValue
+	node.Height = 0
+	node.Children[1] = nil
+	node.Children[0] = tree.free
+	tree.free = node
+}
+
+func (tree *Tree[KEY, VALUE]) removeLeft(key KEY, grandpa *Node[KEY, VALUE], child2, child1 int) (target VALUE, found, isRebalance bool) {
 	parent := grandpa.Children[child2]
 	cur := parent.Children[child1]
 
 	if cur == nil {
-		return nil, false
+		return tree.zero, false, false
 	}
 
 	cmp := tree.Compare(cur.Key, key)
-	if cmp < 0 {
-		target, isRebalance = tree.removeLeft(key, parent, child1, 0)
-		if target != nil {
+	if cmp == 0 {
+		target, found, isRebalance = tree.removeLeft(key, parent, child1, 0)
+		if found {
 			if cur != tree.Center && isRebalance {
 				isRebalance = tree.rebalance(parent, child1)
 			}
-			return target, isRebalance
+			return target, true, isRebalance
 		}
 
 		if cur.Children[0] == nil {
 			parent.Children[child1] = cur.Children[1]
-			return &cur.Value, true
+			target = cur.Value
+			tree.recycle(cur)
+			return target, true, true
 		}
 
 		if cur.Children[1] == nil {
 			parent.Children[child1] = cur.Children[0]
-			return &cur.Value, true
+			target = cur.Value
+			tree.recycle(cur)
+			return target, true, true
 		}
 
-		var result = cur.Value
-		target = &result
+		target = cur.Value
+		found = true
 
 		replacer, _ := tree.neighboring(cur, child1, ^child1+2)
 		cur.Key = replacer.Key
 		cur.Value = replacer.Value
+		isRebalance = tree.rebalance(parent, child1)
+		tree.recycle(replacer)
 
-		return target, tree.rebalance(parent, child1)
+		return target, true, isRebalance
 	}
 
-	target, isRebalance = tree.removeLeft(key, parent, child1, cmp)
+	dir := 0
+	if cmp < 0 {
+		dir = 1
+	}
+
+	target, found, isRebalance = tree.removeLeft(key, parent, child1, dir)
+	if !found {
+		return tree.zero, false, false
+	}
 	if cur != tree.Center && isRebalance {
 		isRebalance = tree.rebalance(parent, child1)
 	}
 
-	return target, isRebalance
+	return target, true, isRebalance
 }
 
 func (tree *Tree[KEY, VALUE]) neighboring(parent *Node[KEY, VALUE], child2, child1 int) (*Node[KEY, VALUE], bool) {

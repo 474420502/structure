@@ -54,7 +54,9 @@ func (iter *CircularIterator[T]) Value() T {
 }
 
 // Deprecated: use Valid.
-// Vaild if current value is not nil return true. else return false. for use with Seek
+// Vaild is a compatibility alias for Valid.
+//
+// Deprecated: use Valid.
 func (iter *CircularIterator[T]) Vaild() bool {
 	return iter.cur < iter.al.size
 }

@@ -23,7 +23,7 @@ func loadTestData() []int {
 
 func TestAdd(t *testing.T) {
 
-	set := New()
+	set := New[int]()
 	for i := 0; i < 10; i++ {
 		set.Add(i)
 	}
@@ -34,7 +34,7 @@ func TestAdd(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	set := New()
+	set := New[int]()
 
 	for i := 0; i < 10; i++ {
 		set.Add(i)

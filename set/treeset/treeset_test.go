@@ -33,7 +33,7 @@ func TestTreeSet_Add(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New[int, int](compare.AnyEx[int])
+			set := New[int, int](compare.Any[int])
 			for _, item := range tt.args.items {
 				set.Set(item, item)
 			}
@@ -55,14 +55,14 @@ func TestTreeSet_Add(t *testing.T) {
 		args   argsstr
 	}{
 		{name: "add String 1", result: "[1 3 5]", args: argsstr{items: []string{"1", "5", "3", "3", "5"}}},
-		// 字符串的 - 字符 在其他序的后面
-		{name: "add String 2", result: "[5 3132 1 -5]", args: argsstr{items: []string{"-5", "-5", "3132", "3132", "5", "1", "1", "1"}}},
-		{name: "add String 3", result: "[aa bc a b]", args: argsstr{items: []string{"a", "b", "aa", "aa", "bc"}}},
-		{name: "add String 4", result: "[我我 他 你 我]", args: argsstr{items: []string{"我", "你", "他", "我", "我我"}}},
+		// ArrayAny is the standard lexicographic contract: shorter prefix first.
+		{name: "add String 2", result: "[-5 1 3132 5]", args: argsstr{items: []string{"-5", "-5", "3132", "3132", "5", "1", "1", "1"}}},
+		{name: "add String 3", result: "[a aa b bc]", args: argsstr{items: []string{"a", "b", "aa", "aa", "bc"}}},
+		{name: "add String 4", result: "[他 你 我 我我]", args: argsstr{items: []string{"我", "你", "他", "我", "我我"}}},
 	}
 	for _, tt := range tests2 {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New[string, string](compare.ArrayAnyEx[string])
+			set := New[string, string](compare.ArrayAny[string])
 			for _, item := range tt.args.items {
 				set.Set(item, item)
 			}
@@ -109,7 +109,7 @@ func TestTreeSet_Remove(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			set := New[int, int](compare.AnyEx[int])
+			set := New[int, int](compare.Any[int])
 			for _, item := range tt.args.addItems {
 				set.Set(item, item)
 			}
@@ -126,7 +126,7 @@ func TestTreeSet_Remove(t *testing.T) {
 }
 
 func TestTreeSet_Iterator(t *testing.T) {
-	set := New[int, int](compare.AnyEx[int])
+	set := New[int, int](compare.Any[int])
 
 	set.Set(5, 5)
 	set.Set(4, 4)
@@ -192,7 +192,7 @@ func TestForce(t *testing.T) {
 	rand := random.New(t.Name())
 
 	for n := 0; n < 2000; n++ {
-		set := New[int, int](compare.AnyEx[int])
+		set := New[int, int](compare.Any[int])
 		var hashset map[int]bool = make(map[int]bool)
 		for i := 0; i < 200; i++ {
 			v := rand.Intn(100)
@@ -245,19 +245,19 @@ func TestTreeSet_Union(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			setA := New[int, int](compare.AnyEx[int])
-			setB := New[int, int](compare.AnyEx[int])
+			setA := New[int, int](compare.Any[int])
+			setB := New[int, int](compare.Any[int])
 			for _, v := range tt.a {
 				setA.Set(v, v)
 			}
 			for _, v := range tt.b {
 				setB.Set(v, v)
 			}
-				beforeB := valuesSnapshot(setB)
+			beforeB := valuesSnapshot(setB)
 			result := setA.Union(setB)
-				if result != setA {
-					t.Fatalf("union should return receiver")
-				}
+			if result != setA {
+				t.Fatalf("union should return receiver")
+			}
 			if result.Size() != uint(len(tt.expect)) {
 				t.Errorf("size mismatch: got %d, expect %d", result.Size(), len(tt.expect))
 			}
@@ -266,9 +266,9 @@ func TestTreeSet_Union(t *testing.T) {
 					t.Errorf("missing element %d", v)
 				}
 			}
-				if !reflect.DeepEqual(valuesSnapshot(setB), beforeB) {
-					t.Fatalf("union should not mutate other: got %v want %v", setB.Values(), beforeB)
-				}
+			if !reflect.DeepEqual(valuesSnapshot(setB), beforeB) {
+				t.Fatalf("union should not mutate other: got %v want %v", setB.Values(), beforeB)
+			}
 		})
 	}
 }
@@ -292,19 +292,19 @@ func TestTreeSet_Intersection(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			setA := New[int, int](compare.AnyEx[int])
-			setB := New[int, int](compare.AnyEx[int])
+			setA := New[int, int](compare.Any[int])
+			setB := New[int, int](compare.Any[int])
 			for _, v := range tt.a {
 				setA.Set(v, v)
 			}
 			for _, v := range tt.b {
 				setB.Set(v, v)
 			}
-				beforeB := valuesSnapshot(setB)
+			beforeB := valuesSnapshot(setB)
 			result := setA.Intersection(setB)
-				if result != setA {
-					t.Fatalf("intersection should return receiver")
-				}
+			if result != setA {
+				t.Fatalf("intersection should return receiver")
+			}
 			if result.Size() != uint(len(tt.expect)) {
 				t.Errorf("size mismatch: got %d, expect %d, got %v", result.Size(), len(tt.expect), result.Values())
 			}
@@ -313,9 +313,9 @@ func TestTreeSet_Intersection(t *testing.T) {
 					t.Errorf("missing element %d", v)
 				}
 			}
-				if !reflect.DeepEqual(valuesSnapshot(setB), beforeB) {
-					t.Fatalf("intersection should not mutate other: got %v want %v", setB.Values(), beforeB)
-				}
+			if !reflect.DeepEqual(valuesSnapshot(setB), beforeB) {
+				t.Fatalf("intersection should not mutate other: got %v want %v", setB.Values(), beforeB)
+			}
 		})
 	}
 }
@@ -339,19 +339,19 @@ func TestTreeSet_Difference(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			setA := New[int, int](compare.AnyEx[int])
-			setB := New[int, int](compare.AnyEx[int])
+			setA := New[int, int](compare.Any[int])
+			setB := New[int, int](compare.Any[int])
 			for _, v := range tt.a {
 				setA.Set(v, v)
 			}
 			for _, v := range tt.b {
 				setB.Set(v, v)
 			}
-				beforeB := valuesSnapshot(setB)
+			beforeB := valuesSnapshot(setB)
 			result := setA.Difference(setB)
-				if result != setA {
-					t.Fatalf("difference should return receiver")
-				}
+			if result != setA {
+				t.Fatalf("difference should return receiver")
+			}
 			if result.Size() != uint(len(tt.expect)) {
 				t.Errorf("size mismatch: got %d, expect %d, got %v", result.Size(), len(tt.expect), result.Values())
 			}
@@ -360,9 +360,9 @@ func TestTreeSet_Difference(t *testing.T) {
 					t.Errorf("missing element %d", v)
 				}
 			}
-				if !reflect.DeepEqual(valuesSnapshot(setB), beforeB) {
-					t.Fatalf("difference should not mutate other: got %v want %v", setB.Values(), beforeB)
-				}
+			if !reflect.DeepEqual(valuesSnapshot(setB), beforeB) {
+				t.Fatalf("difference should not mutate other: got %v want %v", setB.Values(), beforeB)
+			}
 		})
 	}
 }
@@ -370,8 +370,8 @@ func TestTreeSet_Difference(t *testing.T) {
 func TestTreeSet_UnionRandom(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 1000; n++ {
-		setA := New[int, int](compare.AnyEx[int])
-		setB := New[int, int](compare.AnyEx[int])
+		setA := New[int, int](compare.Any[int])
+		setB := New[int, int](compare.Any[int])
 		var mapA, mapB, mapUnion map[int]bool = make(map[int]bool), make(map[int]bool), make(map[int]bool)
 
 		for i := 0; i < 100; i++ {
@@ -404,8 +404,8 @@ func TestTreeSet_UnionRandom(t *testing.T) {
 func TestTreeSet_IntersectionRandom(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 1000; n++ {
-		setA := New[int, int](compare.AnyEx[int])
-		setB := New[int, int](compare.AnyEx[int])
+		setA := New[int, int](compare.Any[int])
+		setB := New[int, int](compare.Any[int])
 		var mapA, mapB, mapIntersection map[int]bool = make(map[int]bool), make(map[int]bool), make(map[int]bool)
 
 		for i := 0; i < 100; i++ {
@@ -441,8 +441,8 @@ func TestTreeSet_IntersectionRandom(t *testing.T) {
 func TestTreeSet_DifferenceRandom(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 1000; n++ {
-		setA := New[int, int](compare.AnyEx[int])
-		setB := New[int, int](compare.AnyEx[int])
+		setA := New[int, int](compare.Any[int])
+		setB := New[int, int](compare.Any[int])
 		var mapA, mapB, mapDiff map[int]bool = make(map[int]bool), make(map[int]bool), make(map[int]bool)
 
 		for i := 0; i < 100; i++ {
@@ -476,7 +476,7 @@ func TestTreeSet_DifferenceRandom(t *testing.T) {
 }
 
 func TestIterator_Clone(t *testing.T) {
-	set := New[int, int](compare.AnyEx[int])
+	set := New[int, int](compare.Any[int])
 	for i := 0; i < 10; i++ {
 		set.Set(i, i)
 	}

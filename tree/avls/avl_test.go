@@ -17,7 +17,7 @@ type duplicateEntry struct {
 }
 
 func TestPut(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, i := range []int{5, 8, 11, 10, 11, 50, 1, 99} {
 		tree.Put(i, i)
 	}
@@ -35,7 +35,7 @@ func TestPut(t *testing.T) {
 }
 
 func TestPutDuplicateLifecycle(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, value := range []int{5, 5, 5, 3, 7} {
 		tree.Put(value, value)
 	}
@@ -43,7 +43,7 @@ func TestPutDuplicateLifecycle(t *testing.T) {
 	if int(tree.Size()) != 5 {
 		t.Fatalf("size mismatch: %v", tree.Values())
 	}
- 
+
 	values := tree.Values()
 	if got := len(values); got != 5 {
 		t.Fatalf("unexpected value count: %d %v", got, values)
@@ -80,11 +80,10 @@ func TestPutDuplicateLifecycle(t *testing.T) {
 		t.Fatalf("remove should fail after all duplicates are removed: %v", tree.Values())
 	}
 
-	
 }
 
 func TestSetDoesNotDuplicateKey(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	if !tree.Set(5, 50) {
 		t.Fatal("first set should insert")
 	}
@@ -103,7 +102,7 @@ func TestSetDoesNotDuplicateKey(t *testing.T) {
 }
 
 func TestRemoveDuplicateKeyWithDistinctValues(t *testing.T) {
-	tree := New[int, string](compare.AnyEx[int])
+	tree := New[int, string](compare.Any[int])
 	for _, item := range []struct {
 		key   int
 		value string
@@ -160,7 +159,7 @@ func TestRemoveDuplicateKeyWithDistinctValues(t *testing.T) {
 }
 
 func TestSetWithExistingDuplicatesUpdatesSingleNode(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, value := range []int{10, 20, 30} {
 		tree.Put(5, value)
 	}
@@ -193,7 +192,7 @@ func TestSetWithExistingDuplicatesUpdatesSingleNode(t *testing.T) {
 }
 
 func TestDuplicateKeyGetSetRemoveStability(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, item := range []struct {
 		key   int
 		value int
@@ -247,7 +246,7 @@ func TestMultisetReferenceForce(t *testing.T) {
 	rand := random.New(t.Name())
 
 	for round := 0; round < 300; round++ {
-		tree := New[int, int](compare.AnyEx[int])
+		tree := New[int, int](compare.Any[int])
 		var reference []duplicateEntry
 		nextID := 1
 
@@ -314,7 +313,7 @@ func TestMultisetReferenceForce(t *testing.T) {
 }
 
 func TestPutGet(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for i := 0; i < 100; i++ {
 		tree.Set(i, i)
 	}
@@ -347,7 +346,7 @@ func TestPutGet(t *testing.T) {
 }
 
 func TestRemove2(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, i := range testutils.TestedBigArray {
 		if !tree.Set(i, i) {
 			// log.Println("equal key", i)
@@ -368,7 +367,7 @@ func TestRemove2(t *testing.T) {
 }
 
 func TestRemove1(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, i := range testutils.TestedArray {
 		if !tree.Set(i, i) {
 			// log.Println("equal key", i)
@@ -392,7 +391,7 @@ func TestRemove1(t *testing.T) {
 func TestForce(t *testing.T) {
 	rand := random.New(t.Name())
 
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for n := 0; n < 2000; n++ {
 
 		var priority []int
@@ -457,7 +456,7 @@ func TestForce(t *testing.T) {
 func BenchmarkPut(b *testing.B) {
 	rand := random.New(1683721792150515321)
 
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	b.StopTimer()
 	for i := 0; i < 10000; i++ {
 		v := rand.Int()
@@ -474,7 +473,7 @@ func BenchmarkPut(b *testing.B) {
 
 func BenchmarkRemove(b *testing.B) {
 	rand := random.New(1683721792150515321)
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	var removelist []int
 	var ri = 0
 

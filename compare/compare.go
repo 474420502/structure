@@ -1,70 +1,72 @@
+// Package compare provides reusable key comparators for the ordered
+// containers in this repository.
+//
+// # Standard contract
+//
+// Every ordered container expects the same comparator contract:
+//
+//   - a negative result means k1 < k2
+//   - a positive result means k1 > k2
+//   - zero means k1 == k2
+//
+// Any, AnyDesc, ArrayAny, ArrayLenAny, RunesDesc and RunesLenDesc follow this
+// contract directly. They are accepted by every tree, set, map, priority
+// queue, heap, and list in the repository.
+//
+// AnyEx and ArrayAnyEx are deprecated compatibility aliases that now delegate
+// to Any and ArrayAny. They previously used a legacy index-style encoding
+// (k1 < k2 returned 1, k1 > k2 returned 0, k1 == k2 returned -1) that the
+// ordered containers no longer consume.
 package compare
 
+// Compare is the signature shared by every comparator.
 type Compare[T any] func(k1, k2 T) int
 
+// ArrayType is the ordered byte-slice and string key family.
 type ArrayType interface {
 	[]byte | string
 }
 
-// ArrayLenAny Bytes []byte compare
-func ArrayLenAny[T ArrayType](k1, k2 T) int {
+// DefaultAny is the scalar key family supported by the generic comparators.
+type DefaultAny interface {
+	int | int64 | int32 | int8 | float32 | float64 | uint8 | uint | uint32 | uint64
+}
 
+// Any compares scalar keys in ascending order using the standard contract.
+func Any[T DefaultAny](k1, k2 T) int {
 	switch {
-	case len(k1) > len(k2):
+	case k1 > k2:
 		return 1
-	case len(k1) < len(k2):
+	case k1 < k2:
 		return -1
 	default:
-		for i := 0; i < len(k1); i++ {
-			if k1[i] != k2[i] {
-				if k1[i] > k2[i] {
-					return 1
-				}
-				return -1
-			}
-		}
 		return 0
 	}
 }
 
-// ArrayAnyEx compare bytes
-func ArrayAnyEx[T ArrayType](k1, k2 T) int {
+// AnyDesc compares scalar keys in descending order using the standard
+// contract.
+func AnyDesc[T DefaultAny](k1, k2 T) int {
 	switch {
-	case len(k1) > len(k2):
-		for i := 0; i < len(k2); i++ {
-			if k1[i] != k2[i] {
-				if k1[i] > k2[i] {
-					return 1
-				}
-				return 0
-			}
-		}
-		return 1
-	case len(k1) < len(k2):
-		for i := 0; i < len(k1); i++ {
-			if k1[i] != k2[i] {
-				if k1[i] > k2[i] {
-					return 1
-				}
-				return 0
-			}
-		}
-		return 0
-	default:
-		for i := 0; i < len(k1); i++ {
-			if k1[i] != k2[i] {
-				if k1[i] > k2[i] {
-					return 0
-				}
-				return 1
-			}
-		}
+	case k1 > k2:
 		return -1
+	case k1 < k2:
+		return 1
+	default:
+		return 0
 	}
-
 }
 
-// ArrayAny compare bytes
+// AnyEx is a deprecated compatibility alias for Any.
+//
+// Deprecated: use Any. AnyEx previously used the legacy index-style encoding,
+// which is no longer consumed by any container.
+func AnyEx[T DefaultAny](k1, k2 T) int {
+	return Any(k1, k2)
+}
+
+// ArrayAny compares byte slices and strings lexicographically with shorter
+// values first. It follows the standard contract.
 func ArrayAny[T ArrayType](k1, k2 T) int {
 	switch {
 	case len(k1) > len(k2):
@@ -98,396 +100,39 @@ func ArrayAny[T ArrayType](k1, k2 T) int {
 		}
 		return 0
 	}
-
 }
 
-type DefaultAny interface {
-	int | int64 | int32 | int8 | float32 | float64 | uint8 | uint | uint32 | uint64
-}
-
-func AnyEx[T DefaultAny](k1, k2 T) int {
-
-	if k1 > k2 {
-		return 0 // 这个k2就应该去左边
-	} else if k1 < k2 {
-		return 1
-	} else {
-		return -1
-	}
-
-}
-
-func Any[T DefaultAny](k1, k2 T) int {
-
+// ArrayLenAny compares byte slices and strings by length first and then
+// lexicographically. It follows the standard contract.
+func ArrayLenAny[T ArrayType](k1, k2 T) int {
 	switch {
-	case k1 > k2:
+	case len(k1) > len(k2):
 		return 1
-	case k1 < k2:
+	case len(k1) < len(k2):
 		return -1
 	default:
+		for i := 0; i < len(k1); i++ {
+			if k1[i] != k2[i] {
+				if k1[i] > k2[i] {
+					return 1
+				}
+				return -1
+			}
+		}
 		return 0
 	}
 }
 
-func AnyDesc[T DefaultAny](k1, k2 T) int {
-
-	switch {
-	case k1 > k2:
-		return -1
-	case k1 < k2:
-		return 1
-	default:
-		return 0
-	}
+// ArrayAnyEx is a deprecated compatibility alias for ArrayAny.
+//
+// Deprecated: use ArrayAny. ArrayAnyEx previously used the legacy index-style
+// encoding, which is no longer consumed by any container.
+func ArrayAnyEx[T ArrayType](k1, k2 T) int {
+	return ArrayAny(k1, k2)
 }
 
-// // Bytes []byte compare
-// func Bytes(k1, k2 interface{}) int {
-// 	s1 := k1.([]byte)
-// 	s2 := k2.([]byte)
-
-// 	switch {
-// 	case len(s1) > len(s2):
-// 		for i := 0; i < len(s2); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 1
-// 	case len(s1) < len(s2):
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return -1
-// 	default:
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 0
-// 	}
-// }
-
-// // Bytes []byte compare
-// func BytesLen(k1, k2 interface{}) int {
-// 	s1 := k1.([]byte)
-// 	s2 := k2.([]byte)
-
-// 	switch {
-// 	case len(s1) > len(s2):
-// 		return 1
-// 	case len(s1) < len(s2):
-// 		return -1
-// 	default:
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 0
-// 	}
-// }
-
-// // String compare
-// func StringLen(k1, k2 interface{}) int {
-// 	s1 := k1.(string)
-// 	s2 := k2.(string)
-
-// 	switch {
-// 	case len(s1) > len(s2):
-
-// 		return 1
-// 	case len(s1) < len(s2):
-
-// 		return -1
-// 	default:
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 0
-// 	}
-
-// }
-
-// // String comp
-// func String(k1, k2 interface{}) int {
-// 	s1 := k1.(string)
-// 	s2 := k2.(string)
-
-// 	switch {
-// 	case len(s1) > len(s2):
-// 		for i := 0; i < len(s2); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 1
-// 	case len(s1) < len(s2):
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return -1
-// 	default:
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 0
-// 	}
-// }
-
-// // Runes []rune compare
-// func Runes(k1, k2 interface{}) int {
-// 	s1 := k1.([]rune)
-// 	s2 := k2.([]rune)
-
-// 	switch {
-// 	case len(s1) > len(s2):
-// 		for i := 0; i < len(s2); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 1
-// 	case len(s1) < len(s2):
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return -1
-// 	default:
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 0
-// 	}
-// }
-
-// // RunesLen []rune compare
-// func RunesLen(k1, k2 interface{}) int {
-// 	s1 := k1.([]rune)
-// 	s2 := k2.([]rune)
-
-// 	switch {
-// 	case len(s1) > len(s2):
-
-// 		return 1
-// 	case len(s1) < len(s2):
-
-// 		return -1
-// 	default:
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 0
-// 	}
-// }
-
-// type TimeType[T any] interface {
-// 	After(T) bool
-// 	Before(T) bool
-// 	*T
-// }
-
-// func Time[P any, T TimeType[P]](k1, k2 T) int {
-// 	switch {
-// 	case k1.After(*k2):
-// 		return 1
-// 	case k1.Before(*k2):
-// 		return -1
-// 	default:
-// 		return 0
-// 	}
-// }
-
-// func TimeDesc[P any, T TimeType[P]](k2, k1 T) int {
-
-// 	if k1.After(*k2) {
-// 		return 1
-// 	} else if k1.Before(*k2) {
-// 		return -1
-// 	}
-// 	return 0
-
-// }
-
-// // Bytes []byte compare
-// func BytesDesc(k2, k1 interface{}) int {
-// 	s1 := k1.([]byte)
-// 	s2 := k2.([]byte)
-
-// 	switch {
-// 	case len(s1) > len(s2):
-// 		for i := 0; i < len(s2); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 1
-// 	case len(s1) < len(s2):
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return -1
-// 	default:
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 0
-// 	}
-// }
-
-// // Bytes []byte compare
-// func BytesLenDesc(k2, k1 interface{}) int {
-// 	s1 := k1.([]byte)
-// 	s2 := k2.([]byte)
-
-// 	switch {
-// 	case len(s1) > len(s2):
-// 		return 1
-// 	case len(s1) < len(s2):
-// 		return -1
-// 	default:
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 0
-// 	}
-// }
-
-// // String compare
-// func StringLenDesc(k2, k1 interface{}) int {
-// 	s1 := k1.(string)
-// 	s2 := k2.(string)
-
-// 	switch {
-// 	case len(s1) > len(s2):
-
-// 		return 1
-// 	case len(s1) < len(s2):
-
-// 		return -1
-// 	default:
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 0
-// 	}
-
-// }
-
-// // String comp
-// func StringDesc(k2, k1 interface{}) int {
-// 	s1 := k1.(string)
-// 	s2 := k2.(string)
-
-// 	switch {
-// 	case len(s1) > len(s2):
-// 		for i := 0; i < len(s2); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 1
-// 	case len(s1) < len(s2):
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return -1
-// 	default:
-// 		for i := 0; i < len(s1); i++ {
-// 			if s1[i] != s2[i] {
-// 				if s1[i] > s2[i] {
-// 					return 1
-// 				}
-// 				return -1
-// 			}
-// 		}
-// 		return 0
-// 	}
-// }
-
-// Runes []rune compare
+// RunesDesc compares rune slices in descending order using the standard
+// contract.
 func RunesDesc(k2, k1 interface{}) int {
 	s1 := k1.([]rune)
 	s2 := k2.([]rune)
@@ -526,17 +171,16 @@ func RunesDesc(k2, k1 interface{}) int {
 	}
 }
 
-// RunesLen []rune compare
+// RunesLenDesc compares rune slices by length first and then lexicographically,
+// in descending order. It follows the standard contract.
 func RunesLenDesc(k2, k1 interface{}) int {
 	s1 := k1.([]rune)
 	s2 := k2.([]rune)
 
 	switch {
 	case len(s1) > len(s2):
-
 		return 1
 	case len(s1) < len(s2):
-
 		return -1
 	default:
 		for i := 0; i < len(s1); i++ {

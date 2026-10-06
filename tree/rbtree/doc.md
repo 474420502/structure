@@ -45,6 +45,7 @@ The iterator supports `SeekToFirst`, `SeekToLast`, `SeekGE`, `SeekGT`, `SeekLE`,
 - `Set` inserts when absent and overwrites when present.
 - `Upsert` returns whether an existing value was replaced.
 - This tree does not currently expose rank/index operations, so it is compared only on the shared ordered-map operations.
+- Example usage is available at [../../example/rbtree/main.go](../../example/rbtree/main.go).
 
 ## Validation
 

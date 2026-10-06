@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	set := treeset.New[int, int](compare.AnyEx[int])
+	set := treeset.New[int, int](compare.Any[int])
 
 	for _, v := range []int{5, 25, 4, 11, 0} {
 		set.InsertIfAbsent(v, v)

@@ -73,6 +73,12 @@ func (l *ArrayList[T]) Size() uint {
 	return l.size
 }
 
+// Len returns the number of stored elements as an int. It is the preferred
+// cross-package size accessor for new code.
+func (l *ArrayList[T]) Len() int {
+	return int(l.size)
+}
+
 func (l *ArrayList[T]) shrink() {
 
 	if l.size <= listMinLimit {
@@ -244,7 +250,7 @@ func (l *ArrayList[T]) Contains(values ...T) (count int) {
 
 	for _, element := range l.data[l.headidx+1 : l.tailidx] {
 		for _, searchValue := range values {
-			if l.comp(element, searchValue) == -1 {
+			if l.comp(element, searchValue) == 0 {
 				count++
 			}
 		}

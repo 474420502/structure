@@ -26,22 +26,36 @@ func (tree *Tree[KEY, VALUE]) getRoot() *treeNode[KEY, VALUE] {
 }
 
 func (tree *Tree[KEY, VALUE]) initRootNode(key KEY, value VALUE) {
-	node := &treeNode[KEY, VALUE]{
-		Parent: tree.root,
-		Size:   1,
-		Slice:  Slice[KEY, VALUE]{Key: key, Value: value},
+	node := tree.free
+	if node != nil {
+		tree.free = node.Parent
+	} else {
+		node = &treeNode[KEY, VALUE]{}
 	}
+	node.Parent = tree.root
+	node.Size = 1
+	node.Children[0] = nil
+	node.Children[1] = nil
+	node.Direct[0] = nil
+	node.Direct[1] = nil
+	node.Slice = Slice[KEY, VALUE]{Key: key, Value: value}
 	tree.root.Children[0] = node
 	tree.root.Direct[0] = node
 	tree.root.Direct[1] = node
 }
 
 func (tree *Tree[KEY, VALUE]) attachNode(parent *treeNode[KEY, VALUE], childDir int, key KEY, value VALUE, left *treeNode[KEY, VALUE], right *treeNode[KEY, VALUE]) {
-	node := &treeNode[KEY, VALUE]{
-		Parent: parent,
-		Size:   1,
-		Slice:  Slice[KEY, VALUE]{Key: key, Value: value},
+	node := tree.free
+	if node != nil {
+		tree.free = node.Parent
+	} else {
+		node = &treeNode[KEY, VALUE]{}
 	}
+	node.Parent = parent
+	node.Size = 1
+	node.Children[0] = nil
+	node.Children[1] = nil
+	node.Slice = Slice[KEY, VALUE]{Key: key, Value: value}
 	parent.Children[childDir] = node
 
 	if left != nil {
@@ -168,7 +182,6 @@ var rootSizeTable []*heightLimitSize = func() []*heightLimitSize {
 
 func (tree *Tree[KEY, VALUE]) fixPut(cur *treeNode[KEY, VALUE]) {
 	cur.Size++
-	cur.updateBalance()
 	if cur.Size == 3 {
 		tree.fixPutSize(cur.Parent)
 		return
@@ -181,12 +194,11 @@ func (tree *Tree[KEY, VALUE]) fixPut(cur *treeNode[KEY, VALUE]) {
 
 	for cur != tree.root {
 		cur.Size++
-		cur.updateBalance()
 		parent = cur.Parent
 
 		limitsize := rootSizeTable[height]
 		if cur.Size < limitsize.rootsize {
-			balance := cur.Balance
+			balance := getSize(cur.Children[0]) - getSize(cur.Children[1])
 			if balance < 0 {
 				if -balance >= limitsize.bottomsize {
 					tree.sizeRRotate(cur)
@@ -291,9 +303,6 @@ func (tree *Tree[KEY, VALUE]) lrotate(cur *treeNode[KEY, VALUE]) *treeNode[KEY, 
 	cur.Size = getChildrenSumSize(cur) + 1
 	mov.Size = getChildrenSumSize(mov) + 1
 
-	cur.updateBalance()
-	mov.updateBalance()
-
 	return mov
 }
 
@@ -323,9 +332,6 @@ func (tree *Tree[KEY, VALUE]) rrotate(cur *treeNode[KEY, VALUE]) *treeNode[KEY, 
 
 	cur.Size = getChildrenSumSize(cur) + 1
 	mov.Size = getChildrenSumSize(mov) + 1
-
-	cur.updateBalance()
-	mov.updateBalance()
 
 	return mov
 }
@@ -362,10 +368,25 @@ func (tree *Tree[KEY, VALUE]) mergeGroups(root *treeNode[KEY, VALUE], group *tre
 	}
 }
 
-func (tree *Tree[KEY, VALUE]) removeNode(cur *treeNode[KEY, VALUE]) (s *Slice[KEY, VALUE]) {
+// recycle resets a detached node and pushes it onto the free list.
+func (tree *Tree[KEY, VALUE]) recycle(node *treeNode[KEY, VALUE]) {
+	var zeroKey KEY
+	var zeroValue VALUE
+	node.Slice = Slice[KEY, VALUE]{Key: zeroKey, Value: zeroValue}
+	node.Size = 0
+	node.Children[0] = nil
+	node.Children[1] = nil
+	node.Direct[0] = nil
+	node.Direct[1] = nil
+	node.Parent = tree.free
+	tree.free = node
+}
+
+// removeNode detaches cur and returns a copy of its key/value.
+func (tree *Tree[KEY, VALUE]) removeNode(cur *treeNode[KEY, VALUE]) Slice[KEY, VALUE] {
 	const L = 0
 	const R = 1
-	s = &Slice[KEY, VALUE]{Key: cur.Key, Value: cur.Value}
+	s := Slice[KEY, VALUE]{Key: cur.Key, Value: cur.Value}
 
 	if cur.Size == 1 {
 		parent := cur.Parent
@@ -394,7 +415,8 @@ func (tree *Tree[KEY, VALUE]) removeNode(cur *treeNode[KEY, VALUE]) (s *Slice[KE
 			tree.root.Direct[R] = nil
 		}
 
-		return
+		tree.recycle(cur)
+		return s
 	}
 
 	lsize, rsize := getChildrenSize(cur)
@@ -433,6 +455,7 @@ func (tree *Tree[KEY, VALUE]) removeNode(cur *treeNode[KEY, VALUE]) (s *Slice[KE
 		}
 
 		cur.Direct[L] = dleft
+		tree.recycle(prev)
 
 	} else {
 
@@ -466,9 +489,10 @@ func (tree *Tree[KEY, VALUE]) removeNode(cur *treeNode[KEY, VALUE]) (s *Slice[KE
 			tree.root.Direct[R] = cur
 		}
 		cur.Direct[R] = dright
+		tree.recycle(next)
 	}
 
-	return
+	return s
 }
 
 func (tree *Tree[KEY, VALUE]) head() *treeNode[KEY, VALUE] {
@@ -491,6 +515,10 @@ func (tree *Tree[KEY, VALUE]) index(i int64) *treeNode[KEY, VALUE] {
 	const R = 1
 
 	cur := tree.getRoot()
+	if cur == nil || i < 0 || i >= cur.Size {
+		return nil
+	}
+
 	var idx int64 = getSize(cur.Children[L])
 	for {
 		if idx > i {
@@ -583,10 +611,6 @@ func getRelationship[KEY any, VALUE any](cur *treeNode[KEY, VALUE]) int {
 		return 1
 	}
 	return 0
-}
-
-func (node *treeNode[KEY, VALUE]) updateBalance() {
-	node.Balance = getSize(node.Children[0]) - getSize(node.Children[1])
 }
 
 // func (tree *Tree[KEY,VALUE]) getHeight() int {
@@ -896,7 +920,6 @@ func (tree *Tree[KEY, VALUE]) buildFromSortedSlices(items []*Slice[KEY, VALUE]) 
 		prev = node
 		node.Children[1] = build(mid+1, end, node)
 		node.Size = getChildrenSumSize(node) + 1
-		node.updateBalance()
 		return node
 	}
 
@@ -935,7 +958,6 @@ func (tree *Tree[KEY, VALUE]) buildFromSortedStream(count int64, next func() Sli
 
 		node.Children[1] = build(rightSize, node)
 		node.Size = getChildrenSumSize(node) + 1
-		node.updateBalance()
 		return node
 	}
 

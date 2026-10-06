@@ -22,6 +22,7 @@ import arraystack "github.com/474420502/structure/stack/array"
 - `Clear()`
 - `Empty() bool`
 - `Size() uint`
+- `Len() int`
 - `Values() []T`
 - `String() string`
 

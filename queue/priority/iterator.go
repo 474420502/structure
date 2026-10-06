@@ -1,13 +1,20 @@
 package treequeue
 
+// iteratorStackSize is the inline path-stack capacity. It covers any realistic
+// tree; deeper trees spill into the overflow slice.
+const iteratorStackSize = 64
+
 // Iterator tree iterator
 type Iterator[KEY, VALUE any] struct {
 	tree *Tree[KEY, VALUE]
 
 	cur *Node[KEY, VALUE]
 
-	idx   int8
-	stack []NodeDir[KEY, VALUE]
+	idx int8
+	// backing stores the path inline so a per-query iterator does not allocate
+	// a separate slice. overflow is only used by extremely deep trees.
+	backing  [iteratorStackSize]NodeDir[KEY, VALUE]
+	overflow []NodeDir[KEY, VALUE]
 }
 
 type NodeDir[KEY any, VALUE any] struct {
@@ -25,8 +32,9 @@ func (iter *Iterator[KEY, VALUE]) Value() VALUE {
 	return iter.cur.Value
 }
 
+// Vaild is a compatibility alias for Valid.
+//
 // Deprecated: use Valid.
-// Vaild if current value is not nil return true. else return false. for use with Seek
 func (iter *Iterator[KEY, VALUE]) Vaild() bool {
 	return iter.cur != nil
 }
@@ -111,6 +119,9 @@ func (iter *Iterator[KEY, VALUE]) Clone() *Iterator[KEY, VALUE] {
 	other := newIterator(iter.tree)
 	other.cur = iter.cur
 	other.idx = iter.idx
-	copy(other.stack, iter.stack)
+	other.backing = iter.backing
+	if len(iter.overflow) > 0 {
+		other.overflow = append([]NodeDir[KEY, VALUE](nil), iter.overflow...)
+	}
 	return other
 }

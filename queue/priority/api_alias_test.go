@@ -7,7 +7,7 @@ import (
 )
 
 func TestSemanticAliases(t *testing.T) {
-	queue := New[int, string](compare.AnyEx[int])
+	queue := New[int, string](compare.Any[int])
 
 	if !queue.InsertIfAbsent(1, "a") {
 		t.Fatal("InsertIfAbsent should insert a missing key")

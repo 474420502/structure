@@ -22,8 +22,7 @@ type treeNode[KEY any, VALUE any] struct {
 	Children [2]*treeNode[KEY, VALUE]
 	Direct   [2]*treeNode[KEY, VALUE]
 
-	Size    int64
-	Balance int64
+	Size int64
 
 	Slice[KEY, VALUE]
 }
@@ -40,6 +39,8 @@ type Tree[KEY any, VALUE any] struct {
 	doubleRotations int64
 
 	zero VALUE
+	// free is a singly linked list of recycled nodes, chained through Parent.
+	free *treeNode[KEY, VALUE]
 }
 
 // New create a object of tree
@@ -71,6 +72,12 @@ func (tree *Tree[KEY, VALUE]) Size() int64 {
 	return 0
 }
 
+// Len returns the number of stored keys as an int. It is the preferred
+// cross-package size accessor for new code.
+func (tree *Tree[KEY, VALUE]) Len() int {
+	return int(tree.Size())
+}
+
 // Get Get Value from key.
 func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	if cur := tree.getNode(key); cur != nil {
@@ -100,11 +107,41 @@ func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 	return tree.putWith(key, value, true, false, nil)
 }
 
+// InsertIfAbsent inserts the key only when it is absent. It returns true when a
+// new entry was inserted and false when the key already existed. It is the
+// preferred explicit name for insert-only writes; Put remains the legacy alias.
+func (tree *Tree[KEY, VALUE]) InsertIfAbsent(key KEY, value VALUE) bool {
+	return tree.Put(key, value)
+}
+
+// Upsert ensures the key exists with the provided value. It returns true when
+// an existing entry was replaced and false when a new entry was inserted.
+func (tree *Tree[KEY, VALUE]) Upsert(key KEY, value VALUE) bool {
+	if cur := tree.getNode(key); cur != nil {
+		cur.Slice.Value = value
+		return true
+	}
+	tree.Put(key, value)
+	return false
+}
+
+// Delete removes key if present and returns the removed value and true. It
+// returns the zero value and false when the key is absent.
+func (tree *Tree[KEY, VALUE]) Delete(key KEY) (VALUE, bool) {
+	if cur := tree.getNode(key); cur != nil {
+		return tree.removeNode(cur).Value, true
+	}
+	return tree.zero, false
+}
+
 // Index return the slice by index.
 //
 // like the index of array(order)
 func (tree *Tree[KEY, VALUE]) Index(i int64) *Slice[KEY, VALUE] {
 	node := tree.index(i)
+	if node == nil {
+		return nil
+	}
 	return &node.Slice
 }
 
@@ -184,7 +221,8 @@ func (tree *Tree[KEY, VALUE]) Slices() []Slice[KEY, VALUE] {
 // Remove remove key and return value that be removed. if not exists, return nil
 func (tree *Tree[KEY, VALUE]) Remove(key KEY) *Slice[KEY, VALUE] {
 	if cur := tree.getNode(key); cur != nil {
-		return tree.removeNode(cur)
+		s := tree.removeNode(cur)
+		return &s
 	}
 	return nil
 }
@@ -192,7 +230,8 @@ func (tree *Tree[KEY, VALUE]) Remove(key KEY) *Slice[KEY, VALUE] {
 // RemoveIndex remove key value by index and return value that be removed
 func (tree *Tree[KEY, VALUE]) RemoveIndex(index int64) *Slice[KEY, VALUE] {
 	if cur := tree.index(index); cur != nil {
-		return tree.removeNode(cur)
+		s := tree.removeNode(cur)
+		return &s
 	}
 	return nil
 }
@@ -209,7 +248,8 @@ func (tree *Tree[KEY, VALUE]) Head() *Slice[KEY, VALUE] {
 // RemoveHead remove the head of the ordered data of tree. similar to the pop function of heap
 func (tree *Tree[KEY, VALUE]) RemoveHead() *Slice[KEY, VALUE] {
 	if tree.getRoot() != nil {
-		return tree.removeNode(tree.root.Direct[0])
+		s := tree.removeNode(tree.root.Direct[0])
+		return &s
 	}
 	return nil
 }
@@ -226,7 +266,8 @@ func (tree *Tree[KEY, VALUE]) Tail() *Slice[KEY, VALUE] {
 // RemoveTail remove the tail of the ordered data of tree.
 func (tree *Tree[KEY, VALUE]) RemoveTail() *Slice[KEY, VALUE] {
 	if tree.getRoot() != nil {
-		return tree.removeNode(tree.root.Direct[1])
+		s := tree.removeNode(tree.root.Direct[1])
+		return &s
 	}
 	return nil
 }

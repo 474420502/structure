@@ -22,6 +22,9 @@ type Tree[KEY any, VALUE any] struct {
 	zero            VALUE
 	size            int
 	singleRotations int
+	// free is a singly linked list of recycled nodes. Reusing removed nodes
+	// keeps delete/reinsert workloads allocation free.
+	free *Node[KEY, VALUE]
 }
 
 func New[KEY any, VALUE any](comp compare.Compare[KEY]) *Tree[KEY, VALUE] {
@@ -106,7 +109,35 @@ func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
 		tree.root.Color = black
 	}
 
+	// target is the node actually spliced out; y (when present) is moved into
+	// target's place and stays in the tree.
+	tree.recycle(target)
+
 	return removedValue, true
+}
+
+// allocNode returns a recycled node when one is available.
+func (tree *Tree[KEY, VALUE]) allocNode() *Node[KEY, VALUE] {
+	if tree.free != nil {
+		node := tree.free
+		tree.free = node.Left
+		node.Left = nil
+		return node
+	}
+	return &Node[KEY, VALUE]{}
+}
+
+// recycle resets a detached node and pushes it onto the free list.
+func (tree *Tree[KEY, VALUE]) recycle(node *Node[KEY, VALUE]) {
+	var zeroKey KEY
+	var zeroValue VALUE
+	node.Key = zeroKey
+	node.Value = zeroValue
+	node.Color = black
+	node.Right = nil
+	node.Parent = nil
+	node.Left = tree.free
+	tree.free = node
 }
 
 func (tree *Tree[KEY, VALUE]) Delete(key KEY) (VALUE, bool) {
@@ -201,12 +232,13 @@ func (tree *Tree[KEY, VALUE]) insert(key KEY, value VALUE, overwrite bool) bool 
 		}
 	}
 
-	inserted := &Node[KEY, VALUE]{
-		Key:    key,
-		Value:  value,
-		Color:  red,
-		Parent: parent,
-	}
+	inserted := tree.allocNode()
+	inserted.Key = key
+	inserted.Value = value
+	inserted.Color = red
+	inserted.Parent = parent
+	inserted.Left = nil
+	inserted.Right = nil
 
 	if parent == nil {
 		tree.root = inserted

@@ -11,7 +11,7 @@ import (
 )
 
 func TestPutGet(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for i := 0; i < 100; i++ {
 		tree.Set(i, i)
 	}
@@ -40,7 +40,7 @@ func TestPutGet(t *testing.T) {
 }
 
 func TestRemove2(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, i := range testutils.TestedBigArray {
 		if !tree.Set(i, i) {
 			// log.Println("equal key", i)
@@ -61,7 +61,7 @@ func TestRemove2(t *testing.T) {
 }
 
 func TestRemove1(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, i := range testutils.TestedArray {
 		if !tree.Set(i, i) {
 			// log.Println("equal key", i)
@@ -85,7 +85,7 @@ func TestRemove1(t *testing.T) {
 func TestForce(t *testing.T) {
 	rand := random.New(t.Name())
 
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for n := 0; n < 2000; n++ {
 
 		var priority []int
@@ -151,7 +151,7 @@ func TestForce(t *testing.T) {
 func BenchmarkPut(b *testing.B) {
 	rand := random.New(1683721792150515321)
 
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	b.StopTimer()
 	for i := 0; i < 10000; i++ {
 		v := rand.Int()
@@ -168,7 +168,7 @@ func BenchmarkPut(b *testing.B) {
 
 func BenchmarkRemove(b *testing.B) {
 	rand := random.New(1683721792150515321)
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	var removelist []int
 	var ri = 0
 

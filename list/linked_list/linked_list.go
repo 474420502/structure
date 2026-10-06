@@ -74,6 +74,12 @@ func (l *LinkedList[T]) Size() uint {
 	return l.size
 }
 
+// Len returns the number of stored elements as an int. It is the preferred
+// cross-package size accessor for new code.
+func (l *LinkedList[T]) Len() int {
+	return int(l.size)
+}
+
 // Push Push a value to the tail of the list
 func (l *LinkedList[T]) Push(value T) {
 	var node *hNode[T]
@@ -232,7 +238,7 @@ func (l *LinkedList[T]) Contains(values ...T) (count int) {
 
 	for cur := l.head.next; cur != l.tail; cur = cur.next {
 		for _, searchValue := range values {
-			if l.comp(cur.value, searchValue) == -1 {
+			if l.comp(cur.value, searchValue) == 0 {
 				count++
 			}
 		}

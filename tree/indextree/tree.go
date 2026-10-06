@@ -26,6 +26,8 @@ type Tree[KEY any, VALUE any] struct {
 	zero            VALUE
 	singleRotations int
 	doubleRotations int
+	// free is a singly linked list of recycled nodes, chained through Parent.
+	free *hNode[KEY, VALUE]
 }
 
 // New creates a typed tree where the key and value share the same type.
@@ -64,12 +66,37 @@ func (tree *Tree[KEY, VALUE]) Get(key KEY) (VALUE, bool) {
 	return tree.zero, false
 }
 
+// recycle resets a detached node and pushes it onto the free list.
+func (tree *Tree[KEY, VALUE]) recycle(node *hNode[KEY, VALUE]) {
+	var zeroKey KEY
+	var zeroValue VALUE
+	node.Key = zeroKey
+	node.Value = zeroValue
+	node.Size = 0
+	node.Balance = 0
+	node.Children[0] = nil
+	node.Children[1] = nil
+	node.Parent = tree.free
+	tree.free = node
+}
+
 // Put put value into tree  by Key . if key exists,not cover the value and return false. else return true
 func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		tree.root.Children[0] = &hNode[KEY, VALUE]{Key: key, Value: value, Size: 1, Parent: tree.root}
+		var node *hNode[KEY, VALUE]
+		if tree.free != nil {
+			node = tree.free
+			tree.free = node.Parent
+		} else {
+			node = &hNode[KEY, VALUE]{}
+		}
+		node.Key = key
+		node.Value = value
+		node.Size = 1
+		node.Parent = tree.root
+		tree.root.Children[0] = node
 		return true
 	}
 
@@ -84,7 +111,17 @@ func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
-				node := &hNode[KEY, VALUE]{Parent: cur, Key: key, Value: value, Size: 1}
+				var node *hNode[KEY, VALUE]
+				if tree.free != nil {
+					node = tree.free
+					tree.free = node.Parent
+				} else {
+					node = &hNode[KEY, VALUE]{}
+				}
+				node.Parent = cur
+				node.Key = key
+				node.Value = value
+				node.Size = 1
 				cur.Children[L] = node
 				tree.fixPut(cur, L)
 				return true
@@ -95,7 +132,17 @@ func (tree *Tree[KEY, VALUE]) Put(key KEY, value VALUE) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &hNode[KEY, VALUE]{Parent: cur, Key: key, Value: value, Size: 1}
+				var node *hNode[KEY, VALUE]
+				if tree.free != nil {
+					node = tree.free
+					tree.free = node.Parent
+				} else {
+					node = &hNode[KEY, VALUE]{}
+				}
+				node.Parent = cur
+				node.Key = key
+				node.Value = value
+				node.Size = 1
 				cur.Children[R] = node
 				tree.fixPut(cur, R)
 				return true
@@ -117,7 +164,18 @@ func (tree *Tree[KEY, VALUE]) Set(key KEY, value VALUE) bool {
 
 	cur := tree.getRoot()
 	if cur == nil {
-		tree.root.Children[0] = &hNode[KEY, VALUE]{Key: key, Value: value, Size: 1, Parent: tree.root}
+		var node *hNode[KEY, VALUE]
+		if tree.free != nil {
+			node = tree.free
+			tree.free = node.Parent
+		} else {
+			node = &hNode[KEY, VALUE]{}
+		}
+		node.Key = key
+		node.Value = value
+		node.Size = 1
+		node.Parent = tree.root
+		tree.root.Children[0] = node
 		return true
 	}
 
@@ -132,7 +190,17 @@ func (tree *Tree[KEY, VALUE]) Set(key KEY, value VALUE) bool {
 			if cur.Children[L] != nil {
 				cur = cur.Children[L]
 			} else {
-				node := &hNode[KEY, VALUE]{Parent: cur, Key: key, Value: value, Size: 1}
+				var node *hNode[KEY, VALUE]
+				if tree.free != nil {
+					node = tree.free
+					tree.free = node.Parent
+				} else {
+					node = &hNode[KEY, VALUE]{}
+				}
+				node.Parent = cur
+				node.Key = key
+				node.Value = value
+				node.Size = 1
 				cur.Children[L] = node
 				tree.fixPut(cur, L)
 				return false
@@ -143,7 +211,17 @@ func (tree *Tree[KEY, VALUE]) Set(key KEY, value VALUE) bool {
 			if cur.Children[R] != nil {
 				cur = cur.Children[R]
 			} else {
-				node := &hNode[KEY, VALUE]{Parent: cur, Key: key, Value: value, Size: 1}
+				var node *hNode[KEY, VALUE]
+				if tree.free != nil {
+					node = tree.free
+					tree.free = node.Parent
+				} else {
+					node = &hNode[KEY, VALUE]{}
+				}
+				node.Parent = cur
+				node.Key = key
+				node.Value = value
+				node.Size = 1
 				cur.Children[R] = node
 				tree.fixPut(cur, R)
 				return false
@@ -284,10 +362,12 @@ func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
 	if cur := tree.getNode(key); cur != nil {
 
 		if cur.Size == 1 {
+			value := cur.Value
 			parent := cur.Parent
 			parent.Children[getRelationship(cur)] = nil
 			tree.fixRemoveSize(parent)
-			return cur.Value, true
+			tree.recycle(cur)
+			return value, true
 		}
 
 		lsize, rsize := getChildrenSize(cur)
@@ -315,6 +395,7 @@ func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
 				}
 				tree.fixRemoveSize(prevParent)
 			}
+			tree.recycle(prev)
 
 			return value, true
 		} else {
@@ -342,6 +423,7 @@ func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
 				}
 				tree.fixRemoveSize(nextParent)
 			}
+			tree.recycle(next)
 
 			return value, true
 
@@ -369,10 +451,12 @@ func (tree *Tree[KEY, VALUE]) RemoveIndex(index int64) (VALUE, bool) {
 	if cur := tree.index(index); cur != nil {
 
 		if cur.Size == 1 {
+			value := cur.Value
 			parent := cur.Parent
 			parent.Children[getRelationship(cur)] = nil
 			tree.fixRemoveSize(parent)
-			return cur.Value, true
+			tree.recycle(cur)
+			return value, true
 		}
 
 		lsize, rsize := getChildrenSize(cur)
@@ -400,6 +484,7 @@ func (tree *Tree[KEY, VALUE]) RemoveIndex(index int64) (VALUE, bool) {
 				}
 				tree.fixRemoveSize(prevParent)
 			}
+			tree.recycle(prev)
 
 			return value, true
 		} else {
@@ -427,6 +512,7 @@ func (tree *Tree[KEY, VALUE]) RemoveIndex(index int64) (VALUE, bool) {
 				}
 				tree.fixRemoveSize(nextParent)
 			}
+			tree.recycle(next)
 
 			return value, true
 

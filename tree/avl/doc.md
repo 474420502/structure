@@ -50,6 +50,7 @@ The iterator supports:
 - `InsertIfAbsent` is the preferred explicit name for insert-only writes.
 - `Upsert` is the preferred explicit name for overwrite-or-create writes and returns whether an existing value was replaced.
 - `Delete` and `Len` provide the preferred cross-package removal and size entry points for new code.
+- The comparator follows the standard repository contract: negative means less-than, positive means greater-than, and zero means equal.
 - The iterator `Seek*` methods already return the exact-match status directly. This package does not need separate `Seek*Exact` aliases.
 - `NewEx` allows a larger height difference than a strict AVL tree, which can shift the balance between update cost and lookup shape.
 - Example usage is available at [../../example/avl/main.go](../../example/avl/main.go).

@@ -1,13 +1,20 @@
 package avl
 
+// iteratorStackSize is the inline path-stack capacity. It covers any realistic
+// tree; deeper trees spill into the overflow slice.
+const iteratorStackSize = 64
+
 // Iterator tree iterator
 type Iterator[KEY, VALUE any] struct {
 	tree *Tree[KEY, VALUE]
 
 	cur *Node[KEY, VALUE]
 
-	idx   int8
-	stack []NodeDir[KEY, VALUE]
+	idx int8
+	// backing stores the path inline so a per-query iterator does not allocate
+	// a separate slice. overflow is only used by extremely deep trees.
+	backing  [iteratorStackSize]NodeDir[KEY, VALUE]
+	overflow []NodeDir[KEY, VALUE]
 }
 
 type NodeDir[KEY any, VALUE any] struct {
@@ -70,12 +77,12 @@ func (iter *Iterator[KEY, VALUE]) SeekGT(key KEY) bool {
 	return iter.seekThan(key, 1)
 }
 
-// Prev the current iterator move to the prev. before call it must call Vaild() and return true.
+// Prev the current iterator move to the prev. before call it must call Valid() and return true.
 func (iter *Iterator[KEY, VALUE]) Prev() {
 	iter.move(0)
 }
 
-// Next the current iterator move to the next. before call it must call Vaild() and return true.
+// Next the current iterator move to the next. before call it must call Valid() and return true.
 func (iter *Iterator[KEY, VALUE]) Next() {
 	iter.move(1)
 }
@@ -85,6 +92,9 @@ func (iter *Iterator[KEY, VALUE]) Clone() *Iterator[KEY, VALUE] {
 	other := newIterator(iter.tree)
 	other.cur = iter.cur
 	other.idx = iter.idx
-	copy(other.stack, iter.stack)
+	other.backing = iter.backing
+	if len(iter.overflow) > 0 {
+		other.overflow = append([]NodeDir[KEY, VALUE](nil), iter.overflow...)
+	}
 	return other
 }

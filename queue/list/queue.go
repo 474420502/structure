@@ -19,6 +19,12 @@ func (lq *ListQueue[T]) Size() int64 {
 	return lq.size
 }
 
+// Len returns the number of stored elements as an int. It is the preferred
+// cross-package size accessor for new code.
+func (lq *ListQueue[T]) Len() int {
+	return int(lq.size)
+}
+
 func (lq *ListQueue[T]) Front() *Element[T] {
 	return lq.head
 }

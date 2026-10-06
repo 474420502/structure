@@ -80,12 +80,17 @@ func (iter *Iterator[KEY, VALUE]) seekEqual(key KEY, LessAndGreater int8) bool {
 
 	for {
 		cmp := iter.tree.Compare(iter.cur.Key, key)
-		if cmp < 0 {
+		if cmp == 0 {
 			return true
 		}
 
-		if !iter.down(int8(cmp)) {
-			if int8(cmp) == LessAndGreater {
+		dir := int8(0)
+		if cmp < 0 {
+			dir = 1
+		}
+
+		if !iter.down(dir) {
+			if dir == LessAndGreater {
 				iter.up(LessAndGreater)
 			}
 			return false
@@ -107,13 +112,18 @@ func (iter *Iterator[KEY, VALUE]) seekThan(key KEY, LessAndGreater int8) bool {
 
 		cmp := iter.tree.Compare(iter.cur.Key, key)
 
-		if cmp < 0 {
+		if cmp == 0 {
 			iter.move(LessAndGreater)
 			return true
 		}
 
-		if !iter.down(int8(cmp)) {
-			if int8(cmp) == LessAndGreater {
+		dir := int8(0)
+		if cmp < 0 {
+			dir = 1
+		}
+
+		if !iter.down(dir) {
+			if dir == LessAndGreater {
 				iter.up(LessAndGreater)
 			}
 			return false

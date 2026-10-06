@@ -13,7 +13,7 @@ import (
 func TestMain(t *testing.T) {
 	r := random.New()
 
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	var s []int
 	count := 40
 	for i := 0; i < count; i++ {
@@ -64,7 +64,7 @@ func (s *dSlice[T]) SetValue(v interface{}) {
 
 func TestCase1(t *testing.T) {
 	rand := random.New(t.Name())
-	q := New[int, int](compare.AnyEx[int])
+	q := New[int, int](compare.Any[int])
 
 	for i := 0; i < 20; i++ {
 		v := rand.Intn(10)
@@ -79,7 +79,7 @@ func TestCase1(t *testing.T) {
 }
 
 func TestIteratorValidAlias(t *testing.T) {
-	q := New[int, int](compare.AnyEx[int])
+	q := New[int, int](compare.Any[int])
 	iter := q.Iterator()
 
 	if iter.Valid() {
@@ -100,7 +100,7 @@ func TestIteratorValidAlias(t *testing.T) {
 func TestExtractForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		queue := New[int, int](compare.AnyEx[int])
+		queue := New[int, int](compare.Any[int])
 		var priority []*dSlice[float64]
 		var offset = 0.00001
 		for i := 0; i < 200; i++ {
@@ -192,7 +192,7 @@ func TestExtractForce(t *testing.T) {
 func TestRemoveForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		queue := New[int, int](compare.AnyEx[int])
+		queue := New[int, int](compare.Any[int])
 		var priority []*dSlice[float64]
 		var offset = 0.00001
 		for i := 0; i < 40; i++ {

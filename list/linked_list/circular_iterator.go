@@ -20,7 +20,9 @@ func (iter *CircularIterator[T]) Value() T {
 }
 
 // Deprecated: use Valid.
-// Vaild current is Vaild ?
+// Vaild is a compatibility alias for Valid.
+//
+// Deprecated: use Valid.
 func (iter *CircularIterator[T]) Vaild() bool {
 	if iter.cur == iter.ll.head || iter.cur == iter.ll.tail {
 		return false
@@ -165,7 +167,7 @@ func (iter *CircularIterator[T]) MoveAfter(mark *CircularIterator[T]) {
 	iter.cur.prev = mark.cur
 }
 
-// InsertBefore insert T before the iterator. must iter.Vaild() == true
+// InsertBefore insert T before the iterator. must iter.Valid() == true
 func (iter *CircularIterator[T]) InsertBefore(values ...T) {
 
 	var start *hNode[T]
@@ -192,7 +194,7 @@ func (iter *CircularIterator[T]) InsertBefore(values ...T) {
 	iter.cur.prev = end
 }
 
-// InsertAfter insert T after the iterator. must iter.Vaild() == true
+// InsertAfter insert T after the iterator. must iter.Valid() == true
 func (iter *CircularIterator[T]) InsertAfter(values ...T) {
 
 	var start *hNode[T]

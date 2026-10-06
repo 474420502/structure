@@ -82,7 +82,7 @@ func main() {
 
 	// [{0:0} {1:1} {3:3} {4:4} {7:7}]
 	log.Println("Iterator: {Valid Prev SeekLT}")
-	log.Println(iter.SeekLT(3)) // true. key 3 exists, iterator lands on 1
+	log.Println(iter.SeekLT(3))       // true. key 3 exists, iterator lands on 1
 	for ; iter.Valid(); iter.Prev() { // Vaiid Next
 		log.Println(iter.Key()) // log: 1 0
 		// you can limit by yourself

@@ -44,6 +44,16 @@ Preferred names:
 - `SeekLEExact`
 - `SeekLTExact`
 
+## Comparator Contract
+
+Ordered containers share one comparator contract defined by `compare.Compare[KEY]`:
+
+- negative: `k1 < k2`
+- positive: `k1 > k2`
+- zero: `k1 == k2`
+
+`compare.Any` and `compare.ArrayAny` are the preferred helpers. The legacy `AnyEx` / `ArrayAnyEx` names remain as deprecated aliases. See [compare/doc.md](./compare/doc.md).
+
 ## Legacy Method Guidance
 
 Legacy names stay supported, but their semantics vary by package and should not be used as the repository-wide contract.
@@ -62,11 +72,14 @@ For non-breaking convergence:
 2. Add preferred semantic wrappers with the contracts above.
 3. Update examples and docs to prefer the standardized names.
 
-## First Convergence Batch
+## Applied Scope
 
-The first batch applies this standard to:
+The standard now applies to the container packages listed below:
 
-- `map/hashmap`
-- `map/linkedhashmap`
-- `tree/indextree`
-- `map/orderedmap.go`
+- maps: `map/hashmap`, `map/linkedhashmap`, `map/orderedmap.go`
+- ordered trees: `tree/avl`, `tree/avls`, `tree/indextree`, `tree/rbtree`, `tree/skiplist`, `tree/treelist`
+- sets: `set/treeset`
+- queues: `queue/priority`
+- size accessor `Len` additionally on: `tree/heap`, `set/hashset`, `queue/linkedarray`, `queue/list`, `list/array_list`, `list/linked_list`, `stack/array`, `stack/list`, `stack/listarray`
+
+`Vaild` is retained only as a deprecated compatibility alias for `Valid`.

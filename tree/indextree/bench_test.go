@@ -30,7 +30,7 @@ func BenchmarkPut(b *testing.B) {
 	})
 
 	b.Run("avl", func(b *testing.B) {
-		tree := avl.New[int64, int64](compare.AnyEx[int64])
+		tree := avl.New[int64, int64](compare.Any[int64])
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			tree.Put(data[i], data[i])
@@ -48,7 +48,7 @@ func BenchmarkPutSequential(b *testing.B) {
 	})
 
 	b.Run("avl", func(b *testing.B) {
-		tree := avl.New[int, int](compare.AnyEx[int])
+		tree := avl.New[int, int](compare.Any[int])
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			tree.Put(i, i)
@@ -64,7 +64,7 @@ func BenchmarkGet(b *testing.B) {
 		tree1.Put(data[i], data[i])
 	}
 
-	tree2 := avl.New[int64, int64](compare.AnyEx[int64])
+	tree2 := avl.New[int64, int64](compare.Any[int64])
 	for i := 0; i < 1000000; i++ {
 		tree2.Put(data[i], data[i])
 	}
@@ -99,7 +99,7 @@ func BenchmarkRemove(b *testing.B) {
 
 	b.Run("avl", func(b *testing.B) {
 		data := newBenchDataWithSeed(b.N, 12345)
-		tree := avl.New[int64, int64](compare.AnyEx[int64])
+		tree := avl.New[int64, int64](compare.Any[int64])
 		for i := 0; i < b.N; i++ {
 			tree.Put(data[i], data[i])
 		}
@@ -148,7 +148,7 @@ func BenchmarkIndexOfOnly(b *testing.B) {
 
 func TestHeight(t *testing.T) {
 	itree := New(compare.Any[int64])
-	avltree := avl.New[int64, int64](compare.AnyEx[int64])
+	avltree := avl.New[int64, int64](compare.Any[int64])
 
 	for i := 0; i < 5000; i++ {
 		v := rand.Int63()

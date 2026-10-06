@@ -4,29 +4,29 @@
 import "github.com/474420502/structure/map/hashmap"
 ```
 
-`map/hashmap` wraps Go's hash map with a small container-style API.
+`map/hashmap` is a generic wrapper around Go's native hash map.
 
 ## Features
 
-- arbitrary key and value types via `interface{}`
+- generic `K comparable, V any` keys and values (no interface boxing)
 - optional initial capacity with `NewWithCap`
 - legacy `Put` and `Set` plus standardized semantic aliases
 - snapshot access to keys, values, and key/value slices
 
 ## API Snapshot
 
-- `New() *HashMap`
-- `NewWithCap(cap int) *HashMap`
-- `Put(key interface{}, value interface{}) bool`
-- `InsertIfAbsent(key interface{}, value interface{}) bool`
-- `Set(key interface{}, value interface{})`
-- `Upsert(key interface{}, value interface{}) bool`
-- `Get(key interface{}) (interface{}, bool)`
-- `Remove(key interface{})`
-- `Delete(key interface{}) (interface{}, bool)`
-- `Keys() []interface{}`
-- `Values() []interface{}`
-- `Slices() []Slice`
+- `New[K comparable, V any]() *HashMap[K, V]`
+- `NewWithCap[K comparable, V any](cap int) *HashMap[K, V]`
+- `Put(key K, value V) bool`
+- `InsertIfAbsent(key K, value V) bool`
+- `Set(key K, value V)`
+- `Upsert(key K, value V) bool`
+- `Get(key K) (V, bool)`
+- `Remove(key K)`
+- `Delete(key K) (V, bool)`
+- `Keys() []K`
+- `Values() []V`
+- `Slices() []Slice[K, V]`
 - `Clear()`
 - `Empty() bool`
 - `Size() int`

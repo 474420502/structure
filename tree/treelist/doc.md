@@ -21,7 +21,11 @@ import "github.com/474420502/structure/tree/treelist"
 - `Put(key KEY, value VALUE) bool`
 - `PutDuplicate(key KEY, value VALUE, do func(exists *Slice[KEY, VALUE])) bool`
 - `Set(key KEY, value VALUE) bool`
+- `InsertIfAbsent(key KEY, value VALUE) bool`
+- `Upsert(key KEY, value VALUE) bool`
 - `Get(key KEY) (VALUE, bool)`
+- `Delete(key KEY) (VALUE, bool)`
+- `Len() int`
 - `Index(i int64) *Slice[KEY, VALUE]`
 - `IndexOf(key KEY) int64`
 - `Head() *Slice[KEY, VALUE]`

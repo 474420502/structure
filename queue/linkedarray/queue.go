@@ -108,6 +108,12 @@ func (queue *ArrayQueue[T]) Size() int64 {
 	return queue.size
 }
 
+// Len returns the number of stored elements as an int. It is the preferred
+// cross-package size accessor for new code.
+func (queue *ArrayQueue[T]) Len() int {
+	return int(queue.size)
+}
+
 func (queue *ArrayQueue[T]) PopBack() interface{} {
 	if queue.size == 0 {
 		return nil

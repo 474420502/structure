@@ -14,7 +14,7 @@ The repository now has standardized, non-breaking compatibility entry points for
 - writes: `InsertIfAbsent`, `Upsert`, `Delete`, `Len`
 - ordered iterators: `SeekGEExact`, `SeekGTExact`, `SeekLEExact`, `SeekLTExact`
 
-Legacy methods remain available and unchanged.
+Legacy methods remain available and unchanged. All map, ordered-tree, set, and priority-queue containers now expose the write aliases, and `Len` was added to the remaining list, stack, queue, heap, and hash-set containers.
 
 ## Migration Goal
 
@@ -24,7 +24,7 @@ The goal is not to remove all legacy names immediately. The goal is to converge 
 
 ### Phase 1: Standard Entry Points First
 
-Status: in progress
+Status: completed
 
 Rules:
 
@@ -32,11 +32,11 @@ Rules:
 2. Add standardized semantic aliases.
 3. Prefer standardized names in docs, examples, and new code.
 
-This phase is already implemented for the main map and ordered-tree packages.
+This phase is now implemented for every map, ordered-tree, set, and priority-queue container in the repository.
 
 ### Phase 2: Documentation And Example Convergence
 
-Status: in progress
+Status: completed
 
 Rules:
 
@@ -51,7 +51,7 @@ Rules:
 
 ### Phase 3: Soft Deprecation
 
-Status: planned
+Status: in progress
 
 Rules:
 
@@ -66,6 +66,10 @@ Primary candidates:
 - `Vaild`
 - package-specific uses of `Add` or `Set` where the semantic meaning is ambiguous outside that package
 - iterator `Seek*` variants that hide exact-match status when a `Seek*Exact` alternative now exists
+
+Progress:
+
+- `Vaild` now carries a `Deprecated: use Valid.` marker in every package that exposes it.
 
 ### Phase 4: Breaking Release Cleanup
 

@@ -64,16 +64,16 @@ func main2() {
 	iter.IndexTo(1)           //
 	log.Println(iter.Value()) // 2
 
-	log.Println("Iterator{Prev Next Vaild}")
+	log.Println("Iterator{Prev Next Valid}")
 	iter = l.Iterator()
 	iter.ToHead()
-	for iter.Vaild() {
+	for iter.Valid() {
 		log.Println(iter.Value()) // 0 2 4 6 8
 		iter.Next()
 	}
 
 	iter.ToTail()
-	for iter.Vaild() {
+	for iter.Valid() {
 		log.Println(iter.Value()) // 8 6 4 2 0
 		iter.Prev()
 	}
@@ -114,7 +114,7 @@ func main3() {
 	iter.IndexTo(1)           //
 	log.Println(iter.Value()) // 2
 
-	log.Println("Iterator{Prev Next Vaild}")
+	log.Println("Iterator{Prev Next Valid}")
 	iter = l.CircularIterator()
 
 	var result []int
@@ -122,7 +122,7 @@ func main3() {
 
 	count = 0
 	iter.ToHead()
-	for iter.Vaild() {
+	for iter.Valid() {
 		result = append(result, iter.Value())
 		iter.Next()
 		if iter.Value() == 0 {
@@ -137,7 +137,7 @@ func main3() {
 	result = nil
 	count = 0
 	iter.ToTail()
-	for iter.Vaild() {
+	for iter.Valid() {
 		result = append(result, iter.Value())
 		iter.Prev()
 		if iter.Value() == 8 {

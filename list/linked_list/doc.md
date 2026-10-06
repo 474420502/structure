@@ -26,6 +26,7 @@ import linkedlist "github.com/474420502/structure/list/linked_list"
 - `PopBack() (T, bool)`
 - `Index(idx int) (T, bool)`
 - `Contains(values ...T) int`
+- `Len() int`
 - `Traverse(func(value T) bool)`
 - `Values() []T`
 - `Iterator() *Iterator[T]`
@@ -33,7 +34,7 @@ import linkedlist "github.com/474420502/structure/list/linked_list"
 
 The iterator APIs support:
 
-- `Value`, `Vaild`, `SetValue`, `Swap`
+- `Value`, `Valid` (`Vaild` remains as a deprecated alias), `SetValue`, `Swap`
 - `Next`, `Prev`, `ToHead`, `ToTail`, `Move`
 - `InsertBefore`, `InsertAfter`
 - `MoveBefore`, `MoveAfter`

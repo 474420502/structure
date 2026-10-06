@@ -3,20 +3,30 @@ package avls
 import "fmt"
 
 func newIterator[KEY, VALUE any](tree *Tree[KEY, VALUE]) *Iterator[KEY, VALUE] {
-	hight := tree.Height()
-	iter := &Iterator[KEY, VALUE]{
+	return &Iterator[KEY, VALUE]{
 		tree: tree,
 		idx:  -1,
 	}
-	iter.stack = make([]NodeDir[KEY, VALUE], hight)
-	return iter
+}
+
+// dir returns a writable slot for path index i, spilling to the heap only for
+// trees deeper than the inline backing array.
+func (iter *Iterator[KEY, VALUE]) dir(i int8) *NodeDir[KEY, VALUE] {
+	if int(i) < iteratorStackSize {
+		return &iter.backing[i]
+	}
+	j := int(i) - iteratorStackSize
+	for len(iter.overflow) <= j {
+		iter.overflow = append(iter.overflow, NodeDir[KEY, VALUE]{})
+	}
+	return &iter.overflow[j]
 }
 
 func (iter *Iterator[KEY, VALUE]) down(cmp int8) bool {
 
 	if iter.cur == nil {
 		if iter.idx > -1 {
-			ndir := &iter.stack[iter.idx]
+			ndir := iter.dir(iter.idx)
 			rcmp := ^cmp + 2
 			if ndir.D == rcmp {
 				iter.cur = ndir.N
@@ -31,7 +41,7 @@ func (iter *Iterator[KEY, VALUE]) down(cmp int8) bool {
 		return false
 	}
 	iter.idx += 1
-	ndir := &iter.stack[iter.idx]
+	ndir := iter.dir(iter.idx)
 	ndir.N = iter.cur
 	ndir.D = cmp
 	iter.cur = iter.cur.Children[cmp]
@@ -44,7 +54,7 @@ func (iter *Iterator[KEY, VALUE]) up(cmp int8) bool {
 	for {
 
 		if idx > -1 {
-			ndir := &iter.stack[idx]
+			ndir := iter.dir(idx)
 			rcmp := ^cmp + 2
 			if ndir.D == rcmp {
 				idx--
@@ -55,7 +65,7 @@ func (iter *Iterator[KEY, VALUE]) up(cmp int8) bool {
 		} else {
 			if iter.cur != nil {
 				iter.idx++
-				ndir := &iter.stack[iter.idx]
+				ndir := iter.dir(iter.idx)
 				ndir.N = iter.cur
 				ndir.D = cmp
 				iter.cur = nil
@@ -67,7 +77,6 @@ func (iter *Iterator[KEY, VALUE]) up(cmp int8) bool {
 	}
 
 }
-
 
 func (iter *Iterator[KEY, VALUE]) seekEqual(key KEY, lessAndGreater int8) bool {
 	return iter.seekBound(key, lessAndGreater, false)
@@ -91,7 +100,6 @@ func (iter *Iterator[KEY, VALUE]) seekBound(key KEY, lessAndGreater int8, strict
 
 	var candidate *Node[KEY, VALUE]
 	candidateIdx := int8(-1)
-	candidateStack := make([]NodeDir[KEY, VALUE], len(iter.stack))
 
 	for cur != nil {
 		cmp := iter.tree.Compare(cur.Key, key)
@@ -102,10 +110,10 @@ func (iter *Iterator[KEY, VALUE]) seekBound(key KEY, lessAndGreater int8, strict
 		switch lessAndGreater {
 		case 1:
 			switch {
-			case cmp == 0:
+			case cmp > 0:
 				satisfies = true
 				moveDir = 0
-			case cmp < 0:
+			case cmp == 0:
 				exact = true
 				if !strict {
 					satisfies = true
@@ -118,10 +126,10 @@ func (iter *Iterator[KEY, VALUE]) seekBound(key KEY, lessAndGreater int8, strict
 			}
 		case 0:
 			switch {
-			case cmp == 1:
+			case cmp < 0:
 				satisfies = true
 				moveDir = 1
-			case cmp < 0:
+			case cmp == 0:
 				exact = true
 				if !strict {
 					satisfies = true
@@ -137,7 +145,6 @@ func (iter *Iterator[KEY, VALUE]) seekBound(key KEY, lessAndGreater int8, strict
 		if satisfies {
 			candidate = cur
 			candidateIdx = pathIdx
-			copy(candidateStack, iter.stack)
 		}
 
 		next := cur.Children[moveDir]
@@ -146,15 +153,14 @@ func (iter *Iterator[KEY, VALUE]) seekBound(key KEY, lessAndGreater int8, strict
 		}
 
 		pathIdx++
-		iter.stack[pathIdx] = NodeDir[KEY, VALUE]{N: cur, D: moveDir}
+		*iter.dir(pathIdx) = NodeDir[KEY, VALUE]{N: cur, D: moveDir}
 		cur = next
 	}
 
+	// seekBound only pushes onto the path, so the candidate's ancestor prefix
+	// is still intact; no snapshot or copy is needed.
 	iter.cur = candidate
 	iter.idx = candidateIdx
-	if candidate != nil {
-		copy(iter.stack, candidateStack)
-	}
 
 	return exact
 }
@@ -174,6 +180,13 @@ func (iter *Iterator[KEY, VALUE]) move(cmp int8) {
 }
 
 func (iter *Iterator[KEY, VALUE]) view() (result string) {
-	result = fmt.Sprintf("%v  current: %v", iter.stack, iter.Key())
+	n := int(iter.idx) + 1
+	if n < 0 {
+		n = 0
+	}
+	if n > iteratorStackSize {
+		n = iteratorStackSize
+	}
+	result = fmt.Sprintf("%v  current: %v", iter.backing[:n], iter.Key())
 	return result
 }

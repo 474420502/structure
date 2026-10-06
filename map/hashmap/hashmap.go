@@ -5,27 +5,28 @@ import (
 )
 
 // Slice the KeyValue
-type Slice struct {
-	Key, Value interface{}
+type Slice[K comparable, V any] struct {
+	Key   K
+	Value V
 }
 
-// HashMap map base on hash
-type HashMap struct {
-	hm map[interface{}]interface{}
+// HashMap is a generic hash map on top of Go's native map.
+type HashMap[K comparable, V any] struct {
+	hm map[K]V
 }
 
 // New instantiates a hash map.
-func New() *HashMap {
-	return &HashMap{hm: make(map[interface{}]interface{})}
+func New[K comparable, V any]() *HashMap[K, V] {
+	return &HashMap[K, V]{hm: make(map[K]V)}
 }
 
-// New instantiates a hash map with  Capacity.
-func NewWithCap(cap int) *HashMap {
-	return &HashMap{hm: make(map[interface{}]interface{}, cap)}
+// NewWithCap instantiates a hash map with capacity.
+func NewWithCap[K comparable, V any](cap int) *HashMap[K, V] {
+	return &HashMap[K, V]{hm: make(map[K]V, cap)}
 }
 
 // Put inserts element into the map With Not Cover. if key exists return false. else return true
-func (hm *HashMap) Put(key interface{}, value interface{}) bool {
+func (hm *HashMap[K, V]) Put(key K, value V) bool {
 	if _, ok := hm.hm[key]; !ok {
 		hm.hm[key] = value
 		return true
@@ -34,35 +35,35 @@ func (hm *HashMap) Put(key interface{}, value interface{}) bool {
 }
 
 // InsertIfAbsent inserts a value only when the key does not exist.
-func (hm *HashMap) InsertIfAbsent(key interface{}, value interface{}) bool {
+func (hm *HashMap[K, V]) InsertIfAbsent(key K, value V) bool {
 	return hm.Put(key, value)
 }
 
 // Set inserts element into the map With Set.
-func (hm *HashMap) Set(key interface{}, value interface{}) {
+func (hm *HashMap[K, V]) Set(key K, value V) {
 	hm.hm[key] = value
 }
 
 // Upsert sets the value and reports whether an existing value was replaced.
-func (hm *HashMap) Upsert(key interface{}, value interface{}) bool {
+func (hm *HashMap[K, V]) Upsert(key K, value V) bool {
 	_, replaced := hm.hm[key]
 	hm.hm[key] = value
 	return replaced
 }
 
 // Get get the element by key
-func (hm *HashMap) Get(key interface{}) (value interface{}, isfound bool) {
+func (hm *HashMap[K, V]) Get(key K) (value V, isfound bool) {
 	value, isfound = hm.hm[key]
 	return
 }
 
 // Remove remove the element by key
-func (hm *HashMap) Remove(key interface{}) {
+func (hm *HashMap[K, V]) Remove(key K) {
 	delete(hm.hm, key)
 }
 
 // Delete removes a key and returns the previous value when present.
-func (hm *HashMap) Delete(key interface{}) (value interface{}, ok bool) {
+func (hm *HashMap[K, V]) Delete(key K) (value V, ok bool) {
 	value, ok = hm.hm[key]
 	if ok {
 		delete(hm.hm, key)
@@ -71,63 +72,53 @@ func (hm *HashMap) Delete(key interface{}) (value interface{}, ok bool) {
 }
 
 // Empty if the hashmap is empty, return true
-func (hm *HashMap) Empty() bool {
+func (hm *HashMap[K, V]) Empty() bool {
 	return len(hm.hm) == 0
 }
 
 // Size return the size of hashmap
-func (hm *HashMap) Size() int {
+func (hm *HashMap[K, V]) Size() int {
 	return len(hm.hm)
 }
 
 // Len returns the number of elements.
-func (hm *HashMap) Len() int {
+func (hm *HashMap[K, V]) Len() int {
 	return len(hm.hm)
 }
 
 // Keys return the all keys of hashmap. non order
-func (hm *HashMap) Keys() []interface{} {
-	keys := make([]interface{}, len(hm.hm))
-	count := 0
+func (hm *HashMap[K, V]) Keys() []K {
+	keys := make([]K, 0, len(hm.hm))
 	for key := range hm.hm {
-		keys[count] = key
-		count++
+		keys = append(keys, key)
 	}
 	return keys
 }
 
 // Values return the all values of hashmap. non order
-func (hm *HashMap) Values() []interface{} {
-	values := make([]interface{}, len(hm.hm))
-	count := 0
+func (hm *HashMap[K, V]) Values() []V {
+	values := make([]V, 0, len(hm.hm))
 	for _, value := range hm.hm {
-		values[count] = value
-		count++
+		values = append(values, value)
 	}
 	return values
 }
 
 // Slices return the all keyvalue of hashmap. non order
-func (hm *HashMap) Slices() []Slice {
-	var slices []Slice = make([]Slice, len(hm.hm))
-
-	var i = 0
+func (hm *HashMap[K, V]) Slices() []Slice[K, V] {
+	slices := make([]Slice[K, V], 0, len(hm.hm))
 	for key, value := range hm.hm {
-		s := &slices[i]
-		s.Key = key
-		s.Value = value
-		i++
+		slices = append(slices, Slice[K, V]{Key: key, Value: value})
 	}
 	return slices
 }
 
 // Clear clear the hashmap
-func (hm *HashMap) Clear() {
-	hm.hm = make(map[interface{}]interface{})
+func (hm *HashMap[K, V]) Clear() {
+	hm.hm = make(map[K]V)
 }
 
 // String print the hashmap
-func (hm *HashMap) String() string {
-	content := fmt.Sprintf("%v", hm.hm)
-	return content
+func (hm *HashMap[K, V]) String() string {
+	return fmt.Sprintf("%v", hm.hm)
 }

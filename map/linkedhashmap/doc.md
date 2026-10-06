@@ -8,7 +8,7 @@ import linkedhashmap "github.com/474420502/structure/map/linkedhashmap"
 
 ## Features
 
-- arbitrary key and value types via `interface{}`
+- generic `K comparable, V any` keys and values (no interface boxing)
 - stable traversal order from head to tail
 - append/prepend insertion helpers
 - update-and-move operations with `SetFront` and `SetBack`
@@ -17,21 +17,21 @@ import linkedhashmap "github.com/474420502/structure/map/linkedhashmap"
 
 ## API Snapshot
 
-- `New() *LinkedHashmap`
-- `Put(key interface{}, value interface{}) bool`
-- `InsertIfAbsent(key interface{}, value interface{}) bool`
-- `PushBack(key interface{}, value interface{}) bool`
-- `PushFront(key interface{}, value interface{}) bool`
-- `Set(key, value interface{}) bool`
-- `Upsert(key, value interface{}) bool`
-- `SetBack(key interface{}, value interface{}) bool`
-- `SetFront(key interface{}, value interface{}) bool`
-- `Get(key interface{}) (interface{}, bool)`
-- `Remove(key interface{}) (interface{}, bool)`
-- `Delete(key interface{}) (interface{}, bool)`
-- `Keys() []interface{}`
-- `Values() []interface{}`
-- `Slices() []Slice`
+- `New[K comparable, V any]() *LinkedHashmap[K, V]`
+- `Put(key K, value V) bool`
+- `InsertIfAbsent(key K, value V) bool`
+- `PushBack(key K, value V) bool`
+- `PushFront(key K, value V) bool`
+- `Set(key K, value V) bool`
+- `Upsert(key K, value V) bool`
+- `SetBack(key K, value V) bool`
+- `SetFront(key K, value V) bool`
+- `Get(key K) (V, bool)`
+- `Remove(key K) (V, bool)`
+- `Delete(key K) (V, bool)`
+- `Keys() []K`
+- `Values() []V`
+- `Slices() []Slice[K, V]`
 - `Clear()`
 - `Empty() bool`
 - `Size() uint`

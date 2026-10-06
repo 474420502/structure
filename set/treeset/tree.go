@@ -14,6 +14,8 @@ type Tree[KEY, VALUE any] struct {
 	zero             VALUE
 	differenceHeight int8
 	// rotateCount      int
+	// free is a singly linked list of recycled nodes.
+	free *Node[KEY, VALUE]
 }
 
 func New[KEY, VALUE any](Compare compare.Compare[KEY]) *Tree[KEY, VALUE] {
@@ -98,10 +100,10 @@ func (set *Tree[KEY, VALUE]) Empty() bool {
 }
 
 func (tree *Tree[KEY, VALUE]) Remove(key KEY) (VALUE, bool) {
-	target, _ := tree.remove(key, tree.Center, 0, 1)
-	if target != nil {
+	target, found, _ := tree.remove(key, tree.Center, 0, 1)
+	if found {
 		tree.size -= 1
-		return *target, true
+		return target, true
 	}
 	return tree.zero, false
 }

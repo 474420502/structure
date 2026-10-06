@@ -23,6 +23,7 @@ import "github.com/474420502/structure/tree/heap"
 - `Reset()`
 - `Empty() bool`
 - `Size() int`
+- `Len() int`
 
 ## Notes
 

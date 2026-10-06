@@ -46,6 +46,7 @@ The iterator supports `SeekToFirst`, `SeekToLast`, `SeekGE`, `SeekGT`, `SeekLE`,
 
 ## Notes
 
+- The comparator follows the standard repository contract: negative means less-than, positive means greater-than, and zero means equal.
 - `Add` does not overwrite an existing key.
 - `Set` inserts when absent and overwrites when present.
 - `InsertIfAbsent` is the preferred explicit name for insert-only writes.

@@ -28,6 +28,7 @@ import arraylist "github.com/474420502/structure/list/array_list"
 - `Set(idx int, value T)`
 - `Remove(idx uint) T`
 - `Contains(values ...T) int`
+- `Len() int`
 - `Traverse(func(idx uint, value T) bool)`
 - `Values() []T`
 - `Iterator() *Iterator[T]`
@@ -35,7 +36,7 @@ import arraylist "github.com/474420502/structure/list/array_list"
 
 The iterator APIs support:
 
-- `Value`, `Vaild`, `Index`, `IndexTo`
+- `Value`, `Valid` (`Vaild` remains as a deprecated alias), `Index`, `IndexTo`
 - `Next`, `Prev`, `ToHead`, `ToTail`
 - `SetValue`, `Swap`
 - `RemoveToNext`, `RemoveToPrev`

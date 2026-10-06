@@ -23,6 +23,12 @@ func (h *Tree[T]) Size() int {
 	return h.size
 }
 
+// Len returns the number of stored elements as an int. It is the preferred
+// cross-package size accessor for new code.
+func (h *Tree[T]) Len() int {
+	return h.size
+}
+
 func (h *Tree[T]) grow() {
 	ecap := len(h.elements)
 	if h.size >= ecap {

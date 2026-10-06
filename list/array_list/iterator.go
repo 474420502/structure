@@ -14,7 +14,9 @@ func (iter *Iterator[T]) Value() T {
 }
 
 // Deprecated: use Valid.
-// Vaild if current value is not nil return true. else return false. for use with Seek
+// Vaild is a compatibility alias for Valid.
+//
+// Deprecated: use Valid.
 func (iter *Iterator[T]) Vaild() bool {
 	return iter.cur < iter.al.size
 }

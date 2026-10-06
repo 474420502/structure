@@ -104,7 +104,7 @@ func (iter *Iterator[KEY, VALUE]) Valid() bool {
 	return iter.cur != nil
 }
 
-// Prev  the current iterator move to the prev. before call it must call Vaild() and return true.
+// Prev  the current iterator move to the prev. before call it must call Valid() and return true.
 func (iter *Iterator[KEY, VALUE]) Prev() {
 	const L = 0
 
@@ -120,7 +120,7 @@ func (iter *Iterator[KEY, VALUE]) Compare(key KEY) int {
 	return iter.tree.compare(iter.cur.Key, key)
 }
 
-// Next Next the current iterator move to the next. before call it must call Vaild() and return true.
+// Next Next the current iterator move to the next. before call it must call Valid() and return true.
 func (iter *Iterator[KEY, VALUE]) Next() {
 	const R = 1
 	iter.cur = iter.cur.Direct[R]

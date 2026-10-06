@@ -4,7 +4,6 @@ import (
 	"container/list"
 	"fmt"
 	"log"
-	"reflect"
 	"testing"
 
 	"github.com/474420502/random"
@@ -13,29 +12,21 @@ import (
 )
 
 func TestPush(t *testing.T) {
-	lhm := New()
-	lhm.PushFront(1, "1")
-	lhm.PushBack("2", 2)
-	var values []interface{}
-	values = lhm.Values()
+	lhm := New[int, int]()
+	lhm.PushFront(1, 1)
+	lhm.PushBack(2, 2)
 
-	var testType reflect.Type
-
-	if testType = reflect.TypeOf(values[0]); testType.String() != "string" {
-		t.Error(testType)
-	}
-
-	if testType = reflect.TypeOf(values[1]); testType.String() != "int" {
-		t.Error(testType)
+	values := lhm.Values()
+	if len(values) != 2 || values[0] != 1 || values[1] != 2 {
+		t.Fatalf("Values = %v want [1 2]", values)
 	}
 
 	// 1 2
-	lhm.PushFront(4, "4") // 4 1 2
-	lhm.PushBack("3", 3)  // 4 1 2 3
+	lhm.PushFront(4, 4) // 4 1 2
+	lhm.PushBack(3, 3)  // 4 1 2 3
 
 	if lhm.String() != "[{4:4} {1:1} {2:2} {3:3}]" {
 		t.Error(lhm.String())
-
 	}
 
 	lhm.Put(5, 5)
@@ -44,7 +35,7 @@ func TestPush(t *testing.T) {
 	}
 }
 func TestLinkedHashMapAlias(t *testing.T) {
-	var lhm *LinkedHashMap = New()
+	var lhm *LinkedHashMap[int, int] = New[int, int]()
 	if lhm == nil {
 		t.Fatal("New should return a usable LinkedHashMap alias")
 	}
@@ -56,7 +47,7 @@ func TestLinkedHashMapAlias(t *testing.T) {
 }
 
 func TestBase(t *testing.T) {
-	lhm := New()
+	lhm := New[int, int]()
 	for i := 0; i < 10; i++ {
 		lhm.PushBack(i, i)
 	}
@@ -80,7 +71,7 @@ func TestBase(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	lhm := New()
+	lhm := New[int, int]()
 	for i := 0; i < 10; i++ {
 		lhm.PushBack(i, i)
 	}
@@ -101,13 +92,13 @@ func TestGet(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	lhm := New()
+	lhm := New[int, int]()
 	for i := 0; i < 10; i++ {
 		lhm.PushBack(i, i)
 	}
 
 	var resultStr = "[{0:0} {1:1} {2:2} {3:3} {4:4} {5:5} {6:6} {7:7} {8:8} {9:9}]"
-	var slices []Slice = lhm.Slices()
+	var slices []Slice[int, int] = lhm.Slices()
 	if fmt.Sprintf("%v", slices) != resultStr {
 		t.Error(resultStr, fmt.Sprintf("%v", slices))
 	}
@@ -151,8 +142,8 @@ func TestRemove(t *testing.T) {
 
 func TestForce(t *testing.T) {
 	rand := random.New()
-	hm := New()
-	set := treeset.New[int, int](compare.AnyEx[int])
+	hm := New[int, int]()
+	set := treeset.New[int, int](compare.Any[int])
 	l := list.New()
 
 	for n := 0; n < 2000; n++ {
@@ -186,7 +177,7 @@ func TestForce(t *testing.T) {
 		}
 
 		for _, k := range hm.Keys() {
-			if ok := set.Contains(k.(int)); !ok {
+			if ok := set.Contains(k); !ok {
 				panic("")
 			}
 		}
@@ -196,7 +187,7 @@ func TestForce(t *testing.T) {
 		}
 
 		for _, v := range hm.Values() {
-			if ok := set.Contains(v.(int)); !ok {
+			if ok := set.Contains(v); !ok {
 				panic("")
 			}
 		}
@@ -246,13 +237,13 @@ func TestForce(t *testing.T) {
 		}
 
 		for _, k := range hm.Keys() {
-			if ok := set.Contains(k.(int)); !ok {
+			if ok := set.Contains(k); !ok {
 				panic("")
 			}
 		}
 
 		for _, v := range hm.Values() {
-			if ok := set.Contains(v.(int)); !ok {
+			if ok := set.Contains(v); !ok {
 				panic("")
 			}
 		}
@@ -274,7 +265,7 @@ func TestForceCover(t *testing.T) {
 	}
 
 	for n := 0; n < 2000; n++ {
-		hm := New()
+		hm := New[int, int]()
 		l := list.New()
 		var m map[int]*KeyValue = make(map[int]*KeyValue)
 

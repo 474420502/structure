@@ -49,6 +49,7 @@ The iterator supports:
 - `Upsert` is the preferred explicit name for overwrite-or-create writes against the first matching key.
 - `Delete` and `Len` provide the preferred cross-package removal and size entry points for new code.
 - The iterator `Seek*` methods already return the exact-match status directly. This package does not need separate `Seek*Exact` aliases.
+- The comparator follows the standard repository contract: negative means less-than, positive means greater-than, and zero means equal.
 - `Get` returns the value at the stable front of the duplicate-key run.
 - `SeekGE` and `SeekLE` position to the first or last node of an equal-key run respectively.
 

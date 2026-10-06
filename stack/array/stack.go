@@ -58,6 +58,12 @@ func (st *Stack[T]) Size() uint {
 	return uint(len(st.element))
 }
 
+// Len returns the number of stored elements as an int. It is the preferred
+// cross-package size accessor for new code.
+func (st *Stack[T]) Len() int {
+	return len(st.element)
+}
+
 // String return the string of stack
 func (st *Stack[T]) String() string {
 	return fmt.Sprintf("%v", st.element)

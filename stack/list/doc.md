@@ -22,6 +22,7 @@ import liststack "github.com/474420502/structure/stack/list"
 - `Clear()`
 - `Empty() bool`
 - `Size() uint`
+- `Len() int`
 - `Values() []T`
 - `String() string`
 

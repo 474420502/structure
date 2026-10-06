@@ -16,7 +16,7 @@ func TestCase(t *testing.T) {
 
 	r := random.New(1684012134704818399)
 
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	var s []int
 	count := 20
 	for i := 0; i < count; i++ {
@@ -39,7 +39,7 @@ func TestCasePut(t *testing.T) {
 	r := random.New()
 
 	for n := 0; n < 500; n++ {
-		tree := New[int, int](compare.AnyEx[int])
+		tree := New[int, int](compare.Any[int])
 		count := r.Intn(100)
 		for i := 0; i < count; i++ {
 			v := r.Intn(100)
@@ -59,7 +59,7 @@ func TestCaseR(t *testing.T) {
 
 	for nn := 0; nn < 100; nn++ {
 
-		tree := New[int, int](compare.AnyEx[int])
+		tree := New[int, int](compare.Any[int])
 		count := r.Intn(50) + 50
 
 		var checkv []int
@@ -106,7 +106,7 @@ func TestCaseR(t *testing.T) {
 // 	r := random.New(t.Name())
 
 // 	for n := 0; n < 500; n++ {
-// 		tree := New[int, int](compare.AnyEx[int])
+// 		tree := New[int, int](compare.Any[int])
 // 		tree2 := avl.New(compare.Any[int])
 // 		var removelist []int
 // 		count := r.Intn(64)

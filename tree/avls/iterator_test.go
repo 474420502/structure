@@ -16,7 +16,7 @@ type iteratorEntry struct {
 }
 
 func TestNextPrev(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for i := 0; i < 10; i++ {
 		tree.Set(i, i)
 	}
@@ -100,7 +100,7 @@ func TestDefault(t *testing.T) {
 	//             └── 0(1)
 
 	var data []int = []int{4, 0, 41, 27, 64, 13, 16, 32, 18, 39, 56, 70, 20, 43, 72, 92, 85, 69}
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, v := range data {
 		tree.Put(v, v)
 	}
@@ -183,7 +183,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestSeekFor(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for i := 0; i < 20; i += 2 {
 		tree.Set(i, i)
 	}
@@ -250,7 +250,7 @@ func TestSeekFor(t *testing.T) {
 func TestIteratorForce(t *testing.T) {
 	rand := random.New(t.Name())
 	for n := 0; n < 2000; n++ {
-		tree := New[int, int](compare.AnyEx[int])
+		tree := New[int, int](compare.Any[int])
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
@@ -340,7 +340,7 @@ func TestIteratorForce(t *testing.T) {
 func TestIteratorForce2(t *testing.T) {
 	rand := random.New(1683989312052736623)
 	for n := 0; n < 2000; n++ {
-		tree := New[int, int](compare.AnyEx[int])
+		tree := New[int, int](compare.Any[int])
 		var priority []int
 		for i := 0; i < 100; i++ {
 			v := rand.Intn(100)
@@ -432,7 +432,7 @@ func TestIteratorForce2(t *testing.T) {
 }
 
 func TestDefaultSeek(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for i := 0; i < 10; i += 2 {
 		tree.Set(i, i)
 	}
@@ -440,7 +440,7 @@ func TestDefaultSeek(t *testing.T) {
 	iter := tree.Iterator()
 
 	// 测试 SeekLE 和 SeekLT 在树为空时的情况
-	emptyTree := New[int, int](compare.AnyEx[int])
+	emptyTree := New[int, int](compare.Any[int])
 	emptyIter := emptyTree.Iterator()
 
 	utils.Expect("false false", emptyIter.SeekLE(-1), emptyIter.Valid())
@@ -534,7 +534,7 @@ func TestDefaultSeek(t *testing.T) {
 }
 
 func TestDuplicateSeekBounds(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, value := range []int{4, 5, 5, 5, 6} {
 		tree.Put(value, value)
 	}
@@ -567,7 +567,7 @@ func TestDuplicateSeekBounds(t *testing.T) {
 }
 
 func TestDuplicateSeekRangeWindows(t *testing.T) {
-	tree := New[int, int](compare.AnyEx[int])
+	tree := New[int, int](compare.Any[int])
 	for _, item := range []iteratorEntry{{4, 40}, {5, 100}, {5, 200}, {5, 300}, {6, 60}, {7, 70}} {
 		tree.Put(item.key, item.value)
 	}
@@ -605,7 +605,7 @@ func TestIteratorDuplicateReferenceForce(t *testing.T) {
 	rand := random.New(t.Name())
 
 	for round := 0; round < 400; round++ {
-		tree := New[int, int](compare.AnyEx[int])
+		tree := New[int, int](compare.Any[int])
 		reference := make([]iteratorEntry, 0, 120)
 
 		for step := 0; step < 120; step++ {
