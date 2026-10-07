@@ -9,6 +9,15 @@ type OrderedMap[K any, V any] struct {
 	tree *indextree.Tree[K, V]
 }
 
+// NewWith builds a container from a comparator and a prototype value. The
+// prototype is not stored; it only lets the compiler infer VALUE so callers
+// name the key type once:
+//
+//	t := orderedmap.NewWith(compare.Any[int], "")
+func NewWith[K any, V any](cmp compare.Compare[K], _ V) *OrderedMap[K, V] {
+	return New[K, V](cmp)
+}
+
 func New[K any, V any](comp compare.Compare[K]) *OrderedMap[K, V] {
 	return &OrderedMap[K, V]{
 		tree: indextree.NewWithValue[K, V](comp),

@@ -1,10 +1,10 @@
 # orderedmap
 
 ```go
-import "github.com/474420502/structure/map/orderedmap.go"
+import "github.com/474420502/structure/map/orderedmap"
 ```
 
-`map/orderedmap.go` is an ordered map implementation based on `tree/indextree`.
+`map/orderedmap` is an ordered map implementation based on `tree/indextree`.
 
 ## Features
 

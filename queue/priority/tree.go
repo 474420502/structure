@@ -18,6 +18,15 @@ type Tree[KEY, VALUE any] struct {
 	// rotateCount int
 }
 
+// NewWith builds a container from a comparator and a prototype value. The
+// prototype is not stored; it only lets the compiler infer VALUE so callers
+// name the key type once:
+//
+//	t := priority.NewWith(compare.Any[int], "")
+func NewWith[K any, V any](cmp compare.Compare[K], _ V) *Tree[K, V] {
+	return New[K, V](cmp)
+}
+
 func New[KEY, VALUE any](Compare compare.Compare[KEY]) *Tree[KEY, VALUE] {
 
 	tree := &Tree[KEY, VALUE]{

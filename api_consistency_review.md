@@ -22,7 +22,7 @@ Representative packages reviewed:
 - `queue/priority`
 - `map/hashmap`
 - `map/linkedhashmap`
-- `map/orderedmap.go`
+- `map/orderedmap`
 
 ## Executive Summary
 
@@ -51,7 +51,7 @@ That means package-to-package substitution is difficult, wrappers have to adapt 
 | `queue/priority` | no `Set` | insert-if-absent among same-key-first lookup, returns inserted status | `(value, ok)` | `int` | returns nothing |
 | `map/hashmap` | unconditional overwrite, no return | insert-if-absent, returns inserted status | no return | `int` | not applicable |
 | `map/linkedhashmap` | update-existing-only, returns updated status | insert-if-absent, returns inserted status | `(value, ok)` | `uint` | not applicable |
-| `map/orderedmap.go` | mirrors `indextree` | mirrors `indextree` | `(value, ok)` wrapper over `indextree` | `int64` | returns `bool` exact-match status |
+| `map/orderedmap` | mirrors `indextree` | mirrors `indextree` | `(value, ok)` wrapper over `indextree` | `int64` | returns `bool` exact-match status |
 
 ## Verified Evidence
 
@@ -77,7 +77,7 @@ Evidence:
 - `set/treeset/tree.go`
 - `map/hashmap/hashmap.go`
 - `map/linkedhashmap/linked_hashmap.go`
-- `map/orderedmap.go/map.go`
+- `map/orderedmap/map.go`
 
 ### 2. `Put` is also inconsistent, and `Add` introduces a third alias
 
@@ -99,7 +99,7 @@ Cases:
 
 - `tree/indextree`: returns removed value or `nil`.
 - `map/hashmap`: no result.
-- `tree/avl`, `tree/avls`, `set/treeset`, `queue/priority`, `map/linkedhashmap`, `map/orderedmap.go`: `(value, ok)`.
+- `tree/avl`, `tree/avls`, `set/treeset`, `queue/priority`, `map/linkedhashmap`, `map/orderedmap`: `(value, ok)`.
 
 Impact:
 
@@ -110,7 +110,7 @@ Impact:
 
 Observed:
 
-- `int64`: `tree/indextree`, `map/orderedmap.go`
+- `int64`: `tree/indextree`, `map/orderedmap`
 - `uint`: `tree/avl`, `tree/avls`, `set/treeset`, `map/linkedhashmap`
 - `int`: `queue/priority`, `map/hashmap`
 
@@ -128,7 +128,7 @@ Style A:
 - `tree/avl`
 - `tree/avls`
 - `tree/treelist`
-- `map/orderedmap.go`
+- `map/orderedmap`
 
 These return `bool`, where `true` means an exact match was found, while the iterator may still land on the nearest valid neighbor when the return value is `false`.
 

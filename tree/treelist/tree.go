@@ -44,6 +44,15 @@ type Tree[KEY any, VALUE any] struct {
 }
 
 // New create a object of tree
+// NewWith builds a container from a comparator and a prototype value. The
+// prototype is not stored; it only lets the compiler infer VALUE so callers
+// name the key type once:
+//
+//	t := treelist.NewWith(compare.Any[int], "")
+func NewWith[K any, V any](cmp compare.Compare[K], _ V) *Tree[K, V] {
+	return New[K, V](cmp)
+}
+
 func New[KEY any, VALUE any](comp compare.Compare[KEY]) *Tree[KEY, VALUE] {
 	return &Tree[KEY, VALUE]{compare: comp, root: &treeNode[KEY, VALUE]{}}
 }

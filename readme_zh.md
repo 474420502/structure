@@ -28,6 +28,32 @@ module github.com/474420502/structure
 
 标量键使用 `compare.Any`，字节切片/字符串键使用 `compare.ArrayAny`。完整辅助函数列表见 [compare/doc.md](./compare/doc.md)。
 
+## 泛型构造
+
+有序容器对键和值类型泛型，并接收一个确定键类型的比较器。构造器提供两种写法：
+
+- `New[K, V](cmp)`：显式书写两个类型参数。
+- `NewWith(cmp, prototype)`：由 prototype 的值类型推断 `V`，键类型只需写一次。prototype 不会被存储。
+
+```go
+// 显式
+rb := rbtree.New[int, string](compare.Any[int])
+
+// 推断：同样是 *rbtree.Tree[int, string]
+rb := rbtree.NewWith(compare.Any[int], "")
+
+// 键和值同类型
+tree := rbtree.NewWith(compare.Any[int], 0)
+```
+
+`NewWith` 适用于所有基于比较器的容器：`tree/avl`、`tree/avls`、
+`tree/btree`、`tree/rbtree`、`tree/skiplist`、`tree/treelist`、
+`tree/indextree`、`set/treeset`、`queue/priority`、`map/orderedmap`。
+
+哈希容器不使用比较器，写作 `hashmap.New[K, V]()`、
+`linkedhashmap.New[K, V]()`、`hashset.New[T]()`。单类型容器
+（`list/*`、`stack/*`、`queue/*`、`tree/heap`）直接推断类型参数。
+
 ## 实现目录
 
 ### List
@@ -43,7 +69,7 @@ module github.com/474420502/structure
 |----|------|------|------|
 | `map/hashmap` | 基础哈希表封装，提供 `Put`、`Set`、`Get`，以及标准化 `InsertIfAbsent`、`Upsert`、`Delete`、`Len` | [doc](./map/hashmap/doc.md) | [example](./example/hashmap/main.go) |
 | `map/linkedhashmap` | 保留插入顺序的哈希表，支持头尾移动与覆盖更新 | [doc](./map/linkedhashmap/doc.md) | [example](./example/linkedhashmap/main.go) |
-| `map/orderedmap.go` | 基于 `tree/indextree` 的有序映射，支持迭代器、按索引访问和标准化写入 | [doc](./map/orderedmap.go/doc.md) | - |
+| `map/orderedmap` | 基于 `tree/indextree` 的有序映射，支持迭代器、按索引访问和标准化写入 | [doc](./map/orderedmap/doc.md) | - |
 
 ### Queue
 

@@ -28,6 +28,36 @@ Ordered containers take a single `compare.Compare[KEY]` function: negative means
 
 Use `compare.Any` for scalar keys and `compare.ArrayAny` for byte-slice or string keys. See [compare/doc.md](./compare/doc.md) for the full helper list.
 
+## Generic Construction
+
+Ordered containers are generic over the key and value types and accept the
+comparator that fixes the key type. Two constructors are provided:
+
+- `New[K, V](cmp)` names both type arguments explicitly.
+- `NewWith(cmp, prototype)` infers `V` from a prototype value, so the key
+  type is named only once. The prototype is never stored.
+
+```go
+// explicit
+rb := rbtree.New[int, string](compare.Any[int])
+
+// inferred: the same *rbtree.Tree[int, string]
+rb := rbtree.NewWith(compare.Any[int], "")
+
+// key and value share a type
+tree := rbtree.NewWith(compare.Any[int], 0)
+```
+
+`NewWith` is available on every comparator-based container: `tree/avl`,
+`tree/avls`, `tree/btree`, `tree/rbtree`, `tree/skiplist`,
+`tree/treelist`, `tree/indextree`, `set/treeset`, `queue/priority` and
+`map/orderedmap`.
+
+Hash containers take no comparator and use `hashmap.New[K, V]()`,
+`linkedhashmap.New[K, V]()` and `hashset.New[T]()`. Single-type containers
+(`list/*`, `stack/*`, `queue/*`, `tree/heap`) infer their type argument
+directly.
+
 ## Package Index
 
 ### Lists
@@ -43,7 +73,7 @@ Use `compare.Any` for scalar keys and `compare.ArrayAny` for byte-slice or strin
 |---------|---------|------|---------|
 | `map/hashmap` | Basic hash map wrapper with legacy `Put`/`Set` plus standardized `InsertIfAbsent`/`Upsert` helpers | [doc](./map/hashmap/doc.md) | [example](./example/hashmap/main.go) |
 | `map/linkedhashmap` | Ordered hash map with front/back relocation and standardized semantic write helpers | [doc](./map/linkedhashmap/doc.md) | [example](./example/linkedhashmap/main.go) |
-| `map/orderedmap.go` | Ordered map built on `tree/indextree` with iterator, index access, and standardized semantic write helpers | [doc](./map/orderedmap.go/doc.md) | - |
+| `map/orderedmap` | Ordered map built on `tree/indextree` with iterator, index access, and standardized semantic write helpers | [doc](./map/orderedmap/doc.md) | - |
 
 ### Queues
 

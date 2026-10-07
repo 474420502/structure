@@ -35,6 +35,15 @@ func New[KEY any](comp compare.Compare[KEY]) *Tree[KEY, KEY] {
 	return NewWithValue[KEY, KEY](comp)
 }
 
+// NewWith builds a tree from a comparator and a prototype value. The
+// prototype is not stored; it only lets the compiler infer VALUE so callers
+// name the key type once:
+//
+//	t := indextree.NewWith(compare.Any[int], "")
+func NewWith[K any, V any](cmp compare.Compare[K], _ V) *Tree[K, V] {
+	return NewWithValue[K, V](cmp)
+}
+
 // NewWithValue create a object of tree
 func NewWithValue[KEY any, VALUE any](comp compare.Compare[KEY]) *Tree[KEY, VALUE] {
 	return &Tree[KEY, VALUE]{compare: comp, root: &hNode[KEY, VALUE]{}}

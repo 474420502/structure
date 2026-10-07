@@ -37,6 +37,15 @@ const (
 	MaxLevel = 16
 )
 
+// NewWith builds a container from a comparator and a prototype value. The
+// prototype is not stored; it only lets the compiler infer VALUE so callers
+// name the key type once:
+//
+//	t := skiplist.NewWith(compare.Any[int], "")
+func NewWith[K any, V any](cmp compare.Compare[K], _ V) *SkipList[K, V] {
+	return New[K, V](cmp)
+}
+
 func New[KEY any, VALUE any](comp compare.Compare[KEY]) *SkipList[KEY, VALUE] {
 	header := &Node[KEY, VALUE]{
 		Forward: make([]*Node[KEY, VALUE], MaxLevel),

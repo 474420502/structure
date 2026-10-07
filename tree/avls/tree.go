@@ -14,6 +14,15 @@ type Tree[KEY, VALUE any] struct {
 	free *Node[KEY, VALUE]
 }
 
+// NewWith builds a container from a comparator and a prototype value. The
+// prototype is not stored; it only lets the compiler infer VALUE so callers
+// name the key type once:
+//
+//	t := avls.NewWith(compare.Any[int], "")
+func NewWith[K any, V any](cmp compare.Compare[K], _ V) *Tree[K, V] {
+	return New[K, V](cmp)
+}
+
 func New[KEY, VALUE any](Compare compare.Compare[KEY]) *Tree[KEY, VALUE] {
 	tree := &Tree[KEY, VALUE]{
 		Center:           &Node[KEY, VALUE]{Height: 0},

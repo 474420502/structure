@@ -76,7 +76,7 @@ For non-breaking convergence:
 
 The standard now applies to the container packages listed below:
 
-- maps: `map/hashmap`, `map/linkedhashmap`, `map/orderedmap.go`
+- maps: `map/hashmap`, `map/linkedhashmap`, `map/orderedmap`
 - ordered trees: `tree/avl`, `tree/avls`, `tree/indextree`, `tree/rbtree`, `tree/skiplist`, `tree/treelist`
 - sets: `set/treeset`
 - queues: `queue/priority`
